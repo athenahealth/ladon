@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+
+# ENVIRONMENT IS A CONTEXT
+# ENVIRONMENT SHOULD EXIST AS A CONTEXT ON CONFIG THAT HAS PERMUTATION INFO FROM ORCHESTRATOR
+# ENVIRONMENT SHOULD HAVE A GET-WITH-DEFAULT METHOD
+
+require 'automator'
+require 'pry'
+
+def load_automation_source
+  automation_location = ARGV.pop # expect argument identifying Automation script path
+  require automation_location # load that path
+end
+
+def select_automation_class
+  # Detect all Automation subclasses
+  detected_automations = ObjectSpace.each_object(Ladon::Automator::Automation.singleton_class)
+
+  # Filter to only those Automation subclasses that are marked executable
+  executable_automations = detected_automations.select {|cls| cls.respond_to?(:abstract?) && !cls.abstract?}
+
+  # Select a single executable Automation subclass to run
+  raise StandardError, 'No non-abstract Automation subclasses detected! Exiting...' if executable_automations.empty?
+  return executable_automations[0] if executable_automations.size == 1
+
+  puts "\nPlease select the Automation you wish to run by entering one of the following numbers:"
+  executable_automations.each_with_index { |cls, idx| puts "\t#{idx + 1}. #{cls.name}" }
+  begin
+    idx = gets.to_i
+    raise StandardError unless idx > 0 && idx < executable_automations.size
+    return executable_automations[idx]
+  rescue
+    puts 'Nope, that is not valid. Try again.'
+    retry
+  end
+end
+
+def configure_automation
+  cfg = Ladon::Automator::Config.new
+  # TODO: options? may conflict with the load from above
+  return cfg
+end
+
+load_automation_source
+target_automation = select_automation_class
+result = nil
+begin
+  puts "About to execute: #{target_automation}"
+  result = target_automation.run(configure_automation)
+  puts 'Execution complete'
+rescue => ex
+  puts "\nAutomation Error: #{ex}"
+  puts ex.backtrace
+end
+
+puts 'Entering interactive mode'
+puts "\tNote: Automation result is stored in the 'result' variable"
+binding.pry
