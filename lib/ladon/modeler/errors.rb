@@ -1,12 +1,12 @@
 module Ladon
   module Modeler
-    # Error raised when trying to call +FiniteStateMachine::merge+ with an incompatible source FSM
+    # Error raised when trying to call +Graph#merge+ with an incompatible source Graph
     class InvalidMergeError < StandardError
     end
 
     class InvalidStateTypeError < StandardError
-      def initialize(reqd_type, given_type)
-        super("Expected: #{reqd_type}; Given: #{given_type}")
+      def initialize(given_type)
+        super(given_type.to_s)
       end
     end
   end
