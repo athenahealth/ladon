@@ -32,7 +32,7 @@ module Ladon
           end
 
           context 'when the target has states the subject does not' do
-            let(:different_state) { Class.new(Ladon::Modeler::States::State) }
+            let(:different_state) { Class.new(State) }
             let(:target) { FiniteStateMachine.new(start_state: different_state)}
 
             it 'adds the states from the target to the subject'  do
@@ -56,7 +56,7 @@ module Ladon
 
         describe 'when specifying a starting state' do
           before do
-            @start_state = Class.new(States::State)
+            @start_state = Class.new(State)
             @fsm = FiniteStateMachine.new(start_state: @start_state)
           end
 
@@ -108,26 +108,26 @@ module Ladon
 
         describe 'when loading states into the machine' do
           it 'does not let you load anything other than a Class as a state' do
-            expect {@fsm.load_state_type(Class.new(States::State))}.not_to raise_error
+            expect {@fsm.load_state_type(Class.new(State))}.not_to raise_error
             [1, 2.2, :symbol, '', {}, []].each do |ex|
               expect{@fsm.load_state_type(ex)}.to raise_error(StandardError, "#{ex} is not a State")
             end
           end
 
           it 'will load multiple states' do
-            newtype = Class.new(States::State)
+            newtype = Class.new(State)
             @fsm.load_state_type(newtype)
             expect(@fsm.state_count).to eq(1)
             expect(@fsm.states).to eq(Set.new([newtype]))
 
-            newtype2 = Class.new(States::State)
+            newtype2 = Class.new(State)
             @fsm.load_state_type(newtype2)
             expect(@fsm.state_count).to eq(2)
             expect(@fsm.states).to eq(Set.new([newtype, newtype2]))
           end
 
           it 'does not change when loading an already known state' do
-            newtype = Class.new(States::State)
+            newtype = Class.new(State)
             expect {@fsm.load_state_type(newtype)}.to change {@fsm.state_count}.from(0).to(1)
             expect {@fsm.load_state_type(newtype)}.not_to change {@fsm.state_count}.from(1)
           end
@@ -135,8 +135,8 @@ module Ladon
 
         describe 'when the machine has at least one state' do
           before do
-            newtype = Class.new(States::State)
-            newtype2 = Class.new(States::State)
+            newtype = Class.new(State)
+            newtype2 = Class.new(State)
             @states = Set.new([newtype, newtype2])
             @states.each {|state_cls| @fsm.load_state_type(state_cls)}
           end
