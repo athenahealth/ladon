@@ -110,7 +110,8 @@ module Ladon
           it 'does not let you load anything other than a Class as a state' do
             expect {@fsm.load_state_type(Class.new(State))}.not_to raise_error
             [1, 2.2, :symbol, '', {}, []].each do |ex|
-              expect{@fsm.load_state_type(ex)}.to raise_error(StandardError, "#{ex} is not a State")
+              expect{@fsm.load_state_type(ex)}.to raise_error(InvalidStateTypeError,
+                                                              "Expected: Ladon::Modeler::State; Given: #{ex}")
             end
           end
 

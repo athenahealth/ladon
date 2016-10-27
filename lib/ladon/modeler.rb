@@ -8,6 +8,10 @@ module Ladon
     # Used to model software as a graph of connected states and transitions.
     class Graph
       module HasStates
+        #
+        def state_type
+          State
+        end
         # Can respond with a duplicate representing the state data in the state machine.
         def states
           @states.clone
@@ -21,7 +25,7 @@ module Ladon
         #
         # Returns true if the state was newly loaded, false if it was already loaded.
         def load_state_type(state_class)
-          raise StandardError, "#{state_class} is not a State" unless state_class.is_a?(Class) && state_class < State
+          raise InvalidStateTypeError.new(State, state_class) unless state_class.is_a?(Class) && state_class < State
           return false if state_loaded?(state_class)
           @states.add(state_class)
 
