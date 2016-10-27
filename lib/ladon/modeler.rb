@@ -5,22 +5,35 @@ require 'ladon/modeler/transitions'
 
 module Ladon
   module Modeler
-    # Facilitates Finite State Machine modeling.
-    class FiniteStateMachine
+    class Graph
       include States::HasStates
       include Transitions::HasTransitions
 
       attr_accessor :eager
+
+      def initialize(start_state: nil, eager: false, contexts: {})
+        @states = Set.new # Set of state classes loaded into this model
+        @transitions = Hash.new {|h, k| h[k] = Set.new}
+        @eager = eager
+      end
+
+      # Merges the +target+ provided into this FSM instance.
+      def merge(target)
+        raise InvalidMergeError, 'Instances to merge are not of the same Class' unless self.class.eql?(target.class)
+        target.states.each {|state| self.load_state_type(state)}
+        target.transitions.each {|state, trans_set| @transitions[state].merge(trans_set)}
+      end
+    end
+
+    # Facilitates Finite State Machine modeling.
+    class FiniteStateMachine < Graph
       attr_reader :contexts
       attr_reader :current_state
 
       # Creates a new +FiniteStateMachine+ model instance.
       def initialize(start_state: nil, eager: false, contexts: {})
-        @states = Set.new # Set of state classes loaded into this model
-        @transitions = Hash.new {|h, k| h[k] = Set.new}
+        super
         @current_state = nil
-
-        @eager = eager
         @activity_log = [] # can track model activity
 
         # contexts: objects available through the model to states/transitions
@@ -40,20 +53,9 @@ module Ladon
 
       # Merges the +target+ provided into this FSM instance.
       def merge(target)
-        other_cls = target.class
-        raise InvalidMergeError, "Can't merge #{target.type} into #{self.type}" unless self.class.eql?(other_cls)
-        target.states.each {|state| self.load_state_type(state)}
-        target.transitions.each {|state, trans_set| @transitions[state].merge(trans_set)}
+        super(target)
         @contexts.merge(target.contexts) {|_, my_val, _| my_val} # merge, keeping current value for any conflicts
         set_contexts_for(self)
-      end
-
-      # Gets the name of the current +FiniteStateMachine+ class type, without any leading module names.
-      # If the class is anonymous, this method will indicate as much and identify the type as the class' string repr.
-      def type
-        class_name = self.class.name
-        return class_name.split('::').last || '' unless class_name.nil?
-        return "Anonymous: #{self.class}"
       end
 
       # Take the currently known contexts and inject them into the +target+.

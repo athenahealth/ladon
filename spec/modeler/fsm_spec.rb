@@ -5,12 +5,6 @@ module Ladon
   module Modeler
     RSpec.describe FiniteStateMachine do
 
-      describe '#type' do
-        it 'returns the name of the FSM class without module names' do
-          expect(FiniteStateMachine.new.type).to eq('FiniteStateMachine')
-        end
-      end
-
       describe '#merge' do
         subject(:fsm) { FiniteStateMachine.new }
 
