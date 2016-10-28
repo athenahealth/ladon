@@ -9,4 +9,6 @@ Gem::Specification.new do |s|
   s.files       = Dir['lib/**/*.rb']
   s.homepage    = 'http://rubygems.org/gems/ladon'
   s.license     = 'MIT'
+  s.executables << 'ladon-run'
+  s.executables << 'ladon-recorder'
 end

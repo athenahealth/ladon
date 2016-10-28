@@ -3,6 +3,8 @@ require 'securerandom'
 module Ladon
   module Automator
     class Config
+      include Ladon::HasContexts
+
       attr_accessor :id, :log_level
 
       # Create a new Automator Config instance.

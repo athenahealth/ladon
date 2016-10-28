@@ -1,4 +1,5 @@
 require 'set'
+require 'ladon/contexts'
 require 'ladon/modeler/errors'
 require 'ladon/modeler/states'
 require 'ladon/modeler/transitions'
@@ -94,6 +95,7 @@ module Ladon
         end
       end
 
+      include Ladon::HasContexts
       include HasStates
       include HasTransitions
 
@@ -103,6 +105,7 @@ module Ladon
         @states = Set.new # Set of state classes loaded into this model
         @transitions = Hash.new {|h, k| h[k] = Set.new}
         @eager = eager
+        self.contexts = contexts
       end
 
       # Merges the +target+ provided into this FSM instance.
@@ -120,7 +123,6 @@ module Ladon
 
     # Facilitates Finite State Machine modeling.
     class FiniteStateMachine < Graph
-      attr_reader :contexts
       attr_reader :current_state
 
       # Creates a new +FiniteStateMachine+ model instance.
@@ -128,11 +130,6 @@ module Ladon
         super
         @current_state = nil
         @activity_log = [] # can track model activity
-
-        # contexts: objects available through the model to states/transitions
-        # as instance variables
-        @contexts = Hash(contexts)
-        set_contexts_for(self) unless @contexts.empty?
 
         unless start_state.nil?
           load_state_type(start_state)
@@ -147,19 +144,19 @@ module Ladon
       # Merges the +target+ provided into this FSM instance.
       def merge(target)
         super(target)
-        @contexts.merge(target.contexts) {|_, my_val, _| my_val} # merge, keeping current value for any conflicts
+        contexts.merge(target.contexts) {|_, my_val, _| my_val} # merge, keeping current value for any conflicts
         set_contexts_for(self)
       end
 
       # Take the currently known contexts and inject them into the +target+.
       def set_contexts_for(target)
-        @contexts.each {|name, obj| target.instance_variable_set("@#{name.to_s}", obj)}
+        contexts.each {|name, obj| target.instance_variable_set("@#{name.to_s}", obj)}
       end
 
       # Including classes must override this method.
       def make_current_state(state_class)
         raise StandardError, "No known state #{state_class}!" unless state_loaded?(state_class)
-        @current_state = state_class.new(@contexts)
+        @current_state = state_class.new(contexts)
         return state_class
       end
 

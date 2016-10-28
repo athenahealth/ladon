@@ -10,6 +10,7 @@
 # a single session using the software). If you've reached the point where you need to issue multiple
 # Automator runs, go look at the Orchestrator component.
 
+require 'ladon/contexts'
 require 'ladon/automator/api/assertions'
 require 'ladon/automator/data/config'
 require 'ladon/automator/data/result'
@@ -24,6 +25,7 @@ module Ladon
     # During this automation, you are able to make assertions, maintain
     # an activity log, and measure the observable behaviors of the software.
     class Automation
+      include Ladon::HasContexts
       include API::Assertions
 
       attr_reader :config, :result
@@ -35,10 +37,11 @@ module Ladon
       # Create an instance of AutomationRun based on the +config+ provided.
       def initialize(config)
         raise StandardError, 'Automation requires a Ladon::Automator::Config' unless config.is_a?(Ladon::Automator::Config)
-        @config = config # TODO arbitrary flag support or other argument system
+        @config = config
         @result = Result.new(config)
         @logger = @result.logger
         @timer = @result.timer
+
       end
 
       def run
