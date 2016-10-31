@@ -4,7 +4,7 @@ module Ladon
       include Ladon::HasContexts
 
       def initialize(contexts)
-        contexts = contexts
+        self.contexts = contexts
       end
 
       # Class-level method defining the transitions that are available from a given state type.

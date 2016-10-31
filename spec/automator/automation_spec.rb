@@ -92,67 +92,31 @@ module Ladon
         let(:config) { Ladon::Automator::Config.new }
         subject(:automation) { Automation.new(config) }
 
-        context 'when the Automation does not have an execute phase defined' do
+        context 'when a required phase is not defined for the Automation' do
           it 'raises an error' do
             expect{automation.run}.to raise_error(StandardError)
           end
         end
 
-        context 'when the Automation has an execute method defined' do
+        context 'when the Automation has its required phases defined' do
           let(:phased_class) do
-            Class.new(Automation) { def execute; end }
+            Class.new(Automation) do
+              Automation.required_phases.each { |phase| define_method(phase.to_sym) {} }
+            end
           end
 
           subject(:automation) { phased_class.new(Ladon::Automator::Config.new) }
 
-          it 'calls the setup, execute, and teardown phases, in that order' do
-            expect(automation).to receive(:setup_phase).ordered
-            expect(automation).to receive(:execute_phase).ordered
-            expect(automation).to receive(:teardown_phase).ordered
+          it "calls the automation's defined phases, in order" do
+            phased_class.all_phases.each do |phase|
+              expect(automation).to receive(:do_phase).with(phase, any_args).ordered
+            end
             automation.run
           end
 
-          it 'has its execute method triggered' do
-            expect(subject).to receive(:execute)
+          it 'calls the required phases' do
+            phased_class.required_phases.each { |phase|expect(subject).to receive(phase) }
             automation.run
-          end
-
-          context 'when the automation has failed before reaching execute phase' do
-            it 'skips the execute phase' do
-              expect(automation).not_to receive(:execute)
-              subject.result.failure
-              automation.run
-            end
-          end
-
-          context 'when the automation has errored before reaching execute phase' do
-            it 'skips the execute phase' do
-              expect(automation).not_to receive(:execute)
-              subject.result.error
-              automation.run
-            end
-          end
-
-          context 'when the setup method is defined' do
-            let(:phased_class) do
-              Class.new(Automation) { def execute; end; def setup; end}
-            end
-
-            it 'has its setup method triggered' do
-              expect(subject).to receive(:setup)
-              automation.run
-            end
-          end
-
-          context 'when there is a teardown method defined' do
-            let(:phased_class) do
-              Class.new(Automation) { def execute; end; def teardown; end}
-            end
-
-            it 'has its teardown method triggered' do
-              expect(subject).to receive(:teardown)
-              automation.run
-            end
           end
         end
       end
@@ -169,9 +133,6 @@ module Ladon
 
           context 'when the target_model returns a Ladon Modeler FSM' do
             let(:model_value) do
-              module Ladon::Modeler
-                class FiniteStateMachine; end
-              end
               Ladon::Modeler::FiniteStateMachine.new
             end
 

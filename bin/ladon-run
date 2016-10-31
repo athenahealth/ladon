@@ -1,15 +1,12 @@
 #!/usr/bin/env ruby
 
-# ENVIRONMENT IS A CONTEXT
-# ENVIRONMENT SHOULD EXIST AS A CONTEXT ON CONFIG THAT HAS PERMUTATION INFO FROM ORCHESTRATOR
-# ENVIRONMENT SHOULD HAVE A GET-WITH-DEFAULT METHOD
-
-require 'automator'
+require 'ladon'
 require 'pry'
 
 def load_automation_source
   automation_location = ARGV.pop # expect argument identifying Automation script path
-  require automation_location # load that path
+  req_path = File.expand_path(automation_location, Dir.pwd)
+  require_relative req_path # load that path
 end
 
 def select_automation_class
@@ -30,7 +27,7 @@ def select_automation_class
     raise StandardError unless idx > 0 && idx < executable_automations.size
     return executable_automations[idx]
   rescue
-    puts 'Nope, that is not valid. Try again.'
+    puts 'Nope. Try again.'
     retry
   end
 end
@@ -46,7 +43,7 @@ target_automation = select_automation_class
 result = nil
 begin
   puts "About to execute: #{target_automation}"
-  result = target_automation.run(configure_automation)
+  result = target_automation.new(configure_automation).run
   puts 'Execution complete'
 rescue => ex
   puts "\nAutomation Error: #{ex}"

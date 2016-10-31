@@ -1,15 +1,3 @@
-# Ladon is a framework designed for modeling and automating interaction with software.
-# The framework consists of three layers of components, with each layer building on the previous layer
-# in order to create a clear separation of concerns.
-#
-# The Automator component is the second layer, building upon the Modeler component.
-# Conceptually, Automator is intended to facilitate automated interaction with software via that software's
-# model, which should be written using Ladon's Modeler.
-#
-# The Automator is used to configure a _single_ automated interaction with the software (think of it as
-# a single session using the software). If you've reached the point where you need to issue multiple
-# Automator runs, go look at the Orchestrator component.
-
 require 'ladon/contexts'
 require 'ladon/automator/api/assertions'
 require 'ladon/automator/data/config'
@@ -19,16 +7,13 @@ require 'ladon/automator/timing/timer'
 
 module Ladon
   module Automator
-    # The Automation is used to harness a Ladon model and use it to power
-    # automated interaction with the software it models.
-    #
-    # During this automation, you are able to make assertions, maintain
-    # an activity log, and measure the observable behaviors of the software.
+    # Base class for Ladon automation. This class is exposed to encapsulate the
+    # aspects of Automation not pertaining directly to operating through a model.
     class Automation
       include Ladon::HasContexts
       include API::Assertions
 
-      attr_reader :config, :result
+      attr_reader :config, :result, :phase
 
       SETUP_PHASE = :setup
       EXECUTE_PHASE = :execute
@@ -41,17 +26,17 @@ module Ladon
         @result = Result.new(config)
         @logger = @result.logger
         @timer = @result.timer
-
+        @phase = 0
       end
 
-      def run
-        raise StandardError, "#{EXECUTE_PHASE} not implemented!" unless respond_to?(EXECUTE_PHASE)
+      # Identifies the phases from +all_phases+ that *must* be defined for automations of this type.
+      def self.required_phases
+        [EXECUTE_PHASE]
+      end
 
-        setup_phase
-        execute_phase
-        teardown_phase
-
-        return @result
+      # Identifies the phases involved in this automation.
+      def self.all_phases
+        [SETUP_PHASE, EXECUTE_PHASE, TEARDOWN_PHASE]
       end
 
       # Subclass implementations should override this method to return false if the subclass is intended as
@@ -60,6 +45,23 @@ module Ladon
       # Ladon utilities will not attempt to execute Automations of any class that returns true for this method.
       def self.abstract?
         true
+      end
+
+      # Run the automation, from the next phase to be executed through the phase at the index specified.
+      # If no +to_index+ is specified, will run through all of the defined phases.
+      def run(to_index: nil)
+        self.class.required_phases.each do |phase|
+          raise StandardError, "'#{phase}' not implemented!" unless respond_to?(phase)
+        end
+
+        all_phases = self.class.all_phases
+        to_index = all_phases.size if to_index.nil? || !to_index.is_a?(Fixnum) || to_index > all_phases.size
+        all_phases[@phase..to_index].each do |phase|
+          @phase += 1
+          do_phase(phase, skip: !respond_to?(phase), skip_msg: "No #{phase} method detected.")
+        end
+
+        @result
       end
 
       # Given an arbitrary code block, this method will execute that block in a rescue construct.
@@ -75,23 +77,6 @@ module Ladon
       end
 
       private
-
-      # Runs the +setup+ component of the automation.
-      # Will be a no-op if the Automation has no +setup+ method to harness.
-      def setup_phase
-        do_phase(SETUP_PHASE, skip: !respond_to?(SETUP_PHASE), skip_msg: "No #{SETUP_PHASE} method detected.")
-      end
-
-      # The +execute+ method is idiomatically intended to house the interesting portion of the automation run.
-      # Automation implementations *MUST* define an +execute+ method.
-      def execute_phase
-        do_phase(EXECUTE_PHASE, skip: !@result.success?, skip_msg: 'skipped due to existing error or failure')
-      end
-
-      # Subclasses should define their cleanup behaviors in this method.
-      def teardown_phase
-        do_phase(TEARDOWN_PHASE, skip: !respond_to?(TEARDOWN_PHASE), skip_msg: "No #{TEARDOWN_PHASE} method detected.")
-      end
 
       # Run a phase of the Automation script, auto-timing the duraction of its execution.
       # The phase will be sandboxed such that an unrescued error during the phase will not crash the entire execution.
@@ -128,18 +113,23 @@ module Ladon
       # * Returns:
       #   - An Array of strings containing error information, with index = 0 being the first line of the info.
       def error_to_array(err, description: nil)
-        msglines = err.backtrace
-        msglines.unshift(description) unless description.nil? || description.empty?
-        return msglines
+        msg_lines = err.backtrace
+        msg_lines.unshift(description) unless description.nil? || description.empty?
+        msg_lines
       end
     end
 
     # Class for Automation driven through a Ladon Modeler model.
+    #
+    # The Automation is used to harness a Ladon model and use it to power
+    # automated interaction with the software it models.
+    #
+    # During this automation, you are able to make assertions, maintain
+    # an activity log, and measure the observable behaviors of the software.
     class ModelAutomation < Automation
 
       # Create an instance based on the +config+ provided.
       def initialize(config)
-        raise StandardError, 'Ladon Modeler must be present' unless defined?(Ladon::Modeler)
         super
         @model = self.class.target_model # set up the model
         raise StandardError, 'The model must be a Ladon FSM' unless @model.is_a?(Ladon::Modeler::FiniteStateMachine)
@@ -152,8 +142,9 @@ module Ladon
       end
     end
 
-    # TODO
+    # TODO Ladon automation for automating Ladon automations
     #class Orchestrator < Automation
+    #  # will need a method that raises by default: "serialize_result"
     #end
   end
 end
