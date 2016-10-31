@@ -143,9 +143,8 @@ module Ladon
         prefiltered_transitions = prefiltered_transitions(transitions_for(@current_state), &block)
         valid_transitions = available_transitions(prefiltered_transitions)
         target = selection_strategy(valid_transitions)
-        err_msg = 'Selection strategy did not return a single transition!'
-        raise StandardError, err_msg unless target.is_a?(Transition)
-        use_state(target.execute)
+        raise StandardError, 'Selection strategy did not return a single transition!' unless target.is_a?(Transition)
+        use_state(target.execute[:result_state_type])
       end
 
       # Method to select transition to take, out of a set of currently valid transitions.

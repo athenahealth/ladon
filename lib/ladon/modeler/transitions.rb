@@ -58,10 +58,10 @@ module Ladon
         @when_blocks.empty? || @when_blocks.any? { |condition| condition.call(current_state) }
       end
 
-      # Executes this transition.
+      # Execute this transition.
       def execute(current_state)
         return_vals = @by_blocks.map { |executor| executor.call(current_state) }
-        return [identify_target_state_type, return_vals]
+        { result_state_type: identify_target_state_type, by_returns: return_vals }
       end
 
       # The +block+ given to this method will be used as the routine that should load
