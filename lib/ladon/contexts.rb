@@ -19,26 +19,30 @@ module Ladon
   # Module for anything that has contexts
   module HasContexts
     def contexts
-      @contexts
+      @contexts ||= {}
     end
 
     def contexts=(contexts)
       raise StandardError, 'Not a hash!' unless contexts.is_a?(Hash)
-      @contexts = {} if @contexts.nil?
-      merge_contexts(contexts)
+      @contexts = contexts
+      apply_contexts
     end
 
     def context(name)
-      @contexts[name] if @contexts
+      contexts[name.to_sym] if contexts
     end
 
-    def merge_contexts(to_merge)
-      @contexts.merge!(to_merge)  {|_, my_val, _| my_val} # merge; default to our context instance for any conflicts
+    def apply_contexts
       contexts.each do |name, ctx|
         raise StandardError, 'Invalid context detected!' unless ctx.is_a?(Ladon::Context) && name.is_a?(Symbol)
         raise StandardError, 'Context name does not match its key in the contexts hash!' unless name == ctx.name.to_sym
         instance_variable_set("@#{ctx.name}", ctx.context_obj)
       end
+    end
+
+    # default to our context instance for any conflicts
+    def merge_contexts(to_merge)
+      self.contexts = contexts.merge(to_merge)  { |_, my_val, _| my_val }
     end
   end
 end
