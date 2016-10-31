@@ -55,9 +55,8 @@ module Ladon
         end
 
         all_phases = self.class.all_phases
-        to_index = all_phases.size if to_index.nil? || !to_index.is_a?(Fixnum) || to_index > all_phases.size
+        to_index = all_phases.size if to_index.nil? || !to_index.is_a?(Fixnum) || to_index > all_phases.size || to_index < @phase
         all_phases[@phase..to_index].each do |phase|
-          @phase += 1
           do_phase(phase, skip: !respond_to?(phase), skip_msg: "No #{phase} method detected.")
         end
 
@@ -81,6 +80,7 @@ module Ladon
       # Run a phase of the Automation script, auto-timing the duraction of its execution.
       # The phase will be sandboxed such that an unrescued error during the phase will not crash the entire execution.
       def do_phase(phase, skip: false, skip_msg: nil)
+        @phase += 1
         return @logger.warn("#{phase} skipped: '#{skip_msg}'") if skip
 
         @timer.for(phase) do

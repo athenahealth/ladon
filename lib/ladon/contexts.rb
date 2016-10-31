@@ -27,7 +27,7 @@ module Ladon
       @contexts = {} if @contexts.nil?
       @contexts.merge!(contexts)
       contexts.each do |name, ctx|
-        raise StandardError, "Invalid context detected!" unless ctx.is_a?(Ladon::Context)
+        raise StandardError, 'Invalid context detected!' unless ctx.is_a?(Ladon::Context)
         instance_variable_set("@#{ctx.name}", ctx.context_obj)
       end
     end

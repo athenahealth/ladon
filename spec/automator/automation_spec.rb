@@ -102,12 +102,13 @@ module Ladon
           let(:phased_class) do
             Class.new(Automation) do
               Automation.required_phases.each { |phase| define_method(phase.to_sym) {} }
+              Automation.all_phases.each { |phase| define_method(phase.to_sym) {} }
             end
           end
 
           subject(:automation) { phased_class.new(Ladon::Automator::Config.new) }
 
-          it "calls the automation's defined phases, in order" do
+          it 'calls the defined phases of the automation, in order' do
             phased_class.all_phases.each do |phase|
               expect(automation).to receive(:do_phase).with(phase, any_args).ordered
             end
@@ -115,8 +116,17 @@ module Ladon
           end
 
           it 'calls the required phases' do
-            phased_class.required_phases.each { |phase|expect(subject).to receive(phase) }
+            phased_class.required_phases.each { |phase| expect(subject).to receive(phase) }
             automation.run
+          end
+
+          context 'when a to_index is specified' do
+            it 'runs from the next scheduled phase through the phase at the specified index' do
+              phased_class.all_phases.each_with_index do |phase, idx|
+                expect(automation).to receive(phase)
+                expect{automation.run(to_index: idx)}.to change(automation, :phase).by(1)
+              end
+            end
           end
         end
       end
