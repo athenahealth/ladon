@@ -57,6 +57,12 @@ module Ladon
           # TODO: context merging test
         end
       end
+
+      describe '#state_count' do
+        subject { graph.state_count }
+
+        it { is_expected.to eq(graph.states.size)}
+      end
     end
   end
 end
