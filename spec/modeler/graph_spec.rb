@@ -66,6 +66,18 @@ module Ladon
 
       end
 
+      describe '#transitions_loaded?' do
+
+      end
+
+      describe '#transitions_for' do
+
+      end
+
+      describe '#transition_count_for' do
+
+      end
+
       describe '#state_count' do
         subject { graph.state_count }
 
