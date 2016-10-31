@@ -10,14 +10,17 @@ module Ladon
     # Used to model software as a graph of connected states and transitions.
     class Graph
       module HasStates
+        def init_states
+          @states ||= Set.new
+        end
+
+        def states
+          @states.clone
+        end
+
         # TODO
         def valid_state?(state_class)
           state_class.is_a?(Class) && state_class < State
-        end
-
-        # Can respond with a duplicate representing the state data in the state machine.
-        def states
-          @states.clone
         end
 
         # Loads the given +state_class+ into this state machine.
@@ -49,6 +52,10 @@ module Ladon
       end
 
       module HasTransitions
+        def init_transitions
+          @transitions ||= Hash.new { |h, k| h[k] = Set.new }
+        end
+
         # Gets a cloned copy of the loaded set of transitions.
         def transitions
           @transitions.clone
@@ -72,7 +79,7 @@ module Ladon
         def add_transitions(state_class, transitions)
           grouped = transitions.group_by {|trans| trans.is_a?(Ladon::Modeler::Transitions::Transition)}
           on_invalid_transitions(grouped[false]) if grouped.key?(false)
-          @transitions[state_class] |= grouped[true]
+          transitions[state_class] |= grouped[true]
         end
 
         # Handles when invalid transitions are encountered by the model.
@@ -104,18 +111,19 @@ module Ladon
 
       def initialize(config)
         raise StandardError, 'Must be a Modeler config!' unless config.is_a?(Ladon::Modeler::Config)
-        @states = Set.new # Set of state classes loaded into this model
-        @transitions = Hash.new {|h, k| h[k] = Set.new}
         @eager = config.eager
+        init_states
+        init_transitions
         self.contexts = config.contexts
+
         load_state_type(config.start_state) unless config.start_state.nil?
       end
 
       # Merges the +target+ provided into this FSM instance.
       def merge(target)
         raise InvalidMergeError, 'Instances to merge are not of the same Class' unless self.class.eql?(target.class)
-        target.states.each {|state| self.load_state_type(state)}
-        target.transitions.each {|state, trans_set| @transitions[state].merge(trans_set)}
+        target.states.each {|state| load_state_type(state)}
+        target.transitions.each {|state, trans_set| transitions[state].merge(trans_set)}
         merge_contexts(target.contexts)
       end
     end

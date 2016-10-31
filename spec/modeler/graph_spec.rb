@@ -9,7 +9,7 @@ module Ladon
       let(:start_state) { Class.new(State) }
       let(:config) { Ladon::Modeler::Config.new(start_state: start_state) }
       let(:graph) { Graph.new(config) }
-      subject { Graph }
+      subject { graph }
 
       describe '#new' do
         subject { lambda { graph } }
