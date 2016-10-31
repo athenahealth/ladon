@@ -143,7 +143,7 @@ module Ladon
 
           context 'when the target_model returns a Ladon Modeler FSM' do
             let(:model_value) do
-              Ladon::Modeler::FiniteStateMachine.new
+              Ladon::Modeler::FiniteStateMachine.new(Ladon::Modeler::Config.new(start_state: Class.new(Modeler::State)))
             end
 
             it 'does not raise an error' do

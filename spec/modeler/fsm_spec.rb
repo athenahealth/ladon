@@ -5,92 +5,39 @@ module Ladon
   module Modeler
     RSpec.describe FiniteStateMachine do
 
+      # unless otherwise redefined
+      let(:start_state) { Class.new(State) }
+      let(:config) { Ladon::Modeler::Config.new(start_state: start_state) }
+      let(:fsm) { FiniteStateMachine.new(config) }
+      subject { fsm }
+
       describe '#new' do
-        before { @fsm = nil }
+        context 'when a valid config is provided' do
+          it { is_expected.to be_a(FiniteStateMachine) }
 
-        it 'does not require any arguments to instantiate' do
-          expect {@fsm = FiniteStateMachine.new}.to change{@fsm}.from(nil).to(FiniteStateMachine)
-        end
-
-        describe 'when specifying a starting state' do
-          before do
-            @start_state = Class.new(State)
-            @fsm = FiniteStateMachine.new(start_state: @start_state)
-          end
-
-          it 'creates a current_state tracker that is initialized to an instance of the starting state' do
-            expect(@fsm.current_state).to be_an_instance_of(@start_state)
-          end
-        end
-
-        describe 'when specifying contexts' do
-          before do
-            @contexts = {}
-          end
-
-          describe 'when there are no contexts' do
-
-          end
-
-          describe 'when there are contexts' do
-            #@contexts['a'] = Object.new
-          end
-
-          it 'can take an empty hash of contexts' do
-            expect{FiniteStateMachine.new(contexts: @contexts)}.not_to raise_error
-          end
-
-          it 'can take a hash containing a single context' do
-            @contexts['a'] = Ladon::Context.new('name', Object.new)
-            expect{FiniteStateMachine.new(contexts: @contexts)}.not_to raise_error
-          end
+          it { is_expected.to have_attributes(current_state: an_instance_of(start_state)) }
         end
       end
 
-      describe '#merge' do
-        subject(:fsm) { FiniteStateMachine.new }
+      describe '#use_state' do
+        subject { lambda { fsm.use_state(target_state) } }
 
-        context 'when the target is a different type than the subject' do
-          let(:target) { Class.new(FiniteStateMachine).new }
+        context 'when the specified state is known to the graph' do
+          let(:target_state) { start_state }
 
-          it 'will raise an invalid merge error' do
-            expect {fsm.merge(target)}.to raise_error(InvalidMergeError)
-          end
+          it { is_expected.not_to raise_error }
+          it { is_expected.to change(fsm, :current_state).to(an_instance_of(target_state)) }
         end
 
-        context 'when the target is the same type as the subject' do
-          let(:target) { FiniteStateMachine.new }
+        context 'when the specified state is not known to the graph' do
+          let(:target_state) { Class.new(State) }
 
-          it 'will not raise an error' do
-            expect {fsm.merge(target)}.not_to raise_error
-          end
-
-          context 'when the target has no states the subject does not' do
-            let(:target) { FiniteStateMachine.new}
-
-            it 'adds the states from the target to the subject'  do
-              expect {fsm.merge(target)}.not_to change{fsm.states}
-            end
-          end
-
-          context 'when the target has states the subject does not' do
-            let(:different_state) { Class.new(State) }
-            let(:target) { FiniteStateMachine.new(start_state: different_state)}
-
-            it 'adds the states from the target to the subject'  do
-              expect {fsm.merge(target)}.to change{fsm.states}.from(fsm.states).to(fsm.states | target.states)
-            end
-          end
-
-          # TODO: transition merging test
-          # TODO: context merging test
+          it { is_expected.to raise_error(StandardError, "No known state #{target_state}!") }
         end
       end
 
+=begin
       describe 'when working with an existing finite state machine' do
-        before do
-          @fsm = FiniteStateMachine.new
-        end
 
         describe 'when the machine has no states loaded' do
           it 'correctly reports state configuration' do
@@ -152,6 +99,7 @@ module Ladon
           end
         end
       end
+=end
     end
   end
 end
