@@ -148,26 +148,13 @@ module Ladon
 
       # TODO
       def make_transition(&block)
-        prefiltered_transitions = prefiltered_transitions(transitions_for(@current_state), &block)
-        valid_transitions = available_transitions(prefiltered_transitions)
+        all_transitions = transitions_for(current_state)
+        prefiltered_transitions = prefiltered_transitions(all_transitions, &block)
+        valid_transitions = valid_transitions(prefiltered_transitions)
         target = selection_strategy(valid_transitions)
         raise StandardError, 'Selection strategy did not return a single transition!' unless target.is_a?(Transition)
         target.execute
         use_state(target.identify_target_state_type)
-      end
-
-      # Method to select transition to take, out of a set of currently valid transitions.
-      # The base +FiniteStateMachine+ implementation expects this function to return
-      # a single +Ladon::Modeler::Transition+ instance in +transition_to+.
-      def selection_strategy(transition_options)
-        raise StandardError, 'Must implement selection_strategy method!'
-      end
-
-      # Get the transitions available from the current state instance.
-      # Only available if +current_state+ is instantiated.
-      def available_transitions(transition_options)
-        raise StandardError, 'No current state to validate against!' if current_state.nil?
-        transition_options.select {|transition| transition.valid_for?(current_state)}
       end
 
       # Filter the given list of transitions based on the model prefilter and current state.
@@ -182,6 +169,20 @@ module Ladon
       # Is an acceptance strategy; this method should return true unless you want to filter OUT the transition.
       def passes_prefilter?(transition)
         true
+      end
+
+      # Get the transitions available from the current state instance.
+      # Only available if +current_state+ is instantiated.
+      def valid_transitions(transition_options)
+        raise StandardError, 'No current state to validate against!' if current_state.nil?
+        transition_options.select {|transition| transition.valid_for?(current_state)}
+      end
+
+      # Method to select transition to take, out of a set of currently valid transitions.
+      # The base +FiniteStateMachine+ implementation expects this function to return
+      # a single +Ladon::Modeler::Transition+ instance in +transition_to+.
+      def selection_strategy(transition_options)
+        raise Ladon::MissingImplementationError, 'Must implement selection_strategy method!'
       end
     end
   end

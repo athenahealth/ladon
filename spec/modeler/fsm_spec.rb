@@ -36,6 +36,18 @@ module Ladon
         end
       end
 
+      describe '#selection_strategy' do
+        subject { lambda { fsm.selection_strategy([]) } }
+
+        it { is_expected.to raise_error(Ladon::MissingImplementationError) }
+      end
+
+      describe '#passes_prefilter' do
+        subject { fsm.passes_prefilter?('anything') }
+
+        it { is_expected.to be true }
+      end
+
 =begin
       describe 'when working with an existing finite state machine' do
 
