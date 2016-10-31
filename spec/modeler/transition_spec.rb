@@ -20,28 +20,25 @@ module Ladon
           let(:transition) { Transition.new { |transition| block_behavior.call(transition) } }
           subject(:behavior) { lambda { transition } }
 
-          context 'when the block takes more than one argument' do
-            let(:block_behavior) { lambda {|transition, stuff| } }
+          context 'when the block expects more than one argument' do
+            let(:block_behavior) { lambda { |transition, stuff| } }
 
             it { is_expected.to raise_error(ArgumentError, 'wrong number of arguments (1 for 2)') }
           end
 
-          context 'when the block takes no arguments' do
+          context 'when the block expects no arguments' do
             let(:block_behavior) { lambda {} }
 
             it { is_expected.to raise_error(ArgumentError, 'wrong number of arguments (1 for 0)') }
           end
 
-          context 'when the block takes one argument' do
-            let(:block_behavior) { lambda { |transition| } }
+          context 'when the block expects one argument' do
+            let(:block_behavior) { lambda { |transition| transition.instance_variable_set('@block_arg', transition) } }
 
             it { is_expected.not_to raise_error }
 
-            context 'in the block itself' do
-              let(:block_behavior) { lambda { |transition| transition.instance_variable_set('@block_arg', transition) } }
-              subject { transition }
-
-              it { is_expected.to satisfy { |trans| trans.instance_variable_get('@block_arg') == trans } }
+            it 'the argument to the block is the transition itself' do
+              expect(subject.call).to satisfy { |trans| trans.instance_variable_get('@block_arg') == trans }
             end
           end
         end
@@ -282,11 +279,25 @@ module Ladon
       end
 
       describe '#execute' do
-        context '' do
-
+        let(:target_state_type) { Class.new(State) }
+        let(:transition) do
+          Transition.new do |t|
+            t.to_load_target_state_type { target_state_type }
+            t.to_identify_target_state_type { target_state_type }
+            t.by { |_| 1 }
+            t.by { |_| '2' }
+            t.by { |_| :three }
+            t.by { |_| 0.4 }
+          end
         end
-        #let(:transition) { Transition.new { |t| block_behavior.call(t) } }
-        #subject(:execution) { transition.valid_for?(nil) }
+
+        subject { transition.execute(Object.new) }
+
+        it { is_expected.to be_an_instance_of(Array) }
+
+        it 'contains the return values of the by-blocks, in the order the by-blocks were specified' do
+          is_expected.to eq([1, '2', :three, 0.4])
+        end
       end
     end
   end

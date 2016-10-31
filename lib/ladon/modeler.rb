@@ -137,7 +137,7 @@ module Ladon
         super(config)
 
         @current_state = nil
-        use_state(config.start_state)
+        use_state(config.start_state) unless config.start_state.nil?
       end
 
       # Including classes must override this method.
@@ -152,7 +152,8 @@ module Ladon
         valid_transitions = available_transitions(prefiltered_transitions)
         target = selection_strategy(valid_transitions)
         raise StandardError, 'Selection strategy did not return a single transition!' unless target.is_a?(Transition)
-        use_state(target.execute[:result_state_type])
+        target.execute
+        use_state(target.identify_target_state_type)
       end
 
       # Method to select transition to take, out of a set of currently valid transitions.
