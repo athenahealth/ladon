@@ -145,7 +145,7 @@ module Ladon
         target = selection_strategy(valid_transitions)
         err_msg = 'Selection strategy did not return a single transition!'
         raise StandardError, err_msg unless target.is_a?(Transition)
-        use_state(target.make_transition)
+        use_state(target.execute)
       end
 
       # Method to select transition to take, out of a set of currently valid transitions.

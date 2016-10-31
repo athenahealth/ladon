@@ -60,7 +60,7 @@ module Ladon
 
       # Executes this transition.
       def execute(current_state)
-        @by_blocks.each {|executor| executor.call(current_state)}
+        @by_blocks.each { |executor| executor.call(current_state) }
         return identify_target_state_type
       end
 

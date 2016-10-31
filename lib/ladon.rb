@@ -1,3 +1,4 @@
+require 'ladon/version'
 require 'ladon/modeler'
 require 'ladon/automator'
 
