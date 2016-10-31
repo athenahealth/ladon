@@ -1,6 +1,8 @@
+require 'ladon/version'
+
 Gem::Specification.new do |s|
   s.name        = 'ladon'
-  s.version     = '1.0.0'
+  s.version     = Ladon::Version::STRING
   s.date        = '2016-10-27'
   s.summary     = 'Ladon'
   s.description = 'Ladon allows you to model software as graphs and create automation leveraging those models.'
