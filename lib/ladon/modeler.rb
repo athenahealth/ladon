@@ -116,7 +116,7 @@ module Ladon
         raise InvalidMergeError, 'Instances to merge are not of the same Class' unless self.class.eql?(target.class)
         target.states.each {|state| self.load_state_type(state)}
         target.transitions.each {|state, trans_set| @transitions[state].merge(trans_set)}
-        self.contexts = contexts.merge(target.contexts) {|_, my_val, _| my_val} # merge; default to our context instance
+        merge_contexts(target.contexts)
       end
     end
 
