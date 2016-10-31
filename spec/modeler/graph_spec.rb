@@ -26,27 +26,23 @@ module Ladon
       end
 
       describe '#merge' do
+        subject { lambda { graph.merge(target) } }
+
         context 'when the target is a different type than the subject' do
           let(:target) { Class.new(Graph).new(config) }
 
-          it 'will raise an invalid merge error' do
-            expect {graph.merge(target)}.to raise_error(InvalidMergeError)
-          end
+          it { is_expected.to raise_error(InvalidMergeError) }
         end
 
         context 'when the target is the same type as the subject' do
           let(:target) { Graph.new(config) }
 
-          it 'will not raise an error' do
-            expect {graph.merge(target)}.not_to raise_error
-          end
+          it { is_expected.not_to raise_error }
 
           context 'when the target has no states the subject does not' do
             let(:target) { Graph.new(config) }
 
-            it 'adds the states from the target to the subject'  do
-              expect {graph.merge(target)}.not_to change{graph.states}
-            end
+            it { is_expected.not_to change(graph, :states) }
           end
 
           context 'when the target has states the subject does not' do
@@ -54,9 +50,7 @@ module Ladon
             let(:config2) { Ladon::Modeler::Config.new(start_state: class2) }
             let(:target) { Graph.new(config2) }
 
-            it 'adds the states from the target to the subject'  do
-              expect {graph.merge(target)}.to change{graph.states}.from(graph.states).to(graph.states | target.states)
-            end
+            it { is_expected.to change(graph, :states).from(graph.states).to(graph.states | target.states)}
           end
 
           # TODO: transition merging test
