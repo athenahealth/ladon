@@ -60,8 +60,8 @@ module Ladon
 
       # Executes this transition.
       def execute(current_state)
-        @by_blocks.each { |executor| executor.call(current_state) }
-        return identify_target_state_type
+        return_vals = @by_blocks.map { |executor| executor.call(current_state) }
+        return [identify_target_state_type, return_vals]
       end
 
       # The +block+ given to this method will be used as the routine that should load
