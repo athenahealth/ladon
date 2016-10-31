@@ -77,7 +77,7 @@ module Ladon
         end
 
         def add_transitions(state_class, transitions)
-          grouped = transitions.group_by {|trans| trans.is_a?(Ladon::Modeler::Transitions::Transition)}
+          grouped = transitions.group_by { |transition| transition.is_a?(Ladon::Modeler::Transition) }
           on_invalid_transitions(grouped[false]) if grouped.key?(false)
           transitions[state_class] |= grouped[true]
         end
@@ -161,7 +161,7 @@ module Ladon
       def prefiltered_transitions(transitions, &block)
         transitions.select do |transition|
           # keep transitions that pass the filter block (if one is provided) AND pass the model-level prefilter
-          (!block_given? || block.call(transition)) && passes_prefilter?(transition)
+          (!block_given? || block.call(transition) == true) && passes_prefilter?(transition)
         end
       end
 

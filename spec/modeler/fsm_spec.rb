@@ -48,6 +48,30 @@ module Ladon
         it { is_expected.to be true }
       end
 
+      describe '#make_transition' do
+
+      end
+
+      describe '#prefiltered_transitions' do
+
+      end
+
+      describe '#valid_transitions' do
+
+      end
+
+      describe '#transitions_loaded?' do
+
+      end
+
+      describe '#transitions_for' do
+
+      end
+
+      describe '#transition_count_for' do
+
+      end
+
 =begin
       describe 'when working with an existing finite state machine' do
 

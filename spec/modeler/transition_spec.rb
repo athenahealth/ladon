@@ -296,7 +296,7 @@ module Ladon
         it { is_expected.to be_an_instance_of(Array) }
 
         it 'contains the return values of the by-blocks, in the order the by-blocks were specified' do
-          is_expected.to eq([1, '2', :three, 0.4])
+          expect(subject).to eq([1, '2', :three, 0.4])
         end
       end
     end
