@@ -73,7 +73,7 @@ module Ladon
           if @eager && respond_to?(:load_state_type)
             transitions.each {|transition| load_state_type(transition.identify_target_state_type)}
           end
-          return true
+          true
         end
 
         def add_transitions(state_class, transitions)
@@ -125,7 +125,6 @@ module Ladon
 
     # Facilitates Finite State Machine modeling.
     class FiniteStateMachine < Graph
-      attr_reader :current_state
 
       # Creates a new +FiniteStateMachine+ model instance.
       def initialize(config)
@@ -141,10 +140,10 @@ module Ladon
         @current_state = state_class.new(contexts)
       end
 
-      def on_current_state(&block)
-        raise StandardError, 'No block given!' unless block_given?
-        raise StandardError, 'No current state!' if current_state.nil?
-        block.call(current_state)
+      #
+      def current_state(&block)
+        return @current_state unless block_given?
+        block.call(@current_state)
       end
 
       # TODO

@@ -54,7 +54,32 @@ module Ladon
       end
 
       describe '#prefiltered_transitions' do
+        let(:key) { 'key' }
+        let(:wanted_value) { 123 }
+        let(:unwanted_value) { 456 }
+        let(:wanted_transition) { Transition.new { |t| t.meta(key, wanted_value) } }
+        let(:unwanted_transition) { Transition.new { |t| t.meta(key, unwanted_value) } }
+        let(:transitions) do
+          [
+              wanted_transition,
+              unwanted_transition
+          ]
+        end
 
+        context 'when given a block' do
+          let(:block_behavior) { lambda { |t| t.meta_for(key) == wanted_value } }
+          subject { fsm.prefiltered_transitions(transitions) { |t| block_behavior.call(t) } }
+
+          it { is_expected.to include(wanted_transition) }
+          it { is_expected.not_to include(unwanted_transition) }
+        end
+
+        context 'when not given a block' do
+          subject { fsm.prefiltered_transitions(transitions) }
+
+          # should apply default +passes_prefilter?+, which returns true for all transitions
+          it { is_expected.to include(unwanted_transition, wanted_transition) }
+        end
       end
 
       describe '#valid_transitions' do
@@ -69,7 +94,6 @@ module Ladon
           it 'raises an error' do
             expect{subject}.to raise_error(StandardError)
           end
-          #it { is_expected.to raise_error(StandardError) }
         end
 
         context 'when the fsm has a current state' do
@@ -89,6 +113,24 @@ module Ladon
           it { is_expected.to be_an_instance_of(Array) }
           it { is_expected.to include(valid_transition) }
           it { is_expected.not_to include(invalid_transition) }
+        end
+      end
+
+      describe '#current_state' do
+        context 'when not given a block' do
+          subject { fsm.current_state }
+
+          it 'returns the current state of the machine' do
+            expect(subject).to be_an_instance_of(start_state)
+          end
+        end
+
+        context 'when given a block' do
+          subject { fsm.current_state { |current_state| current_state } }
+
+          it 'returns the value of calling the block with the current state' do
+            expect(subject).to be_an_instance_of(start_state)
+          end
         end
       end
     end
