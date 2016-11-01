@@ -116,6 +116,6 @@ rescue => ex
 end
 
 if options.review
-  puts 'Entering interactive mode'
+  puts 'Entering interactive review mode'
   binding.pry
 end
