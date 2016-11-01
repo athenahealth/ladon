@@ -43,7 +43,7 @@ module Ladon
         @transitions = Hash.new { |h, k| h[k] = Set.new }
         self.contexts = config.contexts
 
-        if config.start_state && config.load_strategy
+        if config.start_state && LoadStrategy::ALL.include?(config.load_strategy)
           load_state_type(config.start_state, strategy: config.load_strategy)
         end
       end
@@ -137,7 +137,7 @@ module Ladon
         @current_state = nil
         super(config)
 
-        if config.start_state && config.load_strategy
+        if config.start_state && LoadStrategy::ALL.include?(config.load_strategy)
           use_state_type(config.start_state, strategy: config.load_strategy)
         end
       end
