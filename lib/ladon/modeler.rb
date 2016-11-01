@@ -137,24 +137,24 @@ module Ladon
 
       # Including classes must override this method.
       def use_state(state_class)
-        raise StandardError, "No known state #{state_class}!" unless state_loaded?(state_class)
+        load_state_type(state_class) unless state_loaded?(state_class)
         @current_state = state_class.new(contexts)
       end
 
       # TODO
       def make_transition(&block)
-        all_transitions = @transitions[current_state]
+        all_transitions = @transitions[current_state.class]
         prefiltered_transitions = prefiltered_transitions(all_transitions, &block)
         valid_transitions = valid_transitions(prefiltered_transitions)
         target = selection_strategy(valid_transitions)
         raise StandardError, 'Selection strategy did not return a single transition!' unless target.is_a?(Transition)
-        target.execute
+        target.execute(current_state)
         use_state(target.identify_target_state_type)
       end
 
       # Filter the given list of transitions based on the model prefilter and current state.
-      def prefiltered_transitions(transitions, &block)
-        transitions.select do |transition|
+      def prefiltered_transitions(transitions_list, &block)
+        transitions_list.select do |transition|
           # keep transitions that pass the filter block (if one is provided) AND pass the model-level prefilter
           (!block_given? || block.call(transition) == true) && passes_prefilter?(transition)
         end
@@ -178,6 +178,16 @@ module Ladon
       # a single +Ladon::Modeler::Transition+ instance in +transition_to+.
       def selection_strategy(transition_options)
         raise Ladon::MissingImplementationError, 'Must implement selection_strategy method!'
+      end
+
+      def method_missing(meth_name, *args, **kwargs)
+        return current_state.send(meth_name, *args, **kwargs) if current_state && current_state.respond_to?(meth_name)
+        super
+      end
+
+      def respond_to?(meth_name, *args)
+        return true if current_state && current_state.respond_to?(meth_name, *args)
+        super
       end
     end
   end

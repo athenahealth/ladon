@@ -32,7 +32,8 @@ module Ladon
         context 'when the specified state is not known to the graph' do
           let(:target_state) { Class.new(State) }
 
-          it { is_expected.to raise_error(StandardError, "No known state #{target_state}!") }
+          it { is_expected.to change{fsm.state_loaded?(target_state)}.from(false).to(true)}
+          #it { is_expected.to raise_error(StandardError, "No known state #{target_state}!") }
         end
       end
 

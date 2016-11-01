@@ -131,13 +131,13 @@ module Ladon
       # Create an instance based on the +config+ provided.
       def initialize(config)
         super
-        @model = self.class.target_model # set up the model
+        @model = self.class.target_model(self) # set up the model
         raise StandardError, 'The model must be a Ladon FSM' unless @model.is_a?(Ladon::Modeler::FiniteStateMachine)
       end
 
       # Subclasses _MUST_ override this method. This method should return an instance of
       # +Ladon::Modeler::FiniteStateMachine+ that will power this automation.
-      def self.target_model
+      def target_model(instance)
         raise StandardError, 'The target_model method is not implemented!'
       end
     end
