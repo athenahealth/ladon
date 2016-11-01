@@ -127,6 +127,7 @@ module Ladon
     # During this automation, you are able to make assertions, maintain
     # an activity log, and measure the observable behaviors of the software.
     class ModelAutomation < Automation
+      attr_reader :model
 
       # Create an instance based on the +config+ provided.
       def initialize(config)

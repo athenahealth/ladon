@@ -1,12 +1,46 @@
 #!/usr/bin/env ruby
 
-require 'ladon'
 require 'pry'
+require 'ladon'
 
-def load_automation_source
-  automation_location = ARGV.pop # expect argument identifying Automation script path
-  req_path = File.expand_path(automation_location, Dir.pwd)
-  require_relative req_path # load that path
+ridiculous_banner =
+" _           _
+| | __ _  __| | ___  _ __            _ __ _   _ _ __  _ __   ___ _ __
+| |/ _` |/ _` |/ _ \\| '_ \\   _____  | '__| | | | '_ \\| '_ \\ / _ \\ '__|
+| | (_| | (_| | (_) | | | | |_____| | |  | |_| | | | | | | |  __/ |
+|_|\\__,_|\\__,_|\\___/|_| |_|         |_|   \\__,_|_| |_|_| |_|\\___|_|   "
+
+def make_opt_parser
+  vals = Struct.new(:automation_path, :interactive_after, :review).new
+  parser = OptionParser.new do |opts|
+    opts.banner = 'Usage: ladon-run [options]'
+
+    opts.on('-a PATH',
+            '--automation PATH',
+            'Path to the automation script to be executed') do |val|
+      vals.automation_path = val
+    end
+
+    opts.on('-i PHASE_LIST',
+            '--interactive_after PHASE_LIST',
+            'Comma-separated list of phase names that the runner should perform and then enter interactive mode.') do |val|
+      vals.interactive_after = val.split(',').map { |phase| phase.strip.to_sym }
+    end
+
+    opts.on('-r', '--review', 'Pause after automation completes') do |val|
+      vals.review = true
+    end
+
+    opts.on('-h', '--help', 'Prints this help message') do
+      puts opts
+      exit
+    end
+  end
+  [vals, parser]
+end
+
+def load_automation_source(auto_loc)
+  require_relative File.expand_path(auto_loc, Dir.pwd) # load that path
 end
 
 def select_automation_class
@@ -38,18 +72,50 @@ def configure_automation
   return cfg
 end
 
-load_automation_source
+def print_separator_line(sep = '*')
+  puts sep.to_s * 80
+end
+
+options, parser = make_opt_parser
+parser.parse!(ARGV)
+
+raise StandardError, 'Automation not specified!' unless options.automation_path
+options.interactive_after = [] unless options.interactive_after.is_a?(Array)
+
+load_automation_source(options.automation_path)
 target_automation = select_automation_class
-result = nil
+automation = nil
 begin
-  puts "About to execute: #{target_automation}"
-  result = target_automation.new(configure_automation).run
-  puts 'Execution complete'
+  print_separator_line
+  puts ridiculous_banner
+  print_separator_line
+
+  puts "\nStarting: #{target_automation.name}"
+  automation = target_automation.new(configure_automation)
+  target_automation.all_phases.each_with_index do |phase_name, idx|
+    print "Beginning phase: #{phase_name}..."
+    automation.run(to_index: idx)
+    puts 'complete!'
+
+    if options.interactive_after.include?(phase_name)
+      puts ''
+      print_separator_line('-')
+      puts "\tStarting interactive mode\n"
+
+      binding.pry
+
+      puts "\n\tInteractive mode exited, continuing..."
+      print_separator_line('-')
+      puts ''
+    end
+  end
+  puts "\nExecution complete"
 rescue => ex
   puts "\nAutomation Error: #{ex}"
   puts ex.backtrace
 end
 
-puts 'Entering interactive mode'
-puts "\tNote: Automation result is stored in the 'result' variable"
-binding.pry
+if options.review
+  puts 'Entering interactive mode'
+  binding.pry
+end
