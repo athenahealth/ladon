@@ -94,7 +94,7 @@ begin
   automation = target_automation.new(configure_automation)
   target_automation.all_phases.each_with_index do |phase_name, idx|
     print "Beginning phase: #{phase_name}..."
-    automation.run(to_index: idx)
+    automation.run(to_index: idx) # this is the interesting line
     puts 'complete!'
 
     if options.interactive_after.include?(phase_name)
