@@ -44,5 +44,9 @@ module Ladon
     def merge_contexts(to_merge)
       self.contexts = contexts.merge(to_merge)  { |_, my_val, _| my_val }
     end
+
+    def add_context(name, obj)
+      self.merge_contexts(Hash[name.to_sym, Context.new(name, obj)])
+    end
   end
 end

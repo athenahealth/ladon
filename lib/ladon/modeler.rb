@@ -141,6 +141,12 @@ module Ladon
         @current_state = state_class.new(contexts)
       end
 
+      def on_current_state(&block)
+        raise StandardError, 'No block given!' unless block_given?
+        raise StandardError, 'No current state!' if current_state.nil?
+        block.call(current_state)
+      end
+
       # TODO
       def make_transition(&block)
         all_transitions = @transitions[current_state.class]
@@ -178,16 +184,6 @@ module Ladon
       # a single +Ladon::Modeler::Transition+ instance in +transition_to+.
       def selection_strategy(transition_options)
         raise Ladon::MissingImplementationError, 'Must implement selection_strategy method!'
-      end
-
-      def method_missing(meth_name, *args, **kwargs)
-        return current_state.send(meth_name, *args, **kwargs) if current_state && current_state.respond_to?(meth_name)
-        super
-      end
-
-      def respond_to?(meth_name, *args)
-        return true if current_state && current_state.respond_to?(meth_name, *args)
-        super
       end
     end
   end
