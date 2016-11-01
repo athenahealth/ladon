@@ -10,7 +10,7 @@ module Ladon
       def initialize(start_state: nil,
                      id: SecureRandom.uuid,
                      contexts: {},
-                     load_strategy: Ladon::Modeler::Graph::LoadStrategy::LAZY)
+                     load_strategy: LoadStrategy::LAZY)
         @id = id
         self.contexts = contexts
 

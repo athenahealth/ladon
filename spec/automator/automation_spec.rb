@@ -145,7 +145,7 @@ module Ladon
             let(:config) { Ladon::Modeler::Config.new }
             let(:model_value) do
               model = Ladon::Modeler::FiniteStateMachine.new(config)
-              model.use_state_type(Class.new(Modeler::State), strategy: Ladon::Modeler::Graph::LoadStrategy::LAZY)
+              model.use_state_type(Class.new(Modeler::State), strategy: Ladon::Modeler::LoadStrategy::LAZY)
               model
             end
 

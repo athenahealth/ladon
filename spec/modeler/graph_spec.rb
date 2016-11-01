@@ -50,7 +50,7 @@ module Ladon
             let(:config2) { Ladon::Modeler::Config.new(start_state: class2) }
             let(:target) { Graph.new(config2) }
 
-            it { is_expected.to change(graph, :states).from(graph.states).to(graph.states | target.states)}
+            it { is_expected.to change(graph, :states).from(Set.new([start_state])).to(Set.new([start_state, class2])) }
           end
 
           # TODO: transition merging test
@@ -67,7 +67,7 @@ module Ladon
       describe 'transition methods' do
         let(:target_state) { Class.new(State) }
         let(:start_state) { Class.new(State) }
-        let(:config) { Ladon::Modeler::Config.new(start_state: start_state, load_strategy: Graph::LoadStrategy::CONNECTED) }
+        let(:config) { Ladon::Modeler::Config.new(start_state: start_state, load_strategy: LoadStrategy::CONNECTED) }
         let(:transitions) do
           [
               Transition.new do |t|
@@ -104,7 +104,7 @@ module Ladon
         end
 
         describe '#transition_count_for' do
-          let(:config) { Ladon::Modeler::Config.new(start_state: loaded_state, load_strategy: Graph::LoadStrategy::CONNECTED) }
+          let(:config) { Ladon::Modeler::Config.new(start_state: loaded_state, load_strategy: LoadStrategy::CONNECTED) }
           let(:loaded_state) { Class.new(State) }
           let(:transitions) { [Transition.new, Transition.new] }
 

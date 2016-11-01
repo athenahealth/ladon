@@ -10,7 +10,7 @@ module Ladon
       let(:config) { Ladon::Modeler::Config.new }
       let(:fsm) do
         model = FiniteStateMachine.new(config)
-        model.use_state_type(start_state, strategy: Graph::LoadStrategy::LAZY)
+        model.use_state_type(start_state, strategy: LoadStrategy::LAZY)
         model
       end
       subject { fsm }
