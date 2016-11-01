@@ -92,7 +92,7 @@ module Ladon
       #
       # Calls the identifier block specified via +to_identify_target_state_type+
       def identify_target_state_type
-        raise StandardError, 'Target state type not loaded yet!' unless target_loaded?
+        load_target_state_type
         @target_state_type ||= @identifier.call
       end
     end

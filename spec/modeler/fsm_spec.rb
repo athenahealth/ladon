@@ -57,7 +57,38 @@ module Ladon
       end
 
       describe '#valid_transitions' do
+        subject { fsm.valid_transitions(transition_options) }
 
+        before { allow(fsm).to receive(:current_state).and_return(current_state) }
+
+        context 'when the fsm has no current state' do
+          let(:current_state) { nil }
+          let(:transition_options) { [] }
+
+          it 'raises an error' do
+            expect{subject}.to raise_error(StandardError)
+          end
+          #it { is_expected.to raise_error(StandardError) }
+        end
+
+        context 'when the fsm has a current state' do
+          let(:valid_transition) { Transition.new { |t| t.when { |current| current.instance_variable_get('@example') == 5} } }
+          let(:invalid_transition) { Transition.new { |t| t.when { |current| current.instance_variable_get('@example') == 6} } }
+          let(:transition_options) { [valid_transition, invalid_transition] }
+          let(:current_state) do
+            state = Class.new(State).new({})
+            state.instance_variable_set('@example', 5)
+            state
+          end
+
+          it 'does not raise an error' do
+            expect{subject}.not_to raise_error
+          end
+
+          it { is_expected.to be_an_instance_of(Array) }
+          it { is_expected.to include(valid_transition) }
+          it { is_expected.not_to include(invalid_transition) }
+        end
       end
     end
   end

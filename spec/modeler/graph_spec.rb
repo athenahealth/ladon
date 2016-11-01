@@ -58,24 +58,48 @@ module Ladon
         end
       end
 
-      describe '#load_transitions' do
+      describe 'transition methods' do
+        let(:target_state) { Class.new(State) }
+        let(:start_state) { Class.new(State) }
+        let(:config) { Ladon::Modeler::Config.new(start_state: start_state, eager: true) }
+        let(:transitions) do
+          [
+              Transition.new do |t|
+                t.to_load_target_state_type { }
+                t.to_identify_target_state_type { target_state }
+              end
+          ]
+        end
 
-      end
+        before do
+          allow(start_state).to receive(:transitions).and_return(transitions)
+          allow(target_state).to receive(:transitions).and_return([])
+        end
 
-      describe '#add_transitions' do
+        describe '#load_transitions' do
 
-      end
+        end
 
-      describe '#transitions_loaded?' do
+        describe '#add_transitions' do
 
-      end
+        end
 
-      describe '#transitions_for' do
+        describe '#transitions_loaded?' do
+          context 'when the given state has been loaded' do
+            subject { graph.transitions_loaded?(start_state) }
 
-      end
+            it { is_expected.to be true }
+          end
 
-      describe '#transition_count_for' do
+          context 'when the given state has not been loaded' do
+            subject { graph.transitions_loaded?(Class.new) }
+            it { is_expected.to be false }
+          end
+        end
 
+        describe '#transition_count_for' do
+
+        end
       end
 
       describe '#state_count' do

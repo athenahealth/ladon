@@ -71,7 +71,7 @@ module Ladon
           raise StandardError, 'Transitions method must return an enumerable!' unless transitions.respond_to?(:each)
           add_transitions(state_class, transitions)
           if @eager && respond_to?(:load_state_type)
-            transitions.each {|transition| load_state_type(transition.target_state_type)}
+            transitions.each {|transition| load_state_type(transition.identify_target_state_type)}
           end
           return true
         end
@@ -79,7 +79,7 @@ module Ladon
         def add_transitions(state_class, transitions)
           grouped = transitions.group_by { |transition| transition.is_a?(Ladon::Modeler::Transition) }
           on_invalid_transitions(grouped[false]) if grouped.key?(false)
-          transitions[state_class] |= grouped[true]
+          @transitions[state_class] |= grouped[true] if grouped.key?(true)
         end
 
         # Handles when invalid transitions are encountered by the model.
@@ -90,11 +90,6 @@ module Ladon
         # Determines if the given +state_class+ has had its transitions loaded into this FSM.
         def transitions_loaded?(state_class)
           @transitions.key?(state_class)
-        end
-
-        # Lists the transitions available from +state_class+.
-        def transitions_for(state_class)
-          @transitions[state_class].clone
         end
 
         # Counts the number of transitions available from +state_class+.
@@ -148,7 +143,7 @@ module Ladon
 
       # TODO
       def make_transition(&block)
-        all_transitions = transitions_for(current_state)
+        all_transitions = @transitions[current_state]
         prefiltered_transitions = prefiltered_transitions(all_transitions, &block)
         valid_transitions = valid_transitions(prefiltered_transitions)
         target = selection_strategy(valid_transitions)
