@@ -18,6 +18,16 @@ module Ladon
           @states.clone
         end
 
+        # Determines if the given +state_class+ is loaded as a state in this FSM.
+        def state_loaded?(state_class)
+          @states.include?(state_class)
+        end
+
+        # Count the number of states loaded in this FSM.
+        def state_count
+          @states.size
+        end
+
         # TODO
         def valid_state?(state_class)
           state_class.is_a?(Class) && state_class < State
@@ -29,25 +39,15 @@ module Ladon
         #
         # Raises an error if the +state_class+ is already loaded.
         #
-        # Returns true if the state was newly loaded, false if it was already loaded.
-        def load_state_type(state_class)
+        # Returns true if the state is or was already loaded, false otherwise.
+        def load_state_type(state_class, strategy: Graph::LoadStrategy::LAZY)
           raise InvalidStateTypeError.new(state_class) unless valid_state?(state_class)
-          return false if state_loaded?(state_class)
+          return true if state_loaded?(state_class)
+          return false if strategy == Graph::LoadStrategy::NONE
+
           @states.add(state_class)
-
-          load_transitions(state_class) if @eager && self.respond_to?(:load_transitions)
-          state_class.when_loaded_by(self) if state_class.respond_to?(:when_loaded_by)
-          return true
-        end
-
-        # Determines if the given +state_class+ is loaded as a state in this FSM.
-        def state_loaded?(state_class)
-          @states.include?(state_class)
-        end
-
-        # Count the number of states loaded in this FSM.
-        def state_count
-          @states.size
+          load_transitions(state_class, strategy: Graph::LoadStrategy.nested_strategy_for(strategy))
+          true
         end
       end
 
@@ -62,21 +62,24 @@ module Ladon
         end
 
         # Load the transitions defined by the given +state_class+.
-        # Returns false if the transitions were already loaded for +state_class+, true otherwise.
-        def load_transitions(state_class)
+        # Returns true if the transitions are loaded or were already loaded, false otherwise.
+        def load_transitions(state_class, strategy: Graph::LoadStrategy::Lazy)
           raise StandardError, "No known state #{state_class}!" unless state_loaded?(state_class)
-          return false if transitions_loaded?(state_class)
+          return true if transitions_loaded?(state_class)
+          return false if strategy == Graph::LoadStrategy::NONE
 
           transitions = state_class.transitions
           raise StandardError, 'Transitions method must return an enumerable!' unless transitions.respond_to?(:each)
           add_transitions(state_class, transitions)
-          if @eager && respond_to?(:load_state_type)
-            transitions.each {|transition| load_state_type(transition.identify_target_state_type)}
+          next_strategy = Graph::LoadStrategy.nested_strategy_for(strategy)
+          unless next_strategy == Graph::LoadStrategy::NONE
+            transitions.each {|transition| load_state_type(transition.identify_target_state_type, strategy: next_strategy)}
           end
           true
         end
 
         def add_transitions(state_class, transitions)
+          raise StandardError, "No known state #{state_class}!" unless state_loaded?(state_class)
           grouped = transitions.group_by { |transition| transition.is_a?(Ladon::Modeler::Transition) }
           on_invalid_transitions(grouped[false]) if grouped.key?(false)
           @transitions[state_class] |= grouped[true] if grouped.key?(true)
@@ -94,7 +97,33 @@ module Ladon
 
         # Counts the number of transitions available from +state_class+.
         def transition_count_for(state_class)
+          return nil unless transitions_loaded?(state_class)
           @transitions[state_class].size
+        end
+      end
+
+      # Defines approach for  to loading states/transitions.
+      module LoadStrategy
+        # Do not perform the load operation at all
+        NONE = :none
+        # Load only the target state or transition; do not auto-load connected states/transitions
+        LAZY = :lazy
+        # Load the target state or transition; load the connected state or transitions with LAZY strategy
+        CONNECTED = :connected
+        # Load the target state/transition; recursively load
+        EAGER = :eager
+
+        ALL = [NONE, LAZY, CONNECTED, EAGER]
+        NESTING = {
+            NONE => NONE,
+            LAZY => NONE,
+            CONNECTED => LAZY,
+            EAGER => EAGER
+        }
+
+        def self.nested_strategy_for(load_strategy)
+          raise StandardError, 'Not a load strategy!' unless ALL.include?(load_strategy)
+          NESTING[load_strategy]
         end
       end
 
@@ -106,19 +135,20 @@ module Ladon
 
       def initialize(config)
         raise StandardError, 'Must be a Modeler config!' unless config.is_a?(Ladon::Modeler::Config)
-        @eager = config.eager
         init_states
         init_transitions
         self.contexts = config.contexts
 
-        load_state_type(config.start_state) unless config.start_state.nil?
+        if config.start_state && config.load_strategy
+          load_state_type(config.start_state, strategy: config.load_strategy)
+        end
       end
 
       # Merges the +target+ provided into this FSM instance.
       def merge(target)
         raise InvalidMergeError, 'Instances to merge are not of the same Class' unless self.class.eql?(target.class)
-        target.states.each {|state| load_state_type(state)}
-        target.transitions.each {|state, trans_set| transitions[state].merge(trans_set)}
+        target.states.each { |state| load_state_type(state) }
+        target.transitions.each { |state, trans_set| transitions[state].merge(trans_set) }
         merge_contexts(target.contexts)
       end
     end
@@ -128,15 +158,17 @@ module Ladon
 
       # Creates a new +FiniteStateMachine+ model instance.
       def initialize(config)
+        @current_state = nil
         super(config)
 
-        @current_state = nil
-        use_state(config.start_state) unless config.start_state.nil?
+        if config.start_state && config.load_strategy
+          use_state_type(config.start_state, strategy: config.load_strategy)
+        end
       end
 
       # Including classes must override this method.
-      def use_state(state_class)
-        load_state_type(state_class) unless state_loaded?(state_class)
+      def use_state_type(state_class, strategy: Graph::LoadStrategy::LAZY)
+        load_state_type(state_class, strategy: strategy) unless state_loaded?(state_class)
         @current_state = state_class.new(contexts)
       end
 
@@ -154,7 +186,7 @@ module Ladon
         target = selection_strategy(valid_transitions)
         raise StandardError, 'Selection strategy did not return a single transition!' unless target.is_a?(Transition)
         target.execute(current_state)
-        use_state(target.identify_target_state_type)
+        use_state_type(target.identify_target_state_type)
       end
 
       # Filter the given list of transitions based on the model prefilter and current state.

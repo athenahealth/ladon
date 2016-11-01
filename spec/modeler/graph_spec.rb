@@ -58,10 +58,16 @@ module Ladon
         end
       end
 
+      describe '#state_count' do
+        subject { graph.state_count }
+
+        it { is_expected.to eq(graph.states.size)}
+      end
+
       describe 'transition methods' do
         let(:target_state) { Class.new(State) }
         let(:start_state) { Class.new(State) }
-        let(:config) { Ladon::Modeler::Config.new(start_state: start_state, eager: true) }
+        let(:config) { Ladon::Modeler::Config.new(start_state: start_state, load_strategy: Graph::LoadStrategy::CONNECTED) }
         let(:transitions) do
           [
               Transition.new do |t|
@@ -98,14 +104,28 @@ module Ladon
         end
 
         describe '#transition_count_for' do
+          let(:config) { Ladon::Modeler::Config.new(start_state: loaded_state, load_strategy: Graph::LoadStrategy::CONNECTED) }
+          let(:loaded_state) { Class.new(State) }
+          let(:transitions) { [Transition.new, Transition.new] }
 
+          subject { graph.transition_count_for(state_class) }
+
+          before do
+            allow(loaded_state).to receive(:transitions).and_return(transitions)
+            graph.load_state_type(loaded_state)
+          end
+
+          context 'when the state class has been loaded' do
+            let(:state_class) { loaded_state }
+            it { is_expected.to eq(transitions.size) }
+          end
+
+          context 'when the state class has not been loaded' do
+            let(:state_class) { Class.new(State) }
+
+            it { is_expected.to be nil }
+          end
         end
-      end
-
-      describe '#state_count' do
-        subject { graph.state_count }
-
-        it { is_expected.to eq(graph.states.size)}
       end
     end
   end

@@ -142,8 +142,11 @@ module Ladon
           end
 
           context 'when the target_model returns a Ladon Modeler FSM' do
+            let(:config) { Ladon::Modeler::Config.new }
             let(:model_value) do
-              Ladon::Modeler::FiniteStateMachine.new(Ladon::Modeler::Config.new(start_state: Class.new(Modeler::State)))
+              model = Ladon::Modeler::FiniteStateMachine.new(config)
+              model.use_state_type(Class.new(Modeler::State), strategy: Ladon::Modeler::Graph::LoadStrategy::LAZY)
+              model
             end
 
             it 'does not raise an error' do
