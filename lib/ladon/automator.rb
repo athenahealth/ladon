@@ -137,7 +137,7 @@ module Ladon
 
       # Subclasses _MUST_ override this method. This method should return an instance of
       # +Ladon::Modeler::FiniteStateMachine+ that will power this automation.
-      def target_model(instance)
+      def self.target_model(instance)
         raise StandardError, 'The target_model method is not implemented!'
       end
     end
