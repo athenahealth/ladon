@@ -32,11 +32,12 @@ module Ladon
 
     # Used to model software as a graph of connected states and transitions.
     class Graph
-      attr_reader :states, :transitions
+      attr_reader :states, :transitions, :flags
 
-      def initialize
+      def initialize(flags: nil)
         @states = Set.new
         @transitions = Hash.new { |h, k| h[k] = Set.new }
+        @flags = flags.is_a?(Ladon::Flags) ? flags : Ladon::Flags.new
       end
 
       # Determines if the given +state_class+ is loaded as a state in this FSM.
@@ -123,9 +124,9 @@ module Ladon
     class FiniteStateMachine < Graph
 
       # Creates a new +FiniteStateMachine+ model instance.
-      def initialize
-        @current_state = nil
+      def initialize(flags: nil)
         super
+        @current_state = nil
       end
 
       # Override if you need to define new behaviors.

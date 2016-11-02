@@ -11,7 +11,7 @@ module Ladon
     class Automation
       include API::Assertions
 
-      attr_reader :config, :result, :phase
+      attr_reader :config, :result, :phase, :flags
 
       SETUP_PHASE = :setup
       EXECUTE_PHASE = :execute
@@ -21,6 +21,7 @@ module Ladon
       def initialize(config)
         raise StandardError, 'Automation requires a Ladon::Automator::Config' unless config.is_a?(Ladon::Automator::Config)
         @config = config
+        @flags = config.flags
         @result = Result.new(config)
         @logger = @result.logger
         @timer = @result.timer

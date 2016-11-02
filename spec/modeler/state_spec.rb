@@ -7,7 +7,7 @@ module Ladon
       describe '.transitions' do
         subject { lambda { State.transitions } }
 
-        it { is_expected.to raise_error(MissingImplementationError, 'transitions') }
+        it { is_expected.to raise_error(MissingImplementationError, 'self.transitions') }
       end
     end
   end

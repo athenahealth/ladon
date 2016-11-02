@@ -33,7 +33,9 @@ def make_opt_parser
             '--flags FLAGS',
             String,
             'Comma-separated list of name:value pairs') do |val|
-      vals.flags = Hash[val.split(',').map {|el| el.split ':'}]
+      binding.pry
+      # potential FIXME: won't work with flags that have commas in them
+      vals.flags = Hash[val.split(',').map {|el| el.split(':', 2)}]
     end
 
     opts.on('-r', '--review', 'Pause after automation completes') do
@@ -76,9 +78,7 @@ def select_automation_class
 end
 
 def configure_automation(options)
-  cfg = Ladon::Automator::Config.new
-  # TODO: options? may conflict with the load from above
-  return cfg
+  return Ladon::Automator::Config.new(flags: Ladon::Flags.new(in_hash: options.flags))
 end
 
 def print_separator_line(sep = '*')
