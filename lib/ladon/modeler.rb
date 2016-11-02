@@ -1,6 +1,4 @@
 require 'set'
-require 'ladon/contexts'
-require 'ladon/modeler/data/config'
 require 'ladon/modeler/errors'
 require 'ladon/modeler/states'
 require 'ladon/modeler/transitions'
@@ -34,18 +32,11 @@ module Ladon
 
     # Used to model software as a graph of connected states and transitions.
     class Graph
-      include Ladon::HasContexts
       attr_reader :states, :transitions
 
-      def initialize(config)
-        raise StandardError, 'Must be a Modeler config!' unless config.is_a?(Ladon::Modeler::Config)
+      def initialize
         @states = Set.new
         @transitions = Hash.new { |h, k| h[k] = Set.new }
-        self.contexts = config.contexts
-
-        if config.start_state && LoadStrategy::ALL.include?(config.load_strategy)
-          load_state_type(config.start_state, strategy: config.load_strategy)
-        end
       end
 
       # Determines if the given +state_class+ is loaded as a state in this FSM.
@@ -98,7 +89,7 @@ module Ladon
 
       # Load the transitions defined by the given +state_class+.
       # Returns true if the transitions are loaded or were already loaded, false otherwise.
-      def load_transitions(state_class, strategy: LoadStrategy::Lazy)
+      def load_transitions(state_class, strategy: LoadStrategy::LAZY)
         raise StandardError, "No known state #{state_class}!" unless state_loaded?(state_class)
         return true if transitions_loaded?(state_class)
         return false if strategy == LoadStrategy::NONE
@@ -125,7 +116,6 @@ module Ladon
         raise InvalidMergeError, 'Instances to merge are not of the same Class' unless self.class.eql?(target.class)
         target.states.each { |state| load_state_type(state) }
         target.transitions.each { |state, trans_set| transitions[state].merge(trans_set) }
-        merge_contexts(target.contexts)
       end
     end
 
@@ -133,19 +123,20 @@ module Ladon
     class FiniteStateMachine < Graph
 
       # Creates a new +FiniteStateMachine+ model instance.
-      def initialize(config)
+      def initialize
         @current_state = nil
-        super(config)
+        super
+      end
 
-        if config.start_state && LoadStrategy::ALL.include?(config.load_strategy)
-          use_state_type(config.start_state, strategy: config.load_strategy)
-        end
+      # Override if you need to define new behaviors.
+      def new_state_instance(state_class)
+        @current_state = state_class.new
       end
 
       # Including classes must override this method.
       def use_state_type(state_class, strategy: LoadStrategy::LAZY)
         load_state_type(state_class, strategy: strategy) unless state_loaded?(state_class)
-        @current_state = state_class.new(contexts)
+        @current_state = new_state_instance(state_class)
       end
 
       #

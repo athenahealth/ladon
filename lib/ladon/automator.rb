@@ -1,4 +1,3 @@
-require 'ladon/contexts'
 require 'ladon/automator/api/assertions'
 require 'ladon/automator/data/config'
 require 'ladon/automator/data/result'
@@ -10,7 +9,6 @@ module Ladon
     # Base class for Ladon automation. This class is exposed to encapsulate the
     # aspects of Automation not pertaining directly to operating through a model.
     class Automation
-      include Ladon::HasContexts
       include API::Assertions
 
       attr_reader :config, :result, :phase
@@ -27,7 +25,6 @@ module Ladon
         @logger = @result.logger
         @timer = @result.timer
         @phase = 0
-        self.contexts = config.contexts
       end
 
       # Identifies the phases from +all_phases+ that *must* be defined for automations of this type.

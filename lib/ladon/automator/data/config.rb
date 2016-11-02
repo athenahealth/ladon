@@ -3,15 +3,12 @@ require 'securerandom'
 module Ladon
   module Automator
     class Config
-      include Ladon::HasContexts
-
-      attr_accessor :id, :log_level, :contexts
+      attr_accessor :id, :log_level
 
       # Create a new Automator Config instance.
-      def initialize(id: SecureRandom.uuid, log_level: :ERROR, contexts: {})
+      def initialize(id: SecureRandom.uuid, log_level: :ERROR, flags: nil)
         @id = id
         @log_level = log_level
-        self.contexts = contexts
       end
     end
   end
