@@ -27,6 +27,7 @@ module Ladon
         @logger = @result.logger
         @timer = @result.timer
         @phase = 0
+        self.contexts = config.contexts
       end
 
       # Identifies the phases from +all_phases+ that *must* be defined for automations of this type.
@@ -127,25 +128,31 @@ module Ladon
     # During this automation, you are able to make assertions, maintain
     # an activity log, and measure the observable behaviors of the software.
     class ModelAutomation < Automation
-      attr_reader :model
+      BUILD_MODEL_PHASE = :build_model
+      VERIFY_MODEL_PHASE = :verify_model
+      attr_accessor :model
 
-      # Create an instance based on the +config+ provided.
-      def initialize(config)
-        super
-        @model = self.class.target_model(self) # set up the model
-        raise StandardError, 'The model must be a Ladon FSM' unless @model.is_a?(Ladon::Modeler::FiniteStateMachine)
+      # Identifies the phases from +all_phases+ that *must* be defined for automations of this type.
+      def self.required_phases
+        [BUILD_MODEL_PHASE, VERIFY_MODEL_PHASE, EXECUTE_PHASE]
+      end
+
+      # Identifies the phases involved in this automation.
+      def self.all_phases
+        [BUILD_MODEL_PHASE, VERIFY_MODEL_PHASE, SETUP_PHASE, EXECUTE_PHASE, TEARDOWN_PHASE]
       end
 
       # Subclasses _MUST_ override this method. This method should return an instance of
       # +Ladon::Modeler::FiniteStateMachine+ that will power this automation.
-      def self.target_model(instance)
-        raise StandardError, 'The target_model method is not implemented!'
+      #
+      # By default, this returns nil.
+      def build_model
+        self.model = nil # set up the model
+      end
+
+      def verify_model
+        raise StandardError, 'The model must be a Ladon FSM' unless model.is_a?(Ladon::Modeler::FiniteStateMachine)
       end
     end
-
-    # TODO Ladon automation for automating Ladon automations
-    #class Orchestrator < Automation
-    #  # will need a method that raises by default: "serialize_result"
-    #end
   end
 end

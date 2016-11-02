@@ -133,42 +133,7 @@ module Ladon
     end
 
     RSpec.describe ModelAutomation do
-      describe '#new' do
-        subject(:automation) { ModelAutomation.new(Ladon::Automator::Config.new) }
-
-        context 'when class has a target_model defined' do
-          before do
-            allow(ModelAutomation).to receive(:target_model).and_return(model_value)
-          end
-
-          context 'when the target_model returns a Ladon Modeler FSM' do
-            let(:config) { Ladon::Modeler::Config.new }
-            let(:model_value) do
-              model = Ladon::Modeler::FiniteStateMachine.new(config)
-              model.use_state_type(Class.new(Modeler::State), strategy: Ladon::Modeler::LoadStrategy::LAZY)
-              model
-            end
-
-            it 'does not raise an error' do
-              expect{automation}.not_to raise_error
-            end
-          end
-
-          context 'when the target_model returns something other than a Ladon Modeler FSM' do
-            let(:model_value) { nil }
-
-            it 'raises an error' do
-              expect{automation}.to raise_error(StandardError)
-            end
-          end
-        end
-
-        context 'when class has no target model defined' do
-          it 'raises an error' do
-            expect{automation}.to raise_error(StandardError)
-          end
-        end
-      end
+      # TODO
     end
   end
 end
