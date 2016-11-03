@@ -11,7 +11,6 @@ Gem::Specification.new do |s|
   s.email       = 'ssnow@athenahealth.com'
   s.files       = Dir['lib/**/*.rb']
   s.homepage    = 'http://rubygems.org/gems/ladon'
-  s.license     = 'MIT'
+  s.license     = 'MIT' # TODO
   s.executables << 'ladon-run'
-  s.executables << 'ladon-recorder'
 end
