@@ -42,3 +42,23 @@ Ladon 1.0 is subdivided into two familiar components:
 - Modeler: `lib/modeler.rb` and `lib/modeler/*`
 - Automator: `lib/automator.rb` and `lib/automator/*`
 
+### Modeler
+
+Contains the framework for creating a graph-based representation of your software. 
+Nodes are called "States" and edges are called "Transitions"; in other words, we're using finite state machine terminology.
+
+This is extremely similar to the Beta. Some terminology has changed, and Transitions are now classes/objects, rather than specified through a function call.
+
+The `Ladon::Core::PageObjectBase` class from the Beta should be represented as a subclass of Ladon 1.0's `State` class.
+
+### Automator
+
+Contains the framework for scripting software automation.
+Ladon actually exposes two types of Automations: `Automation` and `ModelAutomation`.
+
+While Ladon takes the philosophical stance that *all* automation should work through a model, it doesn't force you to do so.
+The `Automation` class is the parent of `ModelAutomation`; the only difference is, `ModelAutomation`s are expected to use a model.
+
+Use `ModelAutomation` unless you have a really good reason not to do so.
+
+`ModelAutomation` is roughly the equivalent of `Ladon::Core::TestBase` from the beta, but with way more flexibility and potential.
