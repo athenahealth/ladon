@@ -6,7 +6,7 @@ require 'ladon/modeler/components/transition'
 
 module Ladon
   module Modeler
-    # Used to model software as a graph of connected states and transitions.
+    # Used to model software as a graph of states connected by various transitions.
     #
     # @attr_reader [Set] states Set containing the +State+ classes loaded in this Graph.
     # @attr_reader [Hash] transitions Hash mapping loaded +State+ classes to the +Transition+ instances associated with them.
@@ -15,6 +15,11 @@ module Ladon
       attr_reader :states, :transitions, :flags
 
       # Create a new +Graph+ instance.
+      #
+      # @raise [StandardError] If the +config+ is not a Ladon::Modeler::Config instance.
+      #
+      # @param [Ladon::Modeler::Config] config The object providing configuration for this new Graph model.
+      # @return [Graph] The new graph instance.
       def initialize(config = Ladon::Modeler::Config.new)
         raise StandardError, 'Graph requires a Ladon::Modeler::Config' unless config.is_a?(Ladon::Modeler::Config)
         @config = config
@@ -23,48 +28,67 @@ module Ladon
         @flags = config.flags
       end
 
-      # Determines if the given +state_class+ is loaded as a state in this FSM.
-      def state_loaded?(state_class)
-        @states.include?(state_class)
-      end
-
       # Count the number of states loaded in this FSM.
+      #
+      # @return [Fixnum] The number of state types loaded into this Graph.
       def state_count
         @states.size
       end
 
-      # TODO
+      # Determines if the given +state_class+ is loaded as a state in this FSM.
+      # If +valid_state?+ wouldn't return true for the +state_class+, this *should* return false, too.
+      #
+      # @param [Object] state_class The potential state to check against the graph's loaded state set.
+      # @return [Boolean] True if the +state_class+ is loaded in this graph, false otherwise.
+      def state_loaded?(state_class)
+        @states.include?(state_class)
+      end
+
+      # Determines if the given +state_class+ is a valid state according to this graph implementation.
+      #
+      # @param [Object] state_class The potential state to check against the graph's supported state types.
+      # @return [Boolean] True if the +state_class+ is a valid state type, false otherwise.
       def valid_state?(state_class)
         state_class.is_a?(Class) && state_class < State
       end
 
       # Determines if the given +state_class+ has had its transitions loaded into this FSM.
+      #
+      # @param [Object] state_class The potential state to check against the graph's loaded transition mappings.
+      # @return [Boolean] True if the +state_class+ is loaded in this graph, false otherwise.
       def transitions_loaded?(state_class)
-        @transitions.key?(state_class)
+        state_loaded?(state_class) && @transitions.key?(state_class)
       end
 
-      # Counts the number of transitions available from +state_class+.
+      # Counts the number of transitions available in this graph from +state_class+.
+      # If the state doesn't exist or has not had its transitions loaded, this will return 0.
+      #
+      # @param [Object] state_class The potential state to check against the graph's loaded transition mappings.
+      # @return [Fixnum] The number of transitions with +state_class+ as the source state type.
       def transition_count_for(state_class)
-        return nil unless transitions_loaded?(state_class)
+        return 0 unless transitions_loaded?(state_class)
         @transitions[state_class].size
       end
 
-      # Handles when invalid transitions are encountered by the model.
-      # Does nothing by default.
+      # Handler for when invalid transitions are encountered by the model.
+      #
+      # @abstract
+      #
+      # @param [Array<Transition>] transitions List of detected invalid transitions.
       def on_invalid_transitions(transitions)
       end
 
       # Loads the given +state_class+ into this state machine.
       #
-      # If the +state_class+ has a +when_loaded_by(loader)+ hook defined, this method will trigger it.
+      # @raise [InvalidStateTypeError] If +state_class+ is not a valid state type for this graph.
       #
-      # Raises an error if the +state_class+ is already loaded.
-      #
-      # Returns true if the state is or was already loaded, false otherwise.
+      # @param [Object] state_class The potential state to load into this graph.
+      # @param [LoadStrategy] strategy The strategy from LoadStrategy::ALL to use for this load operation.
+      # @return [Boolean] True if the state is now (or was already) loaded, false otherwise.
       def load_state_type(state_class, strategy: LoadStrategy::LAZY)
         raise InvalidStateTypeError.new(state_class) unless valid_state?(state_class)
         return true if state_loaded?(state_class)
-        return false if strategy == LoadStrategy::NONE
+        return false if !LoadStrategy::ALL.include?(strategy) || strategy == LoadStrategy::NONE
 
         @states.add(state_class)
         load_transitions(state_class, strategy: LoadStrategy.nested_strategy_for(strategy))
@@ -72,30 +96,62 @@ module Ladon
       end
 
       # Load the transitions defined by the given +state_class+.
-      # Returns true if the transitions are loaded or were already loaded, false otherwise.
+      #
+      # *Note:* this is purely for loading transitions via the 'transitions' method of +state_class+.
+      # If you want to manually add transitions, see the +add_transitions+ method.
+      #
+      # @raise [StandardError] If +state_class+ is not a state type known to this graph.
+      # @raise [StandardError] If the +state_class+'s transition modeling method does not return an Enumerable.
+      #
+      # @param [Object] state_class The potential state whose transitions are being loaded into this graph.
+      # @param [LoadStrategy] strategy The strategy from LoadStrategy::ALL to use for this load operation.
+      # @return [Boolean] True if the state's transitions are now (or were already) loaded, false otherwise.
       def load_transitions(state_class, strategy: LoadStrategy::LAZY)
         raise StandardError, "No known state #{state_class}!" unless state_loaded?(state_class)
         return true if transitions_loaded?(state_class)
         return false if strategy == LoadStrategy::NONE
 
         transitions = state_class.transitions
-        raise StandardError, 'Transitions method must return an enumerable!' unless transitions.respond_to?(:each)
-        add_transitions(state_class, transitions)
-        next_strategy = LoadStrategy.nested_strategy_for(strategy)
-        unless next_strategy == LoadStrategy::NONE
-          transitions.each {|transition| load_state_type(transition.identify_target_state_type, strategy: next_strategy)}
+        raise StandardError, 'Transitions method must return an Enumerable!' unless transitions.is_a?(Enumerable)
+        added = add_transitions(state_class, transitions)
+
+        unless added.nil?
+          next_strategy = LoadStrategy.nested_strategy_for(strategy)
+          unless next_strategy == LoadStrategy::NONE
+            added.each {|transition| load_state_type(transition.identify_target_state_type, strategy: next_strategy)}
+          end
         end
+
         true
       end
 
+      # Add the +transitions+ to the set associated with the given +state_class+.
+      # Calls +on_invalid_transitions+ with the invalid transitions that were detected, if any are detected.
+      #
+      # @raise [StandardError] If +state_class+ is not a state type known to this graph.
+      #
+      # @param [Class] state_class The state to associate the +transitions+ with.
+      # @param [Set<Transition>] transitions The potential transitions to load into this graph.
+      # @return [Set<Ladon::Modeler::Transition>] The transitions that were loaded and associated with +state_class+.
+      #   Returns nil if no valid transitions were actually detected.
       def add_transitions(state_class, transitions)
         raise StandardError, "No known state #{state_class}!" unless state_loaded?(state_class)
-        grouped = transitions.group_by { |transition| transition.is_a?(Ladon::Modeler::Transition) }
-        on_invalid_transitions(grouped[false]) if grouped.key?(false)
-        @transitions[state_class] |= grouped[true] if grouped.key?(true)
+        valid_groups = transitions.group_by { |transition| transition.is_a?(Ladon::Modeler::Transition) }
+        on_invalid_transitions(valid_groups[false]) if valid_groups.key?(false)
+
+        return nil unless valid_groups.key?(true)
+
+        added = Set.new(valid_groups[true]) - @transitions[state_class] # detect the truly "new" transitions
+        @transitions[state_class] += added # add them
+        added # return them
       end
 
-      # Merges the +target+ provided into this FSM instance.
+      # Merges the +target+ provided into this graph instance.
+      # Only allowed on graph instances of the same Class.
+      #
+      # @raise [InvalidMergeError] If this graph and the +target+ are not instances of the same Class.
+      #
+      # @param [Ladon::Modeler::Graph] target The graph to merge into this graph.
       def merge(target)
         raise InvalidMergeError, 'Instances to merge are not of the same Class' unless self.class.eql?(target.class)
         target.states.each { |state| load_state_type(state) }

@@ -117,7 +117,7 @@ module Ladon
           context 'when the state class has not been loaded' do
             let(:state_class) { Class.new(State) }
 
-            it { is_expected.to be nil }
+            it { is_expected.to eq(0) }
           end
         end
       end

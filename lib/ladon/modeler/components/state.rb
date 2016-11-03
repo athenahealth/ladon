@@ -9,8 +9,8 @@ module Ladon
       # Class-level method defining the transitions that are available from a given state type.
       #
       # @abstract
-      # @return [Array<Ladon::Modeler::Transition>] List of Transition instances that
-      #   are valid from instances of this State type.
+      # @return [Enumerable<Ladon::Modeler::Transition>] List-like object containing Transition
+      #   instances that are valid from instances of this State type.
       def self.transitions
         raise MissingImplementationError, 'self.transitions'
       end
