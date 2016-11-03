@@ -1,18 +1,16 @@
 module Ladon
   module Modeler
-    # Defines approach for  to loading states/transitions.
+    # Defines approach to loading states/transitions in +Ladon::Modeler::Graph+ instances.
+    # Documentation uses the term "components" to refer to states and transitions.
     module LoadStrategy
-      # Do not perform the load operation at all
-      NONE = :none
-      # Load only the target state or transition; do not auto-load connected states/transitions
-      LAZY = :lazy
-      # Load the target state or transition; load the connected state or transitions with LAZY strategy
-      CONNECTED = :connected
-      # Load the target state/transition; recursively load
-      EAGER = :eager
+      NONE = :none # Strategy: do not perform the component load operation at all.
+      LAZY = :lazy # Strategy: load only the target component (do not load connected components.)
+      CONNECTED = :connected # Strategy: load the target component AND the components directly connected to it.
+      EAGER = :eager # Load the target component and follow all connected components until no more are encountered.
 
-      ALL = [NONE, LAZY, CONNECTED, EAGER]
+      ALL = [NONE, LAZY, CONNECTED, EAGER] # Collection of all valid LoadStrategy constants.
 
+      # Defines the strategy to use for loading components connected to the subject of a component load operation.
       NESTING = {
           NONE => NONE,
           LAZY => NONE,
@@ -20,6 +18,11 @@ module Ladon
           EAGER => EAGER
       }
 
+      # Convenience method for getting the nested LoadStrategy for a given LoadStrategy type.
+      #
+      # @param [LoadStrategy] load_strategy An object that *should* be a value from +LoadStrategy::ALL+.
+      # @return [LoadStrategy] The nested/recursive strategy for the given LoadStrategy type.
+      # @raise [StandardError] If given an argument that is not a LoadStrategy type.
       def self.nested_strategy_for(load_strategy)
         raise StandardError, 'Not a load strategy!' unless ALL.include?(load_strategy)
         NESTING[load_strategy]
