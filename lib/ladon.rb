@@ -1,11 +1,8 @@
-require 'ladon/version'
+require 'ladon/_version'
 require 'ladon/modeler'
 require 'ladon/automator'
 
 module Ladon
-  class MissingImplementationError < StandardError
-  end
-
   class Flags
     def initialize(in_hash: nil)
       @flags = {}

@@ -1,5 +1,5 @@
 $LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
-require 'ladon/version'
+require 'ladon/_version'
 
 Gem::Specification.new do |s|
   s.name        = 'ladon'

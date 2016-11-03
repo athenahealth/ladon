@@ -1,6 +1,6 @@
 module Ladon
   module Modeler
-    # Error raised when trying to call +Graph#merge+ with an incompatible source Graph
+    # Error raised when trying to call +Graph#merge+ with an incompatible source Graph.
     class InvalidMergeError < StandardError
     end
 
@@ -9,5 +9,8 @@ module Ladon
         super(given_type.to_s)
       end
     end
+  end
+
+  class MissingImplementationError < StandardError
   end
 end

@@ -1,7 +1,6 @@
 module Ladon
   module Modeler
-    # Allows for modeling when and how a +FiniteStateMachine+ can change its current state
-    # from one specified state to another.
+    # Allows for modeling when and how software can execute a change from one state to another.
     class Transition
       attr_reader :metadata
       attr_reader :target_loaded
