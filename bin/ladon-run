@@ -3,131 +3,205 @@
 require 'pry'
 require 'ladon'
 
-ridiculous_banner =
-" _           _
+# FIXME: eventually we should model Ladon in Ladon and use ModelAutomation here
+class LadonAutomationRunner < Ladon::Automator::Automation
+  # define phases:
+  # - parse args
+  # - require specified Ruby file
+  # - instantiate selected class (or potentially support interactively asking to select)
+  # - run phases, dropping to interactive as appropriate
+  # - drop to interactive on complete/error, or do something with result if I feel like supporting
+
+  ARGV_FLAG = :argv
+  RIDICULOUS_BANNER =
+      " _           _
 | | __ _  __| | ___  _ __            _ __ _   _ _ __  _ __   ___ _ __
 | |/ _` |/ _` |/ _ \\| '_ \\   _____  | '__| | | | '_ \\| '_ \\ / _ \\ '__|
 | | (_| | (_| | (_) | | | | |_____| | |  | |_| | | | | | | |  __/ |
 |_|\\__,_|\\__,_|\\___/|_| |_|         |_|   \\__,_|_| |_|_| |_|\\___|_|   "
 
-def make_opt_parser
-  vals = Struct.new(:automation_path, :interactive_after, :review, :flags).new
-  parser = OptionParser.new do |opts|
-    opts.banner = 'Usage: ladon-run [options]'
-
-    opts.on('-a PATH',
-            '--automation PATH',
-            String,
-            'Path to the automation script to be executed') do |val|
-      vals.automation_path = val
+  def setup
+    argv_given = flags.get(ARGV_FLAG, default_value: nil)
+    halting_assert('ARGV flag must be provided') do
+      argv_given.is_a?(Array)
     end
 
-    opts.on('-i PHASE_LIST',
-            '--interactive_after PHASE_LIST',
-            String,
-            'Comma-separated list of phase names that the runner should perform and then enter interactive mode.') do |val|
-      vals.interactive_after = val.split(',').map { |phase| phase.strip.to_sym }
+    @options = nil #TODO: this may be delete-able
+    halting_assert('Options provided must be valid') do
+      @options = _parse_options(flags: argv_given)
+      _validate_options?
     end
 
-    opts.on('-f FLAGS',
-            '--flags FLAGS',
-            String,
-            'Comma-separated list of name:value pairs') do |val|
-      binding.pry
-      # potential FIXME: won't work with flags that have commas in them
-      vals.flags = Hash[val.split(',').map {|el| el.split(':', 2)}]
+    halting_assert('Must be able to load a file at the specified path') do
+      _load_automation_source
     end
 
-    opts.on('-r', '--review', 'Pause after automation completes') do
-      vals.review = true
-    end
+    @target_automation_class = _select_automation_class
+  end
 
-    opts.on('-h', '--help', 'Prints this help message') do
-      puts opts
-      exit
+  def execute
+    _print_separator_line
+    puts RIDICULOUS_BANNER
+    _print_separator_line
+
+    puts "\nStarting: #{@target_automation_class.name}"
+    @auto_config = _configure_automation(@options)
+    @target_automation = @target_automation_class.new(@auto_config)
+
+    @target_automation_class.all_phases.each_with_index do |phase_name, idx|
+      _go_interactive if @options.interactive_before.include?(phase_name)
+
+      print "Beginning phase: #{phase_name}..."
+      @target_automation.run(to_index: idx) # this is the interesting line
+      puts 'complete!'
+
+      _go_interactive if @options.interactive_following.include?(phase_name)
+    end
+    puts "\nExecution complete"
+  end
+
+  def teardown
+    _go_interactive if @options.review
+
+    unless @target_automation.nil?
+      puts "\n\n"
+      puts @target_automation.to_s
     end
   end
-  [vals, parser]
-end
 
-def load_automation_source(auto_loc)
-  require_relative File.expand_path(auto_loc, Dir.pwd) # load that path
-end
-
-def select_automation_class
-  # Detect all Automation subclasses
-  detected_automations = ObjectSpace.each_object(Ladon::Automator::Automation.singleton_class)
-
-  # Filter to only those Automation subclasses that are marked executable
-  executable_automations = detected_automations.select {|cls| cls.respond_to?(:abstract?) && !cls.abstract?}
-
-  # Select a single executable Automation subclass to run
-  raise StandardError, 'No non-abstract Automation subclasses detected! Exiting...' if executable_automations.empty?
-  return executable_automations[0] if executable_automations.size == 1
-
-  puts "\nPlease select the Automation you wish to run by entering one of the following numbers:"
-  executable_automations.each_with_index { |cls, idx| puts "\t#{idx + 1}. #{cls.name}" }
-  begin
-    idx = gets.to_i
-    raise StandardError unless idx > 0 && idx < executable_automations.size
-    return executable_automations[idx]
-  rescue
-    puts 'Nope. Try again.'
-    retry
+  # If there was a failure in setup, don't run execute.
+  def skip_reason(phase)
+    return "Failure detected in #{SETUP_PHASE}" if phase == EXECUTE_PHASE && !@result.success?
+    super
   end
-end
 
-def configure_automation(options)
-  return Ladon::Automator::Config.new(flags: Ladon::Flags.new(in_hash: options.flags))
-end
+  private
 
-def print_separator_line(sep = '*')
-  puts sep.to_s * 80
-end
+  def _go_interactive
+    puts ''
+    _print_separator_line('-')
+    puts "\tStarting interactive mode\n"
 
-options, parser = make_opt_parser
-parser.parse!(ARGV)
+    binding.pry
 
-raise StandardError, 'Automation not specified!' unless options.automation_path
-options.interactive_after = [] unless options.interactive_after.is_a?(Array)
-options.flags = {} unless options.flags.is_a?(Hash)
+    puts "\n\tInteractive mode exited, continuing..."
+    _print_separator_line('-')
+    puts ''
+  end
 
-load_automation_source(options.automation_path)
-target_automation = select_automation_class
-automation = nil
+  def _parse_options(flags: [])
+    vals = Struct.new(:automation_path,
+                      :automation_class_name,
+                      :interactive_before,
+                      :interactive_following,
+                      :review,
+                      :flags).new
+    OptionParser.new do |opts|
+      opts.banner = 'Usage: ladon-run [options]'
 
-begin
-  print_separator_line
-  puts ridiculous_banner
-  print_separator_line
+      opts.on('-a PATH',
+              '--automation PATH',
+              String,
+              '[REQUIRED] Path to the automation script to be executed') do |val|
+        vals.automation_path = val
+      end
 
-  puts "\nStarting: #{target_automation.name}"
-  automation = target_automation.new(configure_automation(options))
-  target_automation.all_phases.each_with_index do |phase_name, idx|
-    print "Beginning phase: #{phase_name}..."
-    automation.run(to_index: idx) # this is the interesting line
-    puts 'complete!'
+      opts.on('-s NAME',
+              '--automation_class NAME',
+              String,
+              'Name of the Automation class to run.') do |val|
+        vals.automation_class = val
+      end
 
-    if options.interactive_after.include?(phase_name)
-      puts ''
-      print_separator_line('-')
-      puts "\tStarting interactive mode\n"
+      opts.on('-b PHASE_LIST',
+              '--interactive_before PHASE_LIST',
+              String,
+              'Comma-separated list of phases to enter interactive mode BEFORE running') do |val|
+        vals.interactive_before = val.split(',').map { |phase| phase.strip.to_sym }
+      end
 
-      binding.pry
+      opts.on('-f PHASE_LIST',
+              '--interactive_following PHASE_LIST',
+              String,
+              'Comma-separated list of phases to enter interactive mode AFTER running.') do |val|
+        vals.interactive_following = val.split(',').map { |phase| phase.strip.to_sym }
+      end
 
-      puts "\n\tInteractive mode exited, continuing..."
-      print_separator_line('-')
-      puts ''
+      opts.on('-f FLAGS',
+              '--flags FLAGS',
+              String,
+              'Comma-separated list of name:value pairs') do |val|
+        binding.pry
+        # HACK: won't work with flags that have commas in them
+        vals.flags = Hash[val.split(',').map {|el| el.split(':', 2)}]
+      end
+
+      opts.on('-r', '--review', 'Pause after automation completes') do
+        vals.review = true
+      end
+
+      opts.on('-h', '--help', 'Prints this help message') do
+        puts opts
+        exit
+      end
+    end.parse!(ARGV)
+
+    vals
+  end
+
+  # returns true if the options are valid.
+  def _validate_options?
+    raise StandardError, 'Automation not specified!' unless @options.automation_path
+    @options.interactive_following = [] unless @options.interactive_following.is_a?(Array)
+    @options.interactive_before = [] unless @options.interactive_before.is_a?(Array)
+    @options.flags = {} unless @options.flags.is_a?(Hash)
+    true
+  end
+
+  def _load_automation_source
+    require_relative File.expand_path(@options.automation_path, Dir.pwd) # load that path
+  end
+
+  def _select_automation_class
+    # Attempt to load the specified class, if provided
+    return Object.const_get(@options.automation_class_name) if @options.automation_class_name
+
+    # Detect all Automation subclasses
+    detected_automations = ObjectSpace.each_object(Ladon::Automator::Automation.singleton_class)
+
+    # Filter to only those Automation subclasses that are marked executable
+    executable_automations = detected_automations.select { |cls| cls.respond_to?(:abstract?) && !cls.abstract? }
+
+    # Select a single executable Automation subclass to run
+    raise StandardError, 'No non-abstract Automation subclasses detected! Exiting...' if executable_automations.empty?
+    return executable_automations[0] if executable_automations.size == 1
+
+    _interactive_class_select(executable_automations)
+  end
+
+  def _interactive_class_select(class_options)
+    puts "\nPlease select the Automation you wish to run by entering one of the following numbers:"
+    class_options.each_with_index { |cls, idx| puts "\t#{idx + 1}. #{cls.name}" }
+    begin
+      idx = gets.to_i
+      raise StandardError unless idx > 0 && idx < class_options.size
+      return class_options[idx]
+    rescue
+      puts 'Nope. Try again.'
+      retry
     end
   end
-  puts "\nExecution complete"
-rescue => ex
-  puts "\nAutomation Error: #{ex}"
-  puts ex.backtrace
+
+  def _configure_automation(options)
+    Ladon::Automator::Config.new(flags: Ladon::Flags.new(in_hash: options.flags))
+  end
+
+  def _print_separator_line(sep = '*')
+    puts sep.to_s * 80
+  end
 end
 
-if options.review
-  puts 'Entering interactive review mode'
-  binding.pry
-  puts 'exiting...'
-end
+
+flags = Hash[LadonAutomationRunner::ARGV_FLAG, ARGV]
+runner = LadonAutomationRunner.spawn(flags: Ladon::Flags.new(in_hash: flags))
+runner.run

@@ -28,6 +28,11 @@ module Ladon
         @phase = 0
       end
 
+      # Convenience method to spawn an instance of this class without having to manually build a config.
+      def self.spawn(id: SecureRandom.uuid, log_level: nil, flags: nil)
+        self.new(Ladon::Automator::Config.new(id: id, log_level: log_level, flags: flags))
+      end
+
       # Identifies the phases from +all_phases+ that *must* be defined for automations of this type.
       def self.required_phases
         [EXECUTE_PHASE]
@@ -54,10 +59,8 @@ module Ladon
         end
 
         all_phases = self.class.all_phases
-        to_index = all_phases.size if to_index.nil? || !to_index.is_a?(Fixnum) || to_index > all_phases.size || to_index < @phase
-        all_phases[@phase..to_index].each do |phase|
-          do_phase(phase, skip: !respond_to?(phase), skip_msg: "No #{phase} method detected.")
-        end
+        to_index = all_phases.size unless to_index.is_a?(Fixnum) && to_index.between?(@phase, all_phases.size)
+        all_phases[@phase..to_index].each { |phase| do_phase(phase) }
 
         @result
       end
@@ -74,13 +77,20 @@ module Ladon
         end
       end
 
+      # Return a string to indicate why the current automation is skipping the given phase.
+      # Return +nil+ to indicate that the phase should not be skipped.
+      def skip_reason(phase)
+        "No #{phase} method detected!" unless respond_to?(phase)
+      end
+
       private
 
       # Run a phase of the Automation script, auto-timing the duraction of its execution.
       # The phase will be sandboxed such that an unrescued error during the phase will not crash the entire execution.
-      def do_phase(phase, skip: false, skip_msg: nil)
+      def do_phase(phase)
         @phase += 1
-        return @logger.warn("#{phase} skipped: '#{skip_msg}'") if skip
+        skip = skip_reason(phase)
+        return @logger.warn("#{phase} skipped: '#{skip}'") if skip
 
         @timer.for(phase) do
           @logger.info("Starting #{phase}")

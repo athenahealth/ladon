@@ -6,10 +6,10 @@ module Ladon
       attr_reader :id, :log_level, :flags
 
       # Create a new Automator Config instance.
-      def initialize(id: SecureRandom.uuid, log_level: :ERROR, flags: nil)
+      def initialize(id: SecureRandom.uuid, log_level: nil, flags: nil)
         @id = id
-        @log_level = log_level
         @flags = flags.is_a?(Ladon::Flags) ? flags : Ladon::Flags.new
+        @log_level = Automator::Logging::Level::ALL.include?(log_level) ? log_level : Automator::Logging::Level::ERROR
       end
     end
   end

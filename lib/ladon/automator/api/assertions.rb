@@ -26,7 +26,7 @@ module Ladon
           on_failed_assertion(msg, halting)
         end
 
-        def hard_assert(msg, &block)
+        def halting_assert(msg, &block)
           assert(msg, halting: true, &block)
         end
 

@@ -21,14 +21,14 @@ module Ladon
             context 'when the block is safe (will not raise an error)' do
               it 'does not raise an error' do
                 expect{asserter.assert(msg) { true }}.not_to raise_error
-                expect{asserter.hard_assert(msg) { true }}.not_to raise_error
+                expect{asserter.halting_assert(msg) { true }}.not_to raise_error
               end
             end
 
             context 'when the block is unsafe' do
               context 'when the assertion is halting' do
                 it 'raises an AssertionFailedError' do
-                  expect{asserter.hard_assert(msg) { raise }}.to raise_error(Assertions::AssertionFailedError)
+                  expect{asserter.halting_assert(msg) { raise }}.to raise_error(Assertions::AssertionFailedError)
                 end
               end
 
