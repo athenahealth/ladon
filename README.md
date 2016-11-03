@@ -62,3 +62,10 @@ The `Automation` class is the parent of `ModelAutomation`; the only difference i
 Use `ModelAutomation` unless you have a really good reason not to do so.
 
 `ModelAutomation` is roughly the equivalent of `Ladon::Core::TestBase` from the beta, but with way more flexibility and potential.
+
+### ladon-run
+
+You'll notice a single file in the `bin/` directory: `ladon-run`.
+
+Let's say you have some form of `Modeler` model, and a `ModelAutomation` that uses your model to do something.
+This utility is how you run your `ModelAutomation`.
