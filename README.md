@@ -68,4 +68,6 @@ Use `ModelAutomation` unless you have a really good reason not to do so.
 You'll notice a single file in the `bin/` directory: `ladon-run`.
 
 Let's say you have some form of `Modeler` model, and a `ModelAutomation` that uses your model to do something.
-This utility is how you run your `ModelAutomation`.
+This utility is how you run your `ModelAutomation`. 
+
+When you `gem install` Ladon, this becomes an executable on your PATH that you can leverage directly: `ladon-run -h`
