@@ -5,12 +5,6 @@ require 'ladon'
 
 # FIXME: eventually we should model Ladon in Ladon and use ModelAutomation here
 class LadonAutomationRunner < Ladon::Automator::Automation
-  # define phases:
-  # - parse args
-  # - require specified Ruby file
-  # - instantiate selected class (or potentially support interactively asking to select)
-  # - run phases, dropping to interactive as appropriate
-  # - drop to interactive on complete/error, or do something with result if I feel like supporting
 
   ARGV_FLAG = :argv
   RIDICULOUS_BANNER =
@@ -45,8 +39,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     _print_separator_line
 
     puts "\nStarting: #{@target_automation_class.name}"
-    @auto_config = _configure_automation(@options)
-    @target_automation = @target_automation_class.new(@auto_config)
+    @target_automation = @target_automation_class.spawn(flags: @options.flags)
 
     @target_automation_class.all_phases.each_with_index do |phase_name, idx|
       _go_interactive if @options.interactive_before.include?(phase_name)
@@ -61,12 +54,9 @@ class LadonAutomationRunner < Ladon::Automator::Automation
   end
 
   def teardown
-    _go_interactive if @options.review
+    _go_interactive if @options.nil? || @options.review
 
-    unless @target_automation.nil?
-      puts "\n\n"
-      puts @target_automation.to_s
-    end
+    puts "Result: #{result.status}"
   end
 
   # If there was a failure in setup, don't run execute.
@@ -110,7 +100,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
               '--automation_class NAME',
               String,
               'Name of the Automation class to run.') do |val|
-        vals.automation_class = val
+        vals.automation_class_name = val
       end
 
       opts.on('-b PHASE_LIST',
@@ -192,10 +182,6 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     end
   end
 
-  def _configure_automation(options)
-    Ladon::Automator::Config.new(flags: Ladon::Flags.new(in_hash: options.flags))
-  end
-
   def _print_separator_line(sep = '*')
     puts sep.to_s * 80
   end
@@ -205,3 +191,5 @@ end
 flags = Hash[LadonAutomationRunner::ARGV_FLAG, ARGV]
 runner = LadonAutomationRunner.spawn(flags: Ladon::Flags.new(in_hash: flags))
 runner.run
+
+puts 'ladon-run complete!'

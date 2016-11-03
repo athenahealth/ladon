@@ -16,7 +16,7 @@ module Ladon
             passed = block.call
           rescue => ex
             passed = false
-            @logger.error(error_to_array(ex, description: 'Error during attempt to evaluate assertion block'))
+            @logger.error(error_to_array(ex, description: "Error during attempt to evaluate assertion block: #{ex}"))
           end
 
           # NOTE: we do a check for TRUE instead of TRUTHY so that those who code assertions in blocks

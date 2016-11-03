@@ -8,7 +8,7 @@ module Ladon
       # Create a new Automator Config instance.
       def initialize(id: SecureRandom.uuid, log_level: nil, flags: nil)
         @id = id
-        @flags = flags.is_a?(Ladon::Flags) ? flags : Ladon::Flags.new
+        @flags = flags.is_a?(Ladon::Flags) ? flags : Ladon::Flags.new(in_hash: flags)
         @log_level = Automator::Logging::Level::ALL.include?(log_level) ? log_level : Automator::Logging::Level::ERROR
       end
     end
