@@ -1,4 +1,5 @@
 require 'set'
+require 'ladon/modeler/data/config'
 require 'ladon/modeler/components/load_strategy'
 require 'ladon/modeler/components/state'
 require 'ladon/modeler/components/transition'
@@ -9,10 +10,12 @@ module Ladon
     class Graph
       attr_reader :states, :transitions, :flags
 
-      def initialize(flags: nil)
+      def initialize(config = Ladon::Modeler::Config.new)
+        raise StandardError, 'Graph requires a Ladon::Modeler::Config' unless config.is_a?(Ladon::Modeler::Config)
+        @config = config
         @states = Set.new
         @transitions = Hash.new { |h, k| h[k] = Set.new }
-        @flags = flags.is_a?(Ladon::Flags) ? flags : Ladon::Flags.new
+        @flags = config.flags
       end
 
       # Determines if the given +state_class+ is loaded as a state in this FSM.

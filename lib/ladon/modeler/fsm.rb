@@ -6,7 +6,7 @@ module Ladon
     class FiniteStateMachine < Graph
 
       # Creates a new +FiniteStateMachine+ model instance.
-      def initialize(flags: nil)
+      def initialize(config = Ladon::Modeler::Config.new)
         super
         @current_state = nil
       end

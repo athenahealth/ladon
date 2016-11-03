@@ -15,7 +15,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
 |_|\\__,_|\\__,_|\\___/|_| |_|         |_|   \\__,_|_| |_|_| |_|\\___|_|   "
 
   def setup
-    argv_given = flags.get(ARGV_FLAG, default_value: nil)
+    argv_given = flags.get(ARGV_FLAG, default_to: nil)
     halting_assert('ARGV flag must be provided') do
       argv_given.is_a?(Array)
     end
