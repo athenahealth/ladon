@@ -71,3 +71,5 @@ Let's say you have some form of `Modeler` model, and a `ModelAutomation` that us
 This utility is how you run your `ModelAutomation`. 
 
 When you `gem install` Ladon, this becomes an executable on your PATH that you can leverage directly: `ladon-run -h`
+
+Fun fact: `ladon-run` is implemented as a Ladon `Automation` itself, and can serve as example code.
