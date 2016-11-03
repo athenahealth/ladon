@@ -8,6 +8,8 @@ module Ladon
   module Automator
     # Base class for Ladon automation. This class is exposed to encapsulate the
     # aspects of Automation not pertaining directly to operating through a model.
+    #
+    # @abstract
     class Automation
       include API::Assertions
 
@@ -17,7 +19,9 @@ module Ladon
       EXECUTE_PHASE = :execute
       TEARDOWN_PHASE = :teardown
 
-      # Create an instance of AutomationRun based on the +config+ provided.
+      # Create an instance based on the +config+ provided.
+      #
+      # @param [Ladon::Automator::Config] config The configuration object for this automation.
       def initialize(config)
         raise StandardError, 'Automation requires a Ladon::Automator::Config' unless config.is_a?(Ladon::Automator::Config)
         @config = config

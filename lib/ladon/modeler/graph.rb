@@ -7,9 +7,14 @@ require 'ladon/modeler/components/transition'
 module Ladon
   module Modeler
     # Used to model software as a graph of connected states and transitions.
+    #
+    # @attr_reader [Set] states Set containing the +State+ classes loaded in this Graph.
+    # @attr_reader [Hash] transitions Hash mapping loaded +State+ classes to the +Transition+ instances associated with them.
+    # @attr_reader [Ladon::Flags] flags The flags given to this Graph at instantiation.
     class Graph
       attr_reader :states, :transitions, :flags
 
+      # Create a new +Graph+ instance.
       def initialize(config = Ladon::Modeler::Config.new)
         raise StandardError, 'Graph requires a Ladon::Modeler::Config' unless config.is_a?(Ladon::Modeler::Config)
         @config = config

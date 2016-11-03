@@ -1,6 +1,6 @@
 module Ladon
+  # Retains information regarding Ladon framework versioning.
   module Version
-    # Current Ladon semantic version number.
-    STRING = '1.0.0'
+    STRING = '1.0.0' # Ladon framework's current semantic version number.
   end
 end
