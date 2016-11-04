@@ -23,13 +23,13 @@ module Ladon
           context 'when the block expects more than one argument' do
             let(:block_behavior) { lambda { |transition, stuff| } }
 
-            it { is_expected.to raise_error(ArgumentError, 'wrong number of arguments (1 for 2)') }
+            it { is_expected.to raise_error(ArgumentError) }
           end
 
           context 'when the block expects no arguments' do
             let(:block_behavior) { lambda {} }
 
-            it { is_expected.to raise_error(ArgumentError, 'wrong number of arguments (1 for 0)') }
+            it { is_expected.to raise_error(ArgumentError) }
           end
 
           context 'when the block expects one argument' do
