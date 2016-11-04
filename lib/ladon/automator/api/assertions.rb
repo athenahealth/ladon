@@ -63,11 +63,8 @@ module Ladon
         # @param [Boolean] halting If true, raise the AssertionFailedError; otherwise, log message at the error level.
         def on_failed_assertion(assert_msg, halting)
           @result.failure # mark Automation as failed
-          if halting
-            raise AssertionFailedError, assert_msg
-          else
-            @logger.error("Assertion failed: #{assert_msg}")
-          end
+          raise AssertionFailedError, assert_msg if halting
+          @logger.error("Assertion failed: #{assert_msg}")
         end
       end
     end

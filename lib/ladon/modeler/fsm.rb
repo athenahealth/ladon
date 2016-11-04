@@ -103,7 +103,7 @@ module Ladon
       #
       # @abstract
       #
-      # @param [Transition] transition The transition to prefilter.
+      # @param [Transition] _transition The transition to prefilter.
       # @return [Boolean] True if this transition is accepted by the filter, false if it fails the filter.
       def passes_prefilter?(_transition)
         true
@@ -128,7 +128,7 @@ module Ladon
       #
       # @raise [MissingImplementationError] Unless overridden by subclass implementation.
       #
-      # @param [Enumerable<Transition>] transition_options List-like enumerable containing Transition
+      # @param [Enumerable<Transition>] _transition_options List-like enumerable containing Transition
       #   instances to validate.
       # @return [Transition] Must return a Transition instance that should be executed.
       def selection_strategy(_transition_options)

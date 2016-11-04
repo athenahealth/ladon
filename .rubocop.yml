@@ -1,5 +1,5 @@
 AllCops:
-  TargetRubyVersion: 2.0
+  TargetRubyVersion: 2.1
 
 # Antiquated line length settings overridden
 Metrics/LineLength:
@@ -17,3 +17,8 @@ Style/RedundantBegin:
 # See comment above for Style/RedundantReturn
 Style/RedundantSelf:
   Enabled: false
+
+# Bump up the limit
+Metrics/MethodLength:
+  CountComments: false
+  Max: 20

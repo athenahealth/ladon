@@ -1,15 +1,13 @@
 module Ladon
   # Represents arbitrary flags/arguments given to a Ladon model or automation.
   class Flags
-
     # Create a new +Flags+ instance. All +Flags+ instances are frozen upon instantiation.
     #
     # @param [Hash] in_hash Optional hash used to fill out the new +Flags+ instance.
     def initialize(in_hash: nil)
       @flags = {}
-      if in_hash.is_a?(Hash)
-        in_hash.each { |key, val| @flags[key] = val }
-      end
+
+      in_hash.each { |key, val| @flags[key] = val } if in_hash.is_a?(Hash)
 
       # once created, flags should not be modified
       @flags.freeze

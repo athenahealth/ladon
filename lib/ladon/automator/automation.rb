@@ -30,7 +30,7 @@ module Ladon
       #
       # @param [Ladon::Automator::Config] config The configuration object for this automation.
       def initialize(config)
-        raise ArgumentError, 'Automation requires a Ladon::Automator::Config' unless config.is_a?(Ladon::Automator::Config)
+        raise ArgumentError, 'Ladon::Automator::Config required!' unless config.is_a?(Ladon::Automator::Config)
         @config = config
         @flags = config.flags
         @result = Result.new(config)
