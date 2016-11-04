@@ -10,6 +10,11 @@ module Ladon
     # aspects of Automation not pertaining directly to operating through a model.
     #
     # @abstract
+    #
+    # @attr_reader [Ladon::Automator::Config] config The config object used to instantiate this Automation.
+    # @attr_reader [Ladon::Automator::Result] result The current result data for this Automation.
+    # @attr_reader [Fixnum] phase The current phase number, as index into return value of +all_phases+
+    # @attr_reader [Ladon::Flags] flags The flags given to this automation at instantiation.
     class Automation
       include API::Assertions
 
@@ -20,6 +25,8 @@ module Ladon
       TEARDOWN_PHASE = :teardown
 
       # Create an instance based on the +config+ provided.
+      #
+      # @raise [StandardError] if provided config is not a Ladon::Automator::Config instance.
       #
       # @param [Ladon::Automator::Config] config The configuration object for this automation.
       def initialize(config)
@@ -33,16 +40,22 @@ module Ladon
       end
 
       # Convenience method to spawn an instance of this class without having to manually build a config.
+      #
+      # @param [Object] id The id to associate with the spawned Automation.
+      # @param [Ladon::Automator::Logging:Level] log_level The log level to configure the Automation at.
+      # @param [Ladon::Flags|Hash] flags The flags to pass to the spawned automation.
       def self.spawn(id: SecureRandom.uuid, log_level: nil, flags: nil)
         self.new(Ladon::Automator::Config.new(id: id, log_level: log_level, flags: flags))
       end
 
       # Identifies the phases from +all_phases+ that *must* be defined for automations of this type.
+      # @return [Array<Symbol>] Array of Symbols identifying methods that must be defined to facilitate required phases.
       def self.required_phases
         [EXECUTE_PHASE]
       end
 
       # Identifies the phases involved in this automation.
+      # @return [Array<Symbol>] Array of Symbols identifying methods that may be defined to facilitate expected phases.
       def self.all_phases
         [SETUP_PHASE, EXECUTE_PHASE, TEARDOWN_PHASE]
       end
@@ -51,12 +64,18 @@ module Ladon
       # a concrete, runnable Automation implementation.
       #
       # Ladon utilities will not attempt to execute Automations of any class that returns true for this method.
+      #
+      # @return [Boolean] True if this class is abstract, false if not (e.g., is executable.)
       def self.abstract?
         true
       end
 
       # Run the automation, from the next phase to be executed through the phase at the index specified.
-      # If no +to_index+ is specified, will run through all of the defined phases.
+      # If no +to_index+ is specified or idiomatically invalid, will run through all of the defined phases
+      # that have not yet been executed in the phase plan (see: +all_phases+).
+      #
+      # @param [Fixnum] to_index Phase number (zero indexed) to run through.
+      # @return [Ladon::Automator::Result] The result object for this Automation.
       def run(to_index: nil)
         self.class.required_phases.each do |phase|
           raise StandardError, "'#{phase}' not implemented!" unless respond_to?(phase)
@@ -70,7 +89,11 @@ module Ladon
       end
 
       # Given an arbitrary code block, this method will execute that block in a rescue construct.
-      # Should be used to ensure that the block
+      # Should be used to ensure that the block does not cause the entire execution to die.
+      #
+      # @raise [StandardError] if no block given.
+      #
+      # @param [String] activity_name Description of the behavior taking place in the block.
       def sandbox(activity_name, &block)
         raise StandardError, 'No block given!' unless block_given?
 
@@ -83,6 +106,9 @@ module Ladon
 
       # Return a string to indicate why the current automation is skipping the given phase.
       # Return +nil+ to indicate that the phase should not be skipped.
+      #
+      # @param [Symbol] phase Phase name to determine the current reason to skip (or lack thereof.)
+      # @return [String] Description of reason why +phase+ will be skipped; nil if it should not be skipped.
       def skip_reason(phase)
         "No #{phase} method detected!" unless respond_to?(phase)
       end
@@ -91,10 +117,15 @@ module Ladon
 
       # Run a phase of the Automation script, auto-timing the duraction of its execution.
       # The phase will be sandboxed such that an unrescued error during the phase will not crash the entire execution.
+      #
+      # @param [Symbol] phase Name of phase to execute.
       def do_phase(phase)
         @phase += 1
         skip = skip_reason(phase)
-        return @logger.warn("#{phase} skipped: '#{skip}'") if skip
+        if skip
+          @logger.warn("#{phase} skipped: '#{skip}'")
+          return
+        end
 
         @timer.for(phase) do
           @logger.info("Starting #{phase}")
@@ -106,25 +137,21 @@ module Ladon
       end
 
       # Behavior to exhibit when a test run phase has an error that is not rescued by the test script's implementation.
+      # Marks the Automation as +errored+ and logs the error information.
       #
-      # * Arguments:
-      #   - +err+:: The error that was not
-      #   - +phase+:: String identifying the the phase that errored out.
-      #   - +fail_test+:: If true, sets the test run to a FAILURE state.
+      # @param [Error] err The error to handle.
+      # @param [Symbol] phase The phase during which the +err+ occurred.
       def on_error(err, phase)
         @result.error
-        # TODO: convert log into record of objects?
         @logger.error(error_to_array(err, description: "#{err.class} in #{phase}: #{err}"))
       end
 
       # Takes an Error instance and converts it to an array of message lines.
       #
-      # * Arguments:
-      #   - +msg+:: A message to put at the beginning of the message array
-      #   - +err+:: The Error to convert to message lines
+      # @param [Error] err The error to handle.
+      # @param [String] description Optional description string to prepend to backtrace.
       #
-      # * Returns:
-      #   - An Array of strings containing error information, with index = 0 being the first line of the info.
+      # @return [Array<String>] An Array of strings containing error information and backtrace.
       def error_to_array(err, description: nil)
         msg_lines = err.backtrace
         msg_lines.unshift(description) unless description.nil? || description.empty?

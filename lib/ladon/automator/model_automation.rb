@@ -9,6 +9,10 @@ module Ladon
     #
     # During this automation, you are able to make assertions, maintain
     # an activity log, and measure the observable behaviors of the software.
+    #
+    # @abstract
+    #
+    # @attr_reader [Ladon::Modeler::Graph] model The model instance underlying this automation.
     class ModelAutomation < Automation
       BUILD_MODEL_PHASE = :build_model
       VERIFY_MODEL_PHASE = :verify_model
