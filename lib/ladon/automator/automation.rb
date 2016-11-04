@@ -16,13 +16,13 @@ module Ladon
     # @attr_reader [Fixnum] phase The current phase number, as index into return value of +all_phases+
     # @attr_reader [Ladon::Flags] flags The flags given to this automation at instantiation.
     class Automation
-      include API::Assertions
+      include API::Assertions # load assertions API
 
       attr_reader :config, :result, :phase, :flags
 
-      SETUP_PHASE = :setup
-      EXECUTE_PHASE = :execute
-      TEARDOWN_PHASE = :teardown
+      SETUP_PHASE = :setup # name for the setup phase
+      EXECUTE_PHASE = :execute # name for the execute phase
+      TEARDOWN_PHASE = :teardown # name for the teardown phase
 
       # Create an instance based on the +config+ provided.
       #
@@ -49,12 +49,20 @@ module Ladon
       end
 
       # Identifies the phases from +all_phases+ that *must* be defined for automations of this type.
+      #
+      # *Note:* this phase plan is just a decent foundational plan; subclasses are free to
+      # define their own custom phase plans with arbitrary phase names.
+      #
       # @return [Array<Symbol>] Array of Symbols identifying methods that must be defined to facilitate required phases.
       def self.required_phases
         [EXECUTE_PHASE]
       end
 
       # Identifies the phases involved in this automation.
+      #
+      # *Note:* this phase plan is just a decent foundational plan; subclasses are free to
+      # define their own custom phase plans with arbitrary phase names.
+      #
       # @return [Array<Symbol>] Array of Symbols identifying methods that may be defined to facilitate expected phases.
       def self.all_phases
         [SETUP_PHASE, EXECUTE_PHASE, TEARDOWN_PHASE]
