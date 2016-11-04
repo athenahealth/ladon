@@ -130,9 +130,5 @@ module Ladon
         end
       end
     end
-
-    RSpec.describe ModelAutomation do
-      # TODO
-    end
   end
 end
