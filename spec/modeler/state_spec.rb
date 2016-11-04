@@ -5,7 +5,7 @@ module Ladon
   module Modeler
     RSpec.describe State do
       describe '.transitions' do
-        subject { lambda { State.transitions } }
+        subject { -> { State.transitions } }
 
         it { is_expected.to raise_error(MissingImplementationError, 'self.transitions') }
       end

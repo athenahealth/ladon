@@ -9,14 +9,14 @@ module Ladon
           context 'when given an invalid message' do
             it 'raises an error' do
               not_arrays = [123, :sym, 'str', {}, Object.new]
-              not_arrays.each {|thing| expect{LogEntry.new(thing, Level::NONE).to raise_error(StandardError)}}
+              not_arrays.each { |thing| expect { LogEntry.new(thing, Level::NONE).to raise_error(StandardError) } }
             end
           end
 
           context 'when given an invalid level' do
             it 'raises an error' do
-              [1, :one, 'one', [1], {one: 1}].each do |thing|
-                expect{LogEntry.new(['msg'], thing)}.to raise_error(StandardError)
+              [1, :one, 'one', [1], { one: 1 }].each do |thing|
+                expect { LogEntry.new(['msg'], thing) }.to raise_error(StandardError)
               end
             end
           end

@@ -1,6 +1,5 @@
 module Ladon
   module Automator
-
     # Represents the accumulated outcome data for an Automation.
     # Includes success/failure info, as well as any timing, log, and data_log information.
     #

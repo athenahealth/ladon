@@ -90,7 +90,7 @@ module Ladon
         end
 
         all_phases = self.class.all_phases
-        to_index = all_phases.size unless to_index.is_a?(Fixnum) && to_index.between?(@phase, all_phases.size)
+        to_index = all_phases.size unless to_index.is_a?(Integer) && to_index.between?(@phase, all_phases.size)
         all_phases[@phase..to_index].each { |phase| do_phase(phase) }
 
         @result
@@ -102,11 +102,11 @@ module Ladon
       # @raise [BlockRequiredError] if no block given.
       #
       # @param [String] activity_name Description of the behavior taking place in the block.
-      def sandbox(activity_name, &block)
+      def sandbox(activity_name)
         raise BlockRequiredError, 'No block given!' unless block_given?
 
         begin
-          block.call
+          yield
         rescue => ex
           on_error(ex, activity_name)
         end

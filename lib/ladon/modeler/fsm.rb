@@ -2,7 +2,6 @@ require 'ladon/modeler/graph'
 
 module Ladon
   module Modeler
-
     # An extension of the Graph class. Unlike Graph instances, FiniteStateMachine
     # instances have a concept of a single "current state" that they are at.
     #
@@ -10,7 +9,6 @@ module Ladon
     # where the States types in the Graph can actually be instantiated
     # and transitions can be executed to change the machine's current state.
     class FiniteStateMachine < Graph
-
       # Creates a new instance.
       #
       # @raise [StandardError] If the +config+ is not a Ladon::Modeler::Config instance.
@@ -51,9 +49,9 @@ module Ladon
       # @yield [current_state] The current instance of the State type the machine is at.
       # @return [State|Object] If no block is given, returns the +@current_state+.
       #   Otherwise, returns block return value
-      def current_state(&block)
+      def current_state
         return @current_state unless block_given?
-        block.call(@current_state)
+        yield(@current_state)
       end
 
       # Make this FSM execute a transition from the +@current_state+.
@@ -92,10 +90,10 @@ module Ladon
       # @param [Enumerable<Transition>] transition_options List-like enumerable containing Transition
       #   instances to filter.
       # @return [Enumerable<Transition>] List-like enumerable containing Transitions that passed the specified filters.
-      def prefiltered_transitions(transition_options, &block)
+      def prefiltered_transitions(transition_options)
         transition_options.select do |transition|
           # keep transitions that pass the filter block (if one is provided) AND pass the model-level prefilter
-          (!block_given? || block.call(transition) == true) && passes_prefilter?(transition)
+          (!block_given? || yield(transition) == true) && passes_prefilter?(transition)
         end
       end
 
@@ -107,7 +105,7 @@ module Ladon
       #
       # @param [Transition] transition The transition to prefilter.
       # @return [Boolean] True if this transition is accepted by the filter, false if it fails the filter.
-      def passes_prefilter?(transition)
+      def passes_prefilter?(_transition)
         true
       end
 
@@ -121,7 +119,7 @@ module Ladon
       #   of the FSM's current state.
       def valid_transitions(transition_options)
         raise NoCurrentStateError, 'No current state to validate against!' if current_state.nil?
-        transition_options.select {|transition| transition.valid_for?(current_state)}
+        transition_options.select { |transition| transition.valid_for?(current_state) }
       end
 
       # Method to select transition to execute from a set of currently valid transitions.
@@ -133,7 +131,7 @@ module Ladon
       # @param [Enumerable<Transition>] transition_options List-like enumerable containing Transition
       #   instances to validate.
       # @return [Transition] Must return a Transition instance that should be executed.
-      def selection_strategy(transition_options)
+      def selection_strategy(_transition_options)
         raise Ladon::MissingImplementationError, '#selection_strategy'
       end
     end

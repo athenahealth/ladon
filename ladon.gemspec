@@ -6,11 +6,17 @@ Gem::Specification.new do |s|
   s.version     = Ladon::Version::STRING
   s.date        = '2016-10-27'
   s.summary     = 'Ladon'
-  s.description = 'Ladon allows you to model software as graphs and create automation leveraging those models.'
+  s.description = <<-EOF
+    Ladon allows you to create software models and to create automation scripts that work through those models.
+  EOF
   s.authors     = ['Shayne Snow']
   s.email       = 'ssnow@athenahealth.com'
   s.files       = Dir['lib/**/*.rb']
   s.homepage    = 'http://rubygems.org/gems/ladon'
   s.license     = 'MIT' # TODO
+
   s.executables << 'ladon-run'
+
+  s.required_ruby_version = '>= 2.0.0'
+  s.add_runtime_dependency 'pry', '~> 0.10'
 end

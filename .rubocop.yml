@@ -1,0 +1,19 @@
+AllCops:
+  TargetRubyVersion: 2.0
+
+# Antiquated line length settings overridden
+Metrics/LineLength:
+  Max: 120
+
+# I'd rather someone be redundant but able to comprehend their code
+# than use implicit returns and be confused about Ruby behavior.
+Style/RedundantReturn:
+  Enabled: false
+
+# See comment above for Style/RedundantReturn
+Style/RedundantBegin:
+  Enabled: false
+
+# See comment above for Style/RedundantReturn
+Style/RedundantSelf:
+  Enabled: false

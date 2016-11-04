@@ -1,13 +1,12 @@
 module Ladon
   module Modeler
-
     # Used to model when and how modeled software can execute a change of State.
     #
     # @attr_reader [Hash<Object, Object>] metadata Arbitrary key:value pairs associated with the transition.
     # @attr_reader [Boolean] target_loaded True if the transition's target state type loader has been run.
     class Transition
       attr_reader :metadata, :target_loaded
-      alias_method :target_loaded?, :target_loaded
+      alias target_loaded? target_loaded
 
       # Create a new Transition instance, optionally specifying a block to customize the transition.
       #

@@ -20,14 +20,14 @@ module Ladon
         #
         # @param [String] entry_name Name to associate with the timing data.
         # @return [TimeEntry] The new entry that was created.
-        def for(entry_name, &block)
+        def for(entry_name)
           raise StandardError, 'No block given!' unless block_given?
 
           timer = TimeEntry.new(entry_name)
           @entries << timer
 
           timer.start
-          block.call
+          yield
           timer.end
           timer
         end

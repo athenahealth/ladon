@@ -86,7 +86,7 @@ module Ladon
       # @param [LoadStrategy] strategy The strategy from LoadStrategy::ALL to use for this load operation.
       # @return [Boolean] True if the state is now (or was already) loaded, false otherwise.
       def load_state_type(state_class, strategy: LoadStrategy::LAZY)
-        raise InvalidStateTypeError.new(state_class) unless valid_state?(state_class)
+        raise InvalidStateTypeError, state_class unless valid_state?(state_class)
         return true if state_loaded?(state_class)
         return false if !LoadStrategy::ALL.include?(strategy) || strategy == LoadStrategy::NONE
 
@@ -118,7 +118,7 @@ module Ladon
         unless added.nil?
           next_strategy = LoadStrategy.nested_strategy_for(strategy)
           unless next_strategy == LoadStrategy::NONE
-            added.each {|transition| load_state_type(transition.identify_target_state_type, strategy: next_strategy)}
+            added.each { |transition| load_state_type(transition.identify_target_state_type, strategy: next_strategy) }
           end
         end
 

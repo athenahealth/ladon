@@ -7,7 +7,7 @@ module Ladon
     describe '::STRING' do
       subject { Ladon::Version::STRING }
 
-      it { is_expected.to be_a(String)}
+      it { is_expected.to be_a(String) }
     end
   end
 end

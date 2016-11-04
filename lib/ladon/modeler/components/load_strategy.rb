@@ -12,10 +12,10 @@ module Ladon
 
       # Defines the strategy to use for loading components connected to the subject of a component load operation.
       NESTING = {
-          NONE => NONE,
-          LAZY => NONE,
-          CONNECTED => LAZY,
-          EAGER => EAGER
+        NONE => NONE,
+        LAZY => NONE,
+        CONNECTED => LAZY,
+        EAGER => EAGER
       }.freeze
 
       # Convenience method for getting the nested LoadStrategy for a given LoadStrategy type.

@@ -4,7 +4,6 @@ require 'ladon'
 module Ladon
   module Automator
     RSpec.describe Automation do
-
       describe '#new' do
         subject(:automation) { Automation.new(config) }
 
@@ -12,7 +11,7 @@ module Ladon
           let(:config) { Ladon::Automator::Config.new }
 
           it 'raises no error' do
-            expect{automation}.not_to raise_error
+            expect { automation }.not_to raise_error
           end
 
           it { is_expected.to have_attributes(config: config) }
@@ -22,12 +21,12 @@ module Ladon
           end
 
           it 'has a private logger' do
-            expect{automation.logger}.to raise_error(NoMethodError)
+            expect { automation.logger }.to raise_error(NoMethodError)
             expect(automation.instance_variable_get('@logger')).to be_a(Ladon::Automator::Logging::Logger)
           end
 
           it 'has a private timer' do
-            expect{automation.timer}.to raise_error(NoMethodError)
+            expect { automation.timer }.to raise_error(NoMethodError)
             expect(automation.instance_variable_get('@timer')).to be_a(Ladon::Automator::Timing::Timer)
           end
 
@@ -40,7 +39,7 @@ module Ladon
           let(:config) { 5 }
 
           it 'raises an error' do
-            expect{automation}.to raise_error(StandardError)
+            expect { automation }.to raise_error(StandardError)
           end
         end
       end
@@ -57,11 +56,11 @@ module Ladon
         context 'when given a block' do
           context 'when the block does not raise' do
             it 'will not raise an error' do
-              expect{automation.sandbox('name') {}}.not_to raise_error
+              expect { automation.sandbox('name') {} }.not_to raise_error
             end
 
             it 'leaves the result status as success' do
-              expect{automation.sandbox('name') {} }.not_to change{automation.result.success?}.from(true)
+              expect { automation.sandbox('name') {} }.not_to change { automation.result.success? }.from(true)
             end
           end
 
@@ -72,18 +71,18 @@ module Ladon
             end
 
             it 'will not raise an error' do
-              expect{automation.sandbox('name') {}}.not_to raise_error
+              expect { automation.sandbox('name') {} }.not_to raise_error
             end
 
             it 'marks the Automation result as errored' do
-              expect{automation.sandbox('name') { raise } }.to change{automation.result.error?}.from(false).to(true)
+              expect { automation.sandbox('name') { raise } }.to change { automation.result.error? }.from(false).to(true)
             end
           end
         end
 
         context 'when not given a block' do
           it 'raises an error' do
-            expect{automation.sandbox('name')}.to raise_error(StandardError)
+            expect { automation.sandbox('name') }.to raise_error(StandardError)
           end
         end
       end
@@ -94,7 +93,7 @@ module Ladon
 
         context 'when a required phase is not defined for the Automation' do
           it 'raises an error' do
-            expect{automation.run}.to raise_error(StandardError)
+            expect { automation.run }.to raise_error(StandardError)
           end
         end
 
@@ -124,7 +123,7 @@ module Ladon
             it 'runs from the next scheduled phase through the phase at the specified index' do
               phased_class.all_phases.each_with_index do |phase, idx|
                 expect(automation).to receive(phase)
-                expect{automation.run(to_index: idx)}.to change(automation, :phase).by(1)
+                expect { automation.run(to_index: idx) }.to change(automation, :phase).by(1)
               end
             end
           end

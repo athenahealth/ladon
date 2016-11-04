@@ -4,20 +4,19 @@ require 'ladon'
 module Ladon
   module Modeler
     RSpec.describe Graph do
-
       # unless otherwise redefined
       let(:start_state) { Class.new(State) }
       let(:graph) { Graph.new }
       subject { graph }
 
       describe '#new' do
-        subject { lambda { graph } }
+        subject { -> { graph } }
 
         it { expect(subject.call).to be_a(Graph) }
       end
 
       describe '#merge' do
-        subject { lambda { graph.merge(target) } }
+        subject { -> { graph.merge(target) } }
 
         context 'when the target is a different type than the subject' do
           let(:target) { Class.new(Graph).new }
@@ -56,7 +55,7 @@ module Ladon
       describe '#state_count' do
         subject { graph.state_count }
 
-        it { is_expected.to eq(graph.states.size)}
+        it { is_expected.to eq(graph.states.size) }
       end
 
       describe 'transition methods' do
@@ -64,10 +63,10 @@ module Ladon
         let(:start_state) { Class.new(State) }
         let(:transitions) do
           [
-              Transition.new do |t|
-                t.to_load_target_state_type { }
-                t.to_identify_target_state_type { target_state }
-              end
+            Transition.new do |t|
+              t.to_load_target_state_type {}
+              t.to_identify_target_state_type { target_state }
+            end
           ]
         end
 
@@ -77,11 +76,9 @@ module Ladon
         end
 
         describe '#load_transitions' do
-
         end
 
         describe '#add_transitions' do
-
         end
 
         describe '#transitions_loaded?' do

@@ -4,13 +4,12 @@ require 'ladon'
 module Ladon
   module Modeler
     RSpec.describe Transition do
-
       describe '#new' do
         context 'when not given a block' do
           subject(:transition) { Transition.new }
 
           it 'does not raise' do
-            expect{transition}.not_to raise_error
+            expect { transition }.not_to raise_error
           end
 
           it { is_expected.to have_attributes(target_loaded?: false, metadata: {}) }
@@ -18,22 +17,22 @@ module Ladon
 
         context 'when given a block' do
           let(:transition) { Transition.new { |transition| block_behavior.call(transition) } }
-          subject(:behavior) { lambda { transition } }
+          subject(:behavior) { -> { transition } }
 
           context 'when the block expects more than one argument' do
-            let(:block_behavior) { lambda { |transition, stuff| } }
+            let(:block_behavior) { ->(transition, stuff) {} }
 
             it { is_expected.to raise_error(ArgumentError) }
           end
 
           context 'when the block expects no arguments' do
-            let(:block_behavior) { lambda {} }
+            let(:block_behavior) { -> {} }
 
             it { is_expected.to raise_error(ArgumentError) }
           end
 
           context 'when the block expects one argument' do
-            let(:block_behavior) { lambda { |transition| transition.instance_variable_set('@block_arg', transition) } }
+            let(:block_behavior) { ->(transition) { transition.instance_variable_set('@block_arg', transition) } }
 
             it { is_expected.not_to raise_error }
 
@@ -48,7 +47,7 @@ module Ladon
         let(:key) { :key }
         let(:value) { :value }
 
-        subject { Transition.new {|t| t.meta(key, value)}.metadata }
+        subject { Transition.new { |t| t.meta(key, value) }.metadata }
 
         it { is_expected.to be_a_kind_of(Hash) }
         it { is_expected.to include(Hash[key, value]) }
@@ -58,13 +57,13 @@ module Ladon
         let(:meta_key) { :key }
         let(:meta_value) { 'value' }
         let(:transition) { Transition.new }
-        let(:executor) { lambda { transition.meta(meta_key, meta_value) } }
+        let(:executor) { -> { transition.meta(meta_key, meta_value) } }
 
         subject(:execution) { executor.call }
 
         it { is_expected.to eq(meta_value) }
 
-        it { expect{execution}.to change(transition, :metadata).from({}).to(Hash[meta_key, meta_value]) }
+        it { expect { execution }.to change(transition, :metadata).from({}).to(Hash[meta_key, meta_value]) }
       end
 
       describe '#meta_for' do
@@ -86,18 +85,17 @@ module Ladon
 
           it { is_expected.to eq(nil) }
         end
-
       end
 
       describe '#when' do
         context 'when specifying a block' do
-          subject(:transition) { lambda { Transition.new.when {} } }
+          subject(:transition) { -> { Transition.new.when {} } }
 
           it { is_expected.not_to raise_error }
         end
 
         context 'when no block is specified' do
-          subject(:transition) { lambda { Transition.new.when } }
+          subject(:transition) { -> { Transition.new.when } }
 
           it { is_expected.to raise_error(StandardError) }
         end
@@ -105,13 +103,13 @@ module Ladon
 
       describe '#by' do
         context 'when specifying a block' do
-          subject(:transition) { lambda { Transition.new.by {} } }
+          subject(:transition) { -> { Transition.new.by {} } }
 
           it { is_expected.not_to raise_error }
         end
 
         context 'when no block is specified' do
-          subject(:transition) { lambda { Transition.new.by } }
+          subject(:transition) { -> { Transition.new.by } }
 
           it { is_expected.to raise_error(StandardError) }
         end
@@ -120,7 +118,7 @@ module Ladon
       describe '#to_load_target_state_type' do
         let(:transition) { Transition.new }
         let(:behavior) { transition.to_load_target_state_type }
-        subject { lambda { behavior } }
+        subject { -> { behavior } }
 
         context 'when no block is given' do
           it { is_expected.to raise_error(StandardError) }
@@ -129,7 +127,7 @@ module Ladon
         context 'when block is given' do
           let(:behavior) { transition.to_load_target_state_type {} }
 
-          before { allow(transition).to receive(:target_loaded?).and_return(loaded_status)}
+          before { allow(transition).to receive(:target_loaded?).and_return(loaded_status) }
 
           context 'when the target state type has already been loaded' do
             let(:loaded_status) { true }
@@ -146,13 +144,13 @@ module Ladon
       end
 
       describe '#load_target_state_type' do
-        let(:transition) { Transition.new {|t| block_behavior.call(t) } }
-        let(:block_behavior) { lambda { |t| } }
+        let(:transition) { Transition.new { |t| block_behavior.call(t) } }
+        let(:block_behavior) { ->(t) {} }
         let(:behavior) { transition.load_target_state_type }
-        subject { lambda { behavior }}
+        subject { -> { behavior } }
 
         context 'when target is loaded' do
-          let(:block_behavior) { lambda { |t| t.to_load_target_state_type {} } }
+          let(:block_behavior) { ->(t) { t.to_load_target_state_type {} } }
 
           before { transition.load_target_state_type }
 
@@ -163,7 +161,6 @@ module Ladon
           end
 
           context 'when the transition has a target loader block' do
-
             subject { transition.instance_variable_get('@loader') }
 
             it { is_expected.not_to receive(:call) }
@@ -176,9 +173,9 @@ module Ladon
           end
 
           context 'when a target loader has been specified' do
-            let(:block_behavior) { lambda { |t| t.to_load_target_state_type { } } }
+            let(:block_behavior) { ->(t) { t.to_load_target_state_type {} } }
 
-            it { is_expected.to change{transition.target_loaded?}.from(false).to(true) }
+            it { is_expected.to change { transition.target_loaded? }.from(false).to(true) }
 
             it 'calls the target loader' do
               loader = transition.instance_variable_get('@loader')
@@ -192,7 +189,7 @@ module Ladon
       describe '#to_identify_target_state_type' do
         let(:transition) { Transition.new }
         let(:behavior) { transition.to_identify_target_state_type }
-        subject { lambda { behavior } }
+        subject { -> { behavior } }
 
         context 'when no block is given' do
           it { is_expected.to raise_error(StandardError) }
@@ -201,7 +198,7 @@ module Ladon
         context 'when block is given' do
           let(:behavior) { transition.to_identify_target_state_type {} }
 
-          before { allow(transition).to receive(:target_loaded?).and_return(loaded_status)}
+          before { allow(transition).to receive(:target_loaded?).and_return(loaded_status) }
 
           context 'when the target state type has already been loaded' do
             let(:loaded_status) { true }
@@ -219,14 +216,14 @@ module Ladon
 
       describe '#identify_target_state_type' do
         let(:transition) { Transition.new { |t| block_behavior.call(t) } }
-        let(:block_behavior) { lambda { |t| } }
+        let(:block_behavior) { ->(t) {} }
         let(:behavior) { transition.identify_target_state_type }
 
-        subject { lambda { behavior } }
+        subject { -> { behavior } }
 
         context 'when a target identifier is specified' do
           let(:target_type) { Class.new(State) }
-          let(:block_behavior) { lambda { |t| t.to_identify_target_state_type { target_type } } }
+          let(:block_behavior) { ->(t) { t.to_identify_target_state_type { target_type } } }
 
           context 'when the target has not been loaded' do
             it { is_expected.to raise_error(StandardError) }
@@ -258,20 +255,20 @@ module Ladon
         subject(:execution) { transition.valid_for?(nil) }
 
         context 'when the transition has no "when" blocks' do
-          let(:block_behavior) { lambda { |_| } }
+          let(:block_behavior) { ->(_) {} }
 
           it { is_expected.to be true }
         end
 
         context 'when the transition has one or more "when" blocks' do
           context 'when at least one "when" block returns true' do
-            let(:block_behavior) { lambda { |t| t.when { |current_state| true } } }
+            let(:block_behavior) { ->(t) { t.when { |_current_state| true } } }
 
             it { is_expected.to be true }
           end
 
           context 'when no "when" block returns true' do
-            let(:block_behavior) { lambda { |t| t.when { |current_state| false } } }
+            let(:block_behavior) { ->(t) { t.when { |_current_state| false } } }
 
             it { is_expected.to be false }
           end
@@ -302,4 +299,3 @@ module Ladon
     end
   end
 end
-

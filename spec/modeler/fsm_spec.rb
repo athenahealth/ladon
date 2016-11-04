@@ -4,7 +4,6 @@ require 'ladon'
 module Ladon
   module Modeler
     RSpec.describe FiniteStateMachine do
-
       # unless otherwise redefined
       let(:start_state) { Class.new(State) }
       let(:fsm) do
@@ -19,7 +18,7 @@ module Ladon
       end
 
       describe '#use_state' do
-        subject { lambda { fsm.use_state_type(target_state) } }
+        subject { -> { fsm.use_state_type(target_state) } }
 
         context 'when the specified state is known to the graph' do
           let(:target_state) { start_state }
@@ -31,12 +30,12 @@ module Ladon
         context 'when the specified state is not known to the graph' do
           let(:target_state) { Class.new(State) }
 
-          it { is_expected.to change{fsm.state_loaded?(target_state)}.from(false).to(true)}
+          it { is_expected.to change { fsm.state_loaded?(target_state) }.from(false).to(true) }
         end
       end
 
       describe '#selection_strategy' do
-        subject { lambda { fsm.selection_strategy([]) } }
+        subject { -> { fsm.selection_strategy([]) } }
 
         it { is_expected.to raise_error(Ladon::MissingImplementationError) }
       end
@@ -48,7 +47,6 @@ module Ladon
       end
 
       describe '#make_transition' do
-
       end
 
       describe '#prefiltered_transitions' do
@@ -59,13 +57,13 @@ module Ladon
         let(:unwanted_transition) { Transition.new { |t| t.meta(key, unwanted_value) } }
         let(:transitions) do
           [
-              wanted_transition,
-              unwanted_transition
+            wanted_transition,
+            unwanted_transition
           ]
         end
 
         context 'when given a block' do
-          let(:block_behavior) { lambda { |t| t.meta_for(key) == wanted_value } }
+          let(:block_behavior) { ->(t) { t.meta_for(key) == wanted_value } }
           subject { fsm.prefiltered_transitions(transitions) { |t| block_behavior.call(t) } }
 
           it { is_expected.to include(wanted_transition) }
@@ -90,13 +88,13 @@ module Ladon
           let(:transition_options) { [] }
 
           it 'raises an error' do
-            expect{subject}.to raise_error(StandardError)
+            expect { subject }.to raise_error(StandardError)
           end
         end
 
         context 'when the fsm has a current state' do
-          let(:valid_transition) { Transition.new { |t| t.when { |current| current.instance_variable_get('@example') == 5} } }
-          let(:invalid_transition) { Transition.new { |t| t.when { |current| current.instance_variable_get('@example') == 6} } }
+          let(:valid_transition) { Transition.new { |t| t.when { |current| current.instance_variable_get('@example') == 5 } } }
+          let(:invalid_transition) { Transition.new { |t| t.when { |current| current.instance_variable_get('@example') == 6 } } }
           let(:transition_options) { [valid_transition, invalid_transition] }
           let(:current_state) do
             state = Class.new(State).new
@@ -105,7 +103,7 @@ module Ladon
           end
 
           it 'does not raise an error' do
-            expect{subject}.not_to raise_error
+            expect { subject }.not_to raise_error
           end
 
           it { is_expected.to be_an_instance_of(Array) }
@@ -119,7 +117,7 @@ module Ladon
           subject { fsm.current_state }
 
           it 'returns the current state of the machine' do
-            #expect(subject).to be_an_instance_of(start_state)
+            # expect(subject).to be_an_instance_of(start_state)
           end
         end
 
@@ -127,7 +125,7 @@ module Ladon
           subject { fsm.current_state { |current_state| current_state } }
 
           it 'returns the value of calling the block with the current state' do
-            #expect(subject).to e
+            # expect(subject).to e
           end
         end
       end

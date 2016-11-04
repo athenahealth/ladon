@@ -129,4 +129,3 @@ module Ladon
     end
   end
 end
-

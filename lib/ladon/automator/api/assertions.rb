@@ -6,7 +6,6 @@ module Ladon
       module Assertions
         # Error raised when a +halting_assert+ fails.
         class AssertionFailedError < RuntimeError
-
           # Create an instance with the given message.
           #
           # @param [String] msg The message to display as part of the Error.
@@ -29,11 +28,11 @@ module Ladon
         # @param [String] msg The message to use in the log/error if the assertion fails.
         # @param [Boolean] halting If true, halt the Automation's execution of its current phase on assertion failure.
         # @return [Boolean] True if the assertion succeeds, false otherwise.
-        def assert(msg, halting: false, &block)
+        def assert(msg, halting: false)
           raise BlockRequiredError, 'No assertion block given!' unless block_given?
 
           begin
-            passed = block.call
+            passed = yield
           rescue => ex
             passed = false
             @logger.error(error_to_array(ex, description: "Error during attempt to evaluate assertion block: #{ex}"))
