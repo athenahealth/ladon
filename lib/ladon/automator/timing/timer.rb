@@ -1,6 +1,10 @@
 module Ladon
   module Automator
+    # Defines the execution Timing interface for Automation instances.
     module Timing
+      # Can Time how long it takes for a given code block to execute.
+      #
+      # @attr_reader [Array<TimeEntry>] entries The TimeEntry instances recorded by this Timer.
       class Timer
         attr_reader :entries
 
@@ -11,31 +15,35 @@ module Ladon
 
         # API for measuring the time that elapses while executing an arbitrary block of behavior.
         #
-        # * Arguments:
-        #   - +metric_name+:: What name to associate with the metric data in the timing info hash.
+        # @raise [StandardError] if no block is given.
+        # @raise [StandardError] if entry name is not provided.
         #
-        # * Raises:
-        #   - StandardError if metric name is not provided, is empty, or is already used.
-        def for(metric_name, &block)
+        # @param [String] entry_name Name to associate with the timing data.
+        # @return [TimeEntry] The new entry that was created.
+        def for(entry_name, &block)
           raise StandardError, 'No block given!' unless block_given?
 
-          timer = TimeEntry.new(metric_name)
+          timer = TimeEntry.new(entry_name)
           @entries << timer
 
           timer.start
           block.call
           timer.end
+          timer
         end
       end
 
       # Represents a single timing performed by a +Timer+ instance.
+      #
+      # @attr_reader [String] name The name of this entry.
+      # @attr_reader [Time] start_time The time at which this entry began recording.
+      # @attr_reader [Time] end_time The time at which this entry finished recording.
       class TimeEntry
         attr_reader :name, :start_time, :end_time
 
         # Create a new Timer.
         #
-        # * Arguments:
-        #   - +name+:: The name of this Timer.
+        # @param [String] name The name of this timing entry.
         def initialize(name)
           raise StandardError, 'No name provided!' if name.nil?
           @name = name.to_s
@@ -44,11 +52,13 @@ module Ladon
         end
 
         # Start the timer, recording the UTC time at which it started.
+        # @return [Time] The UTC time that was noted.
         def start
           @start_time = Time.now.utc
         end
 
         # End the timer, recording the UTC time at which it ended.
+        # @return [Time] The UTC time that was noted.
         def end
           @end_time = Time.now.utc
         end
