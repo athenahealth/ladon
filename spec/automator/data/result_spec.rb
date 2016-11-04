@@ -16,11 +16,6 @@ module Ladon
           it { is_expected.to raise_error(StandardError) }
         end
 
-        context 'when an empty key is given' do
-          let(:key) { '' }
-          it { is_expected.to raise_error(StandardError) }
-        end
-
         context 'when a new key is given' do
 
         end

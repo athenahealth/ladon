@@ -8,7 +8,7 @@ module Ladon
       CONNECTED = :connected # Strategy: load the target component AND the components directly connected to it.
       EAGER = :eager # Load the target component and follow all connected components until no more are encountered.
 
-      ALL = [NONE, LAZY, CONNECTED, EAGER] # Collection of all valid LoadStrategy constants.
+      ALL = [NONE, LAZY, CONNECTED, EAGER].freeze # Collection of all valid LoadStrategy constants.
 
       # Defines the strategy to use for loading components connected to the subject of a component load operation.
       NESTING = {
@@ -16,7 +16,7 @@ module Ladon
           LAZY => NONE,
           CONNECTED => LAZY,
           EAGER => EAGER
-      }
+      }.freeze
 
       # Convenience method for getting the nested LoadStrategy for a given LoadStrategy type.
       #
