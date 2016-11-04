@@ -4,9 +4,21 @@ module Ladon
   class MissingImplementationError < StandardError
   end
 
+  # Error used to signal that a block was required but not given.
+  class BlockRequiredError < StandardError
+  end
+
   module Modeler
     # Error raised when trying to call +Graph#merge+ with an incompatible source Graph.
     class InvalidMergeError < StandardError
+    end
+
+    # Error raised when trying to load model components that are already loaded.
+    class AlreadyLoadedError < StandardError
+    end
+
+    # Error raised when trying to call a FSM method without a +current_state+.
+    class NoCurrentStateError < StandardError
     end
 
     # Error raised when a +Ladon::Automator::Graph+ is instructed to load a state type that is invalid.

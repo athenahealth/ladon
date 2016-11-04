@@ -45,9 +45,11 @@ module Ladon
 
         # Create a Logger, configured to store log messages at or above the given log level.
         #
+        # @raise [ArgumentError] If +level+ is invalid.
+        #
         # @param [Level] level Lowest level from Level::ALL that this logger will retain.
         def initialize(level: Level::ERROR)
-          raise StandardError, 'Invalid log level specified!' unless Level.valid?(level)
+          raise ArgumentError, 'Invalid log level specified!' unless Level.valid?(level)
           @entries = []
           @level = level
           @enabled_levels = Level.enabled_for(level)
@@ -112,11 +114,13 @@ module Ladon
 
         # Create a new LogEntry.
         #
+        # @raise [ArgumentError] If +msg_lines+ is not an array or +level+ is invalid.
+        #
         # @param [Array<String>] msg_lines The array of strings that make up the lines of this log entry text.
         # @param [Level] level The logging level to associate with this entry.
         def initialize(msg_lines, level)
-          raise StandardError, 'LogEntry message must be an array!' unless msg_lines.is_a?(Array)
-          raise StandardError, 'The level must be one defined in Level::ALL' unless Level::ALL.include?(level)
+          raise ArgumentError, 'LogEntry message must be an array!' unless msg_lines.is_a?(Array)
+          raise ArgumentError, 'The level must be one defined in Level::ALL' unless Level::ALL.include?(level)
           @msg_lines = msg_lines
           @level = level
           @time = Time.now.utc

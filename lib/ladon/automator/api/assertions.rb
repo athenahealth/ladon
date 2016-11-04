@@ -23,14 +23,14 @@ module Ladon
         # a value, we force asserters to return *true* as the *only* way to indicate "success" of assertion.
         # This should decrease the likelihood of false positive assertions due to incidental return values.
         #
-        # @raise [StandardError] If no block is given.
+        # @raise [BlockRequiredError] If no block is given.
         # @raise [AssertionFailedError] If the assertion raises or returns something other than true
         #
         # @param [String] msg The message to use in the log/error if the assertion fails.
         # @param [Boolean] halting If true, halt the Automation's execution of its current phase on assertion failure.
         # @return [Boolean] True if the assertion succeeds, false otherwise.
         def assert(msg, halting: false, &block)
-          raise StandardError, 'No assertion block given!' unless block_given?
+          raise BlockRequiredError, 'No assertion block given!' unless block_given?
 
           begin
             passed = block.call

@@ -30,11 +30,13 @@ module Ladon
 
       # Record an arbitrary key:value pair in the +data_log+.
       #
+      # @raise [ArgumentError] if key is not provided.
+      #
       # @param [Object] key The key to use in the data log.
       # @param [Object] value The value to enter into the data log.
       # @return [Object] The value now contained in the data log at the given +key+.
       def record_data(key, value)
-        raise StandardError, 'Key is required!' if key.nil?
+        raise ArgumentError, 'Key is required!' if key.nil?
         @data_log[key] = value
       end
 

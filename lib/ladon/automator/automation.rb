@@ -26,11 +26,11 @@ module Ladon
 
       # Create an instance based on the +config+ provided.
       #
-      # @raise [StandardError] if provided config is not a Ladon::Automator::Config instance.
+      # @raise [ArgumentError] if provided config is not a Ladon::Automator::Config instance.
       #
       # @param [Ladon::Automator::Config] config The configuration object for this automation.
       def initialize(config)
-        raise StandardError, 'Automation requires a Ladon::Automator::Config' unless config.is_a?(Ladon::Automator::Config)
+        raise ArgumentError, 'Automation requires a Ladon::Automator::Config' unless config.is_a?(Ladon::Automator::Config)
         @config = config
         @flags = config.flags
         @result = Result.new(config)
@@ -99,11 +99,11 @@ module Ladon
       # Given an arbitrary code block, this method will execute that block in a rescue construct.
       # Should be used to ensure that the block does not cause the entire execution to die.
       #
-      # @raise [StandardError] if no block given.
+      # @raise [BlockRequiredError] if no block given.
       #
       # @param [String] activity_name Description of the behavior taking place in the block.
       def sandbox(activity_name, &block)
-        raise StandardError, 'No block given!' unless block_given?
+        raise BlockRequiredError, 'No block given!' unless block_given?
 
         begin
           block.call

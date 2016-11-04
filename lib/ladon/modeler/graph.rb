@@ -16,12 +16,12 @@ module Ladon
 
       # Create a new +Graph+ instance.
       #
-      # @raise [StandardError] If the +config+ is not a Ladon::Modeler::Config instance.
+      # @raise [ArgumentError] If the +config+ is not a Ladon::Modeler::Config instance.
       #
       # @param [Ladon::Modeler::Config] config The object providing configuration for this new Graph model.
       # @return [Graph] The new graph instance.
       def initialize(config = Ladon::Modeler::Config.new)
-        raise StandardError, 'Graph requires a Ladon::Modeler::Config' unless config.is_a?(Ladon::Modeler::Config)
+        raise ArgumentError, 'Graph requires a Ladon::Modeler::Config' unless config.is_a?(Ladon::Modeler::Config)
         @config = config
         @states = Set.new
         @transitions = Hash.new { |h, k| h[k] = Set.new }
@@ -100,14 +100,14 @@ module Ladon
       # *Note:* this is purely for loading transitions via the 'transitions' method of +state_class+.
       # If you want to manually add transitions, see the +add_transitions+ method.
       #
-      # @raise [StandardError] If +state_class+ is not a state type known to this graph.
+      # @raise [ArgumentError] If +state_class+ is not a state type known to this graph.
       # @raise [StandardError] If the +state_class+'s transition modeling method does not return an Enumerable.
       #
       # @param [Object] state_class The potential state whose transitions are being loaded into this graph.
       # @param [LoadStrategy] strategy The strategy from LoadStrategy::ALL to use for this load operation.
       # @return [Boolean] True if the state's transitions are now (or were already) loaded, false otherwise.
       def load_transitions(state_class, strategy: LoadStrategy::LAZY)
-        raise StandardError, "No known state #{state_class}!" unless state_loaded?(state_class)
+        raise ArgumentError, "No known state #{state_class}!" unless state_loaded?(state_class)
         return true if transitions_loaded?(state_class)
         return false if strategy == LoadStrategy::NONE
 
@@ -128,14 +128,14 @@ module Ladon
       # Add the +transitions+ to the set associated with the given +state_class+.
       # Calls +on_invalid_transitions+ with the invalid transitions that were detected, if any are detected.
       #
-      # @raise [StandardError] If +state_class+ is not a state type known to this graph.
+      # @raise [ArgumentError] If +state_class+ is not a state type known to this graph.
       #
       # @param [Class] state_class The state to associate the +transitions+ with.
       # @param [Set<Transition>] transitions The potential transitions to load into this graph.
       # @return [Set<Ladon::Modeler::Transition>] The transitions that were loaded and associated with +state_class+.
       #   Returns nil if no valid transitions were actually detected.
       def add_transitions(state_class, transitions)
-        raise StandardError, "No known state #{state_class}!" unless state_loaded?(state_class)
+        raise ArgumentError, "No known state #{state_class}!" unless state_loaded?(state_class)
         valid_groups = transitions.group_by { |transition| transition.is_a?(Ladon::Modeler::Transition) }
         on_invalid_transitions(valid_groups[false]) if valid_groups.key?(false)
 

@@ -67,13 +67,13 @@ module Ladon
       #
       # *Note:* see +prefiltered_transitions+ for more detail on how the +block+ is used, if given.
       #
-      # @raise [StandardError] If the FSM has no +current_state+ it is operating within.
+      # @raise [NoCurrentStateError] If the FSM has no +current_state+ it is operating within.
       # @raise [StandardError] If FSM-level +selection_strategy+ returns anything
       #   other than a single Transition instance.
       #
       # @return [State] The new +@current_state+ value.
       def make_transition(&block)
-        raise StandardError, 'No current state to validate against!' if current_state.nil?
+        raise NoCurrentStateError, 'No current state to validate against!' if current_state.nil?
         all_transitions = @transitions[current_state.class]
         prefiltered_transitions = prefiltered_transitions(all_transitions, &block)
         valid_transitions = valid_transitions(prefiltered_transitions)
@@ -113,14 +113,14 @@ module Ladon
 
       # Get the transitions available from the current state instance.
       #
-      # @raise [StandardError] If the FSM has no +current_state+ it is operating within.
+      # @raise [NoCurrentStateError] If the FSM has no +current_state+ it is operating within.
       #
       # @param [Enumerable<Transition>] transition_options List-like enumerable containing Transition
       #   instances to validate.
       # @return [Enumerable<Transition>] List of transitions from the argument that are valid in context
       #   of the FSM's current state.
       def valid_transitions(transition_options)
-        raise StandardError, 'No current state to validate against!' if current_state.nil?
+        raise NoCurrentStateError, 'No current state to validate against!' if current_state.nil?
         transition_options.select {|transition| transition.valid_for?(current_state)}
       end
 
@@ -128,11 +128,13 @@ module Ladon
       #
       # @abstract
       #
+      # @raise [MissingImplementationError] Unless overridden by subclass implementation.
+      #
       # @param [Enumerable<Transition>] transition_options List-like enumerable containing Transition
       #   instances to validate.
       # @return [Transition] Must return a Transition instance that should be executed.
       def selection_strategy(transition_options)
-        raise Ladon::MissingImplementationError, 'Must implement selection_strategy method!'
+        raise Ladon::MissingImplementationError, '#selection_strategy'
       end
     end
 

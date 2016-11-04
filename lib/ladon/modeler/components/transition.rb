@@ -46,10 +46,11 @@ module Ladon
       # If *any* block defined in this manner returns true, the transition will be considered executable.
       # These blocks are leveraged by +valid_for?+ to determine if this transition is available.
       #
-      # @raise [StandardError] if called without a block.
+      # @raise [BlockRequiredError] if called without a block.
+      #
       # @return [Proc] The block that was given to this method.
       def when(&block)
-        raise StandardError, 'Required block was not provided!' unless block_given?
+        raise BlockRequiredError, 'Required block was not provided!' unless block_given?
         @when_blocks << block
       end
 
@@ -57,10 +58,11 @@ module Ladon
       # Any number of blocks may be specified in this manner. These blocks will be evaluated in the order
       # they were defined on the transition. These blocks are leveraged by +make_transition+ to execute this transition.
       #
-      # @raise [StandardError] if called without a block.
+      # @raise [BlockRequiredError] if called without a block.
+      #
       # @return [Proc] The block that was given to this method.
       def by(&block)
-        raise StandardError, 'Required block was not provided!' unless block_given?
+        raise BlockRequiredError, 'Required block was not provided!' unless block_given?
         @by_blocks << block
       end
 
@@ -94,11 +96,11 @@ module Ladon
       # Running this block should guarantee that the return value of +identify_target_state_type+
       # will be resolvable and not result in a reference error.
       #
-      # @raise [StandardError] if called without a block.
-      # @raise [StandardError] if called when the target state type has already been loaded.
+      # @raise [BlockRequiredError] if called without a block.
+      # @raise [AlreadyLoadedError] if called when the target state type has already been loaded.
       def to_load_target_state_type(&block)
-        raise StandardError, 'Required block was not provided!' unless block_given?
-        raise StandardError, 'Already loaded!' if target_loaded?
+        raise BlockRequiredError, 'Required block was not provided!' unless block_given?
+        raise AlreadyLoadedError, 'Already loaded!' if target_loaded?
         @loader = block
       end
 
@@ -116,11 +118,11 @@ module Ladon
       # The +&block+ given to this method will be used as the routine that can be run
       # to get a reference to the target state type's Class.
       #
-      # @raise [StandardError] if called without a block.
-      # @raise [StandardError] if called when the target state type has already been loaded.
+      # @raise [BlockRequiredError] if called without a block.
+      # @raise [AlreadyLoadedError] if called when the target state type has already been loaded.
       def to_identify_target_state_type(&block)
-        raise StandardError, 'Required block was not provided!' unless block_given?
-        raise StandardError, 'Already loaded!' if target_loaded?
+        raise BlockRequiredError, 'Required block was not provided!' unless block_given?
+        raise AlreadyLoadedError, 'Already loaded!' if target_loaded?
         @identifier = block
       end
 

@@ -20,11 +20,13 @@ module Ladon
 
       # Convenience method for getting the nested LoadStrategy for a given LoadStrategy type.
       #
+      # @raise [ArgumentError] If +load_strategy+ is invalid.
+      #
       # @param [LoadStrategy] load_strategy An object that *should* be a value from +LoadStrategy::ALL+.
       # @return [LoadStrategy] The nested/recursive strategy type for the given LoadStrategy type.
       # @raise [StandardError] If given an argument that is not a LoadStrategy type.
       def self.nested_strategy_for(load_strategy)
-        raise StandardError, 'Not a load strategy!' unless ALL.include?(load_strategy)
+        raise ArgumentError, 'Not a load strategy!' unless ALL.include?(load_strategy)
         NESTING[load_strategy]
       end
     end
