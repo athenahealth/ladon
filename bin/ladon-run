@@ -187,7 +187,6 @@ end
 
 flags = Hash[LadonAutomationRunner::ARGV_FLAG, ARGV]
 runner = LadonAutomationRunner.spawn(flags: Ladon::Flags.new(in_hash: flags))
-binding.pry
 runner.run
 
 puts 'ladon-run complete!'
