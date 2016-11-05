@@ -101,7 +101,6 @@ module Ladon
       # If you want to manually add transitions, see the +add_transitions+ method.
       #
       # @raise [ArgumentError] If +state_class+ is not a state type known to this graph.
-      # @raise [StandardError] If the +state_class+'s transition modeling method does not return an Enumerable.
       #
       # @param [Object] state_class The potential state whose transitions are being loaded into this graph.
       # @param [LoadStrategy] strategy The strategy from LoadStrategy::ALL to use for this load operation.
@@ -111,9 +110,7 @@ module Ladon
         return true if transitions_loaded?(state_class)
         return false if strategy == LoadStrategy::NONE
 
-        transitions = state_class.transitions
-        raise StandardError, 'Transitions method must return an Enumerable!' unless transitions.is_a?(Enumerable)
-        added = add_transitions(state_class, transitions)
+        added = add_transitions(state_class, state_class.transitions)
 
         unless added.nil?
           next_strategy = LoadStrategy.nested_strategy_for(strategy)

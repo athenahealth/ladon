@@ -66,7 +66,7 @@ module Ladon
       # *Note:* see +prefiltered_transitions+ for more detail on how the +block+ is used, if given.
       #
       # @raise [NoCurrentStateError] If the FSM has no +current_state+ it is operating within.
-      # @raise [StandardError] If FSM-level +selection_strategy+ returns anything
+      # @raise [ArgumentError] If FSM-level +selection_strategy+ returns anything
       #   other than a single Transition instance.
       #
       # @return [State] The new +@current_state+ value.
@@ -75,10 +75,19 @@ module Ladon
         all_transitions = @transitions[current_state.class]
         prefiltered_transitions = prefiltered_transitions(all_transitions, &block)
         valid_transitions = valid_transitions(prefiltered_transitions)
-        target = selection_strategy(valid_transitions)
-        raise StandardError, 'Selection strategy did not return a single transition!' unless target.is_a?(Transition)
+        to_execute = selection_strategy(valid_transitions)
+        execute_transition(to_execute)
+      end
+
+      # Execute the given transition.
+      #
+      # @raise [ArgumentError] If +transition+ is not a Ladon Transition instance.
+      #
+      # @return [State] The new +@current_state+ value after executing the transition.
+      def execute_transition(transition)
+        raise ArgumentError, 'Must be called with a Transition instance!' unless transition.is_a?(Transition)
         target.execute(current_state)
-        use_state_type(target.identify_target_state_type)
+        use_state_type(transition.identify_target_state_type)
       end
 
       # Filter the given list of transitions based on the model prefilter and current state.
