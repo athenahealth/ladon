@@ -86,7 +86,7 @@ module Ladon
       # @return [State] The new +@current_state+ value after executing the transition.
       def execute_transition(transition)
         raise ArgumentError, 'Must be called with a Transition instance!' unless transition.is_a?(Transition)
-        target.execute(current_state)
+        transition.execute(current_state)
         use_state_type(transition.identify_target_state_type)
       end
 
