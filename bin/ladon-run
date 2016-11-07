@@ -47,7 +47,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
       @target_automation.run(to_index: idx) # this is the interesting line
       puts 'complete!'
 
-      _go_interactive if @options.interactive_following.include?(phase_name)
+      _go_interactive if @options.interactive_post.include?(phase_name)
     end
     puts "\nExecution complete"
   end
@@ -82,7 +82,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     vals = Struct.new(:automation_path,
                       :automation_class_name,
                       :interactive_before,
-                      :interactive_following,
+                      :interactive_post,
                       :review,
                       :flags).new
     OptionParser.new do |opts|
@@ -109,11 +109,11 @@ class LadonAutomationRunner < Ladon::Automator::Automation
         vals.interactive_before = val.split(',').map { |phase| phase.strip.to_sym }
       end
 
-      opts.on('-f PHASE_LIST',
-              '--interactive_following PHASE_LIST',
+      opts.on('-p PHASE_LIST',
+              '--interactive_post PHASE_LIST',
               String,
               'Comma-separated list of phases to enter interactive mode AFTER running.') do |val|
-        vals.interactive_following = val.split(',').map { |phase| phase.strip.to_sym }
+        vals.interactive_post = val.split(',').map { |phase| phase.strip.to_sym }
       end
 
       opts.on('-f FLAGS',
@@ -140,7 +140,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
   # returns true if the options are valid.
   def _validate_options?
     raise StandardError, 'Automation not specified!' unless @options.automation_path
-    @options.interactive_following = [] unless @options.interactive_following.is_a?(Array)
+    @options.interactive_post = [] unless @options.interactive_post.is_a?(Array)
     @options.interactive_before = [] unless @options.interactive_before.is_a?(Array)
     @options.flags = {} unless @options.flags.is_a?(Hash)
     true
