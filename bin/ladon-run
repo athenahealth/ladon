@@ -121,7 +121,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
               String,
               'Comma-separated list of name:value pairs') do |val|
         # HACK: won't work with flags that have commas in them
-        vals.flags = Hash[val.split(',').map { |el| el.split(':', 2) }]
+        vals.flags = val.split(',').map { |el| el.split(':', 2) }.to_h
       end
 
       opts.on('-r', '--review', 'Pause after automation completes') do
