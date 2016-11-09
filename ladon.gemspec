@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.description = <<-EOF
     Ladon allows you to create software models and to create automation scripts that work through those models.
   EOF
-  s.authors     = ['Shayne Snow']
-  s.email       = 'ssnow@athenahealth.com'
+  s.authors     = ['Snow']
+  s.email       = 'TestAutomationInfrastructure@athenahealth.com'
   s.files       = Dir['lib/**/*.rb']
   s.homepage    = 'http://rubygems.org/gems/ladon'
   s.license     = 'MIT' # TODO

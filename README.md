@@ -1,43 +1,56 @@
-# Ladon
+# Ladon - A Software Modeling and Automation Framework
 
-Ladon is a framework implemented in Ruby for modeling software, and automating software through the models we create.
+## Description
 
-## Installing
+Ladon is a Ruby framework for codifying software architecture models and scripting automation through those models.
 
-Once Ladon is open sourced, installing will be as simple as running a simple `gem install ladon` command.
-Until then, you will have to clone this repo and build/install the gem manually.
+See the wiki (TODO) for further reading on the philosophy behind the Ladon project.
 
-This is simple to do:
+## Table of Contents
 
-1. Install Ruby if you don't have it (the dev1xx servers all have Ruby 2.3.1 on them.)
-2. Clone this repository somewhere you have permission to do so
-3. Change directories into the Ladon checkout you just cloned
-4. To **build** the Ladon gem: `gem build ladon.gemspec` (this will create a file called `ladon-1.0.0.gem` in this directory.)
-5. To **install** the Ladon gem: `gem install ladon-1.0.0.gem`
+1. [Project Structure](#Project Structure)
+2. [Installation](#Installation)
+3. [Usage](#Usage)
+  - [Modeler](#Modeler) 
+  - [Automator](#Automator)
+  - [ladon-run](#ladon-run)
+4. [Contributing](#Contributing)
+5. [Credits](#Credits)
+6. [License](#License)
+
+##  Project Structure
+  
+   - `README.md`: The file you are currently reading, you rascal. You knew that.
+   - `LICENSE.txt`: Framework licensing details. 
+   - `CHANGELOG`: Per-version framework revision log.
+   - `CONTRIBUTING.md`: Specifies the requirements for contributing to the Ladon framework.
+   - `lib/`: Contains the Ladon framework source code.
+   - `spec/`: RSpec BDD-style test implementations for the Ladon framework.
+   - `bin/`: Holds executables that are installed onto your path when installing the Ladon framework gem.
+
+## Installation
+
+TODO: update when Ladon is available as a public Ruby gem. Once Ladon is open sourced, installation will be simple: `gem install ladon` command.
+
+Until then, you will have to clone this repo and build/install the gem manually. This is simple to do:
+
+1. Install Ruby 2.1+
+2. Clone this repository and `cd` into your checkout directory
+4. **Build** the Ladon gem: `gem build ladon.gemspec`
+5. **Install** the built Ladon gem: `gem install ladon-1.0.0.gem`
 
 To confirm you've successfully installed Ladon:
 
 1. start a Ruby interpreter: `irb`
 2. In your `irb` session, run: `require 'ladon'`
 3. You should see `irb` return `true` for that require commands, which means the require was successful
-4. Type `Ladon::Version::STRING` and confirm that `"1.0.0"` is returned and printed to your terminal
+4. Type `Ladon::Version::STRING` and confirm that a valid-looking semantic version number is returned and printed to your terminal.
 
-If so, you have Ladon 1.0 RC installed! Congrats.
+If step 4 works, you're ready to go!
 
-## Project Structure
+## Usage
 
-- `README.md`: This file, you rascal, you. You knew that.
-- `LICENSE.txt`: Will eventually hold the legitimate license Ladon will be open sourced under.
-- `CHANGELOG`: Will eventually be used to specify changes per Ladon version.
-- `CONTRIBUTING.md`: Will eventually specify the rules developers must follow to contribute to Ladon
-- `lib/`: The Ladon framework source code.
-- `spec/`: Tests for the Ladon framework; implemented in BDD style via RSpec
-- `bin/`: Contains scripts that will be installed onto your path when you install the Ladon gem. Includes a utility for running Ladon automation scripts.
-
-
-## Using
-
-Ladon 1.0 is subdivided into two familiar components:
+Ladon 1.0 is subdivided into two components:
 
 - Modeler: `lib/modeler.rb` and `lib/modeler/*`
 - Automator: `lib/automator.rb` and `lib/automator/*`
@@ -61,15 +74,32 @@ The `Automation` class is the parent of `ModelAutomation`; the only difference i
 
 Use `ModelAutomation` unless you have a really good reason not to do so.
 
-`ModelAutomation` is roughly the equivalent of `Ladon::Core::TestBase` from the beta, but with way more flexibility and potential.
-
 ### ladon-run
 
 You'll notice a single file in the `bin/` directory: `ladon-run`.
 
-Let's say you have some form of `Modeler` model, and a `ModelAutomation` that uses your model to do something.
-This utility is how you run your `ModelAutomation`. 
+Let's say you have a `Modeler` model, and a `ModelAutomation` that uses that model to do something.
+This `ladon-run` utility is how you run your `ModelAutomation`. 
 
 When you `gem install` Ladon, this becomes an executable on your PATH that you can leverage directly: `ladon-run -h`
 
-Fun fact: `ladon-run` is implemented as a Ladon `Automation` itself, and can serve as example code.
+Fun fact: `ladon-run` is implemented as a Ladon `Automation` itself, and can serve as example code!
+
+*Note:* consider installing the following gems, which will make your interactive mode experience more useful:
+
+- [pry-byebug](https://github.com/deivid-rodriguez/pry-byebug)
+- [pry-stack_explorer](https://github.com/pry/pry-stack_explorer)
+
+Installing these gems will increase the power and control you have to observe and debug your automation executions.
+
+## Contributing
+
+Contributions definitely welcome! Refer to [CONTRIBUTING.md](CONTRIBUTING.md) for rules and guidelines. 
+
+## Credits
+
+Ladon was architected and implemented at **athenahealth** by [Snow](https://github.com/imjonsnooow).
+
+## License
+
+See [LICENSE.txt](LICENSE.txt) for authoritative licensing details.   
