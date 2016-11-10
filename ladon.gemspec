@@ -25,7 +25,7 @@ Gem::Specification.new do |gem|
   # NOT REQUIRED: install this gem to
   # s.add_runtime_dependency 'pry-stack_explorer' # for interactive mode support in ladon-run
 
-  gem.add_dependency('rake')
+  gem.add_dependency 'rake', '~> 11.3'
   gem.add_development_dependency 'rspec', '~> 3.5' # for specs
   gem.add_development_dependency 'rubocop', '~> 0.45' # for linting
 end
