@@ -1,23 +1,23 @@
 require File.expand_path('../lib/ladon/_version', __FILE__)
 
-Gem::Specification.new do |s|
-  s.name        = 'ladon'
-  s.version     = Ladon::Version::STRING
-  s.date        = '2016-11-04'
-  s.summary     = 'Ladon'
-  s.description = <<-EOF
+Gem::Specification.new do |gem|
+  gem.name        = 'ladon'
+  gem.version     = Ladon::Version::STRING
+  gem.date        = Date.today.to_s
+  gem.summary     = 'Ladon'
+  gem.description = <<-EOF
     Ladon allows you to create software models and to create automation scripts that work through those models.
   EOF
-  s.authors     = ['Shayne Snow']
-  s.email       = 'ssnow@athenahealth.com'
-  s.files       = Dir['lib/**/*.rb']
-  s.homepage    = 'http://rubygems.org/gems/ladon'
-  s.license     = 'MIT' # TODO
+  gem.authors     = ['Shayne Snow']
+  gem.email       = 'ssnow@athenahealth.com'
+  gem.files       = Dir['lib/**/*.rb']
+  gem.homepage    = 'http://rubygems.org/gems/ladon'
+  gem.license     = 'MIT' # TODO
 
-  s.executables << 'ladon-run'
+  gem.executables << 'ladon-run'
 
-  s.required_ruby_version = '>= 2.1.0' # due to use of required keyword args
-  s.add_runtime_dependency 'pry', '~> 0.10' # for interactive mode support in ladon-run
+  gem.required_ruby_version = '>= 2.1.0' # due to use of required keyword args
+  gem.add_runtime_dependency 'pry', '~> 0.10' # for interactive mode support in ladon-run
 
   # NOT REQUIRED: install this gem to get byebug features baked into pry sessions
   # s.add_runtime_dependency 'pry-byebug'
@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   # NOT REQUIRED: install this gem to
   # s.add_runtime_dependency 'pry-stack_explorer' # for interactive mode support in ladon-run
 
-  s.add_development_dependency 'rspec', '~> 3.5' # for specs
-  s.add_development_dependency 'rubocop', '~> 0.45' # for linting
+  gem.add_dependency('rake')
+  gem.add_development_dependency 'rspec', '~> 3.5' # for specs
+  gem.add_development_dependency 'rubocop', '~> 0.45' # for linting
 end
