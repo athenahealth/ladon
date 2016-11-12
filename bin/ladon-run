@@ -20,7 +20,6 @@ class LadonAutomationRunner < Ladon::Automator::Automation
       argv_given.is_a?(Array)
     end
 
-    @options = nil # TODO: this may be delete-able
     halting_assert('Options provided must be valid') do
       @options = _parse_options(flags: argv_given)
       _validate_options?
