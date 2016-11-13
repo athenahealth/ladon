@@ -57,7 +57,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     _go_interactive if @options.nil? || @options.review
 
     puts "Result: #{@target_automation.result.status}"
-    _print_log_entries if @target_automation.result.status == :ERROR
+    _print_log_entries if @target_automation.result.error?
   end
 
   # If there was a failure in setup, don't run execute.
@@ -69,7 +69,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
   private
 
   def _print_log_entries
-    return '' if @target_automation.result.logger.entries.empty?
+    return if @target_automation.result.logger.entries.empty?
     puts ''
     _print_separator_line('-')
     pp(@target_automation.result.logger.entries)
