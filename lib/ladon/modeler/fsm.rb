@@ -65,6 +65,9 @@ module Ladon
       #
       # *Note:* see +prefiltered_transitions+ for more detail on how the +block+ is used, if given.
       #
+      # *Note:* if the transitions for the +current_state+'s class have not been loaded, those transitions
+      #   will now be loaded (though their targets will not be auto-required unless the transition is used.)
+      #
       # @raise [NoCurrentStateError] If the FSM has no +current_state+ it is operating within.
       # @raise [ArgumentError] If FSM-level +selection_strategy+ returns anything
       #   other than a single Transition instance.
@@ -72,7 +75,9 @@ module Ladon
       # @return [State] The new +@current_state+ value.
       def make_transition(&block)
         raise NoCurrentStateError, 'No current state to validate against!' if current_state.nil?
-        all_transitions = @transitions[current_state.class]
+        state_class = current_state.class
+        load_transitions(state_class) unless transitions_loaded?(state_class)
+        all_transitions = @transitions[state_class]
         prefiltered_transitions = prefiltered_transitions(all_transitions, &block)
         valid_transitions = valid_transitions(prefiltered_transitions)
         to_execute = selection_strategy(valid_transitions)
