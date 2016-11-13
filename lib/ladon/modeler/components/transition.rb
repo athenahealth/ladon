@@ -72,7 +72,7 @@ module Ladon
       # @param [Ladon::Modeler::State] current_state Instance of current state to validate against.
       # @return [Boolean] True if the transition is found to be currently valid, false otherwise.
       def valid_for?(current_state)
-        @when_blocks.empty? || @when_blocks.any? { |condition| condition.call(current_state) }
+        @when_blocks.empty? || @when_blocks.any? { |condition| condition.call(current_state) == true }
       end
 
       # Execute this transition. If the target state has not been loaded, this method will load it.
