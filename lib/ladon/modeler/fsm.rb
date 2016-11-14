@@ -46,7 +46,8 @@ module Ladon
       # If a block is given, the block will be executed by yielding the +@current_state+,
       # instead of returning it.
       #
-      # @yield [current_state] The current instance of the State type the machine is at.
+      # @yield [State] The current instance of the State type the machine is at.
+      #
       # @return [State|Object] If no block is given, returns the +@current_state+.
       #   Otherwise, returns block return value
       def current_state
@@ -57,26 +58,28 @@ module Ladon
       # Make this FSM execute a transition from the +@current_state+.
       #
       # Transition executions consist of 5 phases:
-      #   - *Read* all known transitions available from the +@current_state+'s type
-      #   - *Prefilter* the results via +prefiltered_transitions+ method (accepts an optional block, see note below)
-      #   - *Validate* the prefiltered items via +valid_transitions+ to select only the currently valid options
-      #   - *Select* the transition to execute via FSM-level +selection_strategy+
-      #   - *Execute* the selected transition, updating this FSM's state to an instance of the transition's target type
+      # - *Read* all known transitions available from the +@current_state+'s type
+      # - *Prefilter* the results via +prefiltered_transitions+ method (accepts an optional block, see note below)
+      # - *Validate* the prefiltered items via +valid_transitions+ to select only the currently valid options
+      # - *Select* the transition to execute via FSM-level +selection_strategy+
+      # - *Execute* the selected transition, updating this FSM's state to an instance of the transition's target type
       #
       # *Note:* see +prefiltered_transitions+ for more detail on how the +block+ is used, if given.
       #
       # *Note:* if the transitions for the +current_state+'s class have not been loaded, those transitions
-      #   will now be loaded (though their targets will not be auto-required unless the transition is used.)
+      # will now be loaded (though their targets will not be auto-required unless the transition is used.)
       #
       # @raise [NoCurrentStateError] If the FSM has no +current_state+ it is operating within.
       # @raise [ArgumentError] If FSM-level +selection_strategy+ returns anything
       #   other than a single Transition instance.
       #
+      # @param [LoadStrategy] strategy The load strategy for +@current_state+'s class' transitions, if they're
+      #   not already loaded.
       # @return [State] The new +@current_state+ value.
-      def make_transition(&block)
+      def make_transition(strategy: LoadStrategy::LAZY, &block)
         raise NoCurrentStateError, 'No current state to validate against!' if current_state.nil?
         state_class = current_state.class
-        load_transitions(state_class) unless transitions_loaded?(state_class)
+        load_transitions(state_class, strategy: strategy) unless transitions_loaded?(state_class)
         all_transitions = @transitions[state_class]
         prefiltered_transitions = prefiltered_transitions(all_transitions, &block)
         valid_transitions = valid_transitions(prefiltered_transitions)
