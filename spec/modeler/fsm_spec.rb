@@ -6,9 +6,7 @@ module Ladon
     RSpec.describe FiniteStateMachine do
       # unless otherwise redefined
       let(:start_state) { Class.new(State) }
-      let(:fsm) do
-        FiniteStateMachine.new
-      end
+      let(:fsm) { FiniteStateMachine.new }
       subject { fsm }
 
       describe '#new' do
@@ -17,7 +15,7 @@ module Ladon
         end
       end
 
-      describe '#use_state' do
+      describe '#use_state_type' do
         subject { -> { fsm.use_state_type(target_state) } }
 
         context 'when the specified state is known to the graph' do
@@ -30,7 +28,9 @@ module Ladon
         context 'when the specified state is not known to the graph' do
           let(:target_state) { Class.new(State) }
 
+          it { is_expected.not_to raise_error }
           it { is_expected.to change { fsm.state_loaded?(target_state) }.from(false).to(true) }
+          it { is_expected.to change(fsm, :current_state).to(an_instance_of(target_state)) }
         end
       end
 
@@ -47,6 +47,56 @@ module Ladon
       end
 
       describe '#make_transition' do
+        subject { -> { fsm.make_transition } }
+
+        context 'when machine has no current state' do
+          it { is_expected.to raise_error(NoCurrentStateError) }
+        end
+
+        context 'when machine has a current state' do
+          before { fsm.use_state_type(start_state) }
+
+          context 'when transitions are not loaded for the current state' do
+            context 'when selection_strategy is not defined' do
+              it 'makes the FSM load transitions defined for the current state type, and later raises when calling the missing selection_strategy' do
+                expect(fsm).to receive(:load_transitions).with(start_state.class, strategy: LoadStrategy::LAZY)
+                expect{subject.call}.to raise_error(Ladon::MissingImplementationError, '#selection_strategy')
+              end
+            end
+
+            context 'when selection_strategy is defined' do
+              it 'tells the FSM load the transitions defined for the current state type, succeeds in running the selection_strategy, and calls #execute_transition' do
+                allow(fsm).to receive(:selection_strategy).and_return(Ladon::Modeler::Transition.new)
+                expect(fsm).to receive(:load_transitions).with(start_state.class, strategy: LoadStrategy::LAZY)
+                expect(fsm).to receive(:execute_transition)
+
+                expect{subject.call}.not_to raise_error
+              end
+            end
+          end
+
+          context 'when transitions are already loaded for the current state' do
+            before { fsm.add_transitions(start_state, []) }
+
+            context 'when selection_strategy is not defined' do
+              it 'does not tell the FSM to perform any transition load operation, and later raises when calling the missing selection_strategy' do
+                expect(fsm).to receive(:make_transition).and_call_original.ordered
+                expect(fsm).not_to receive(:load_transitions).ordered
+                expect{subject.call}.to raise_error(Ladon::MissingImplementationError, '#selection_strategy')
+              end
+            end
+
+            context 'when selection_strategy is defined' do
+              it 'does not tell the FSM to perform any transition load operation, and later raises when calling the missing selection_strategy' do
+                allow(fsm).to receive(:selection_strategy).and_return(Ladon::Modeler::Transition.new)
+                expect(fsm).not_to receive(:load_transitions).ordered
+                expect(fsm).to receive(:execute_transition)
+
+                expect{subject.call}.not_to raise_error
+              end
+            end
+          end
+        end
       end
 
       describe '#prefiltered_transitions' do
@@ -113,19 +163,41 @@ module Ladon
       end
 
       describe '#current_state' do
-        context 'when not given a block' do
-          subject { fsm.current_state }
+        context 'when machine has a current state' do
+          before { fsm.use_state_type(start_state) }
 
-          it 'returns the current state of the machine' do
-            # expect(subject).to be_an_instance_of(start_state)
+          context 'when not given a block' do
+            subject { fsm.current_state }
+
+            it 'returns the current state of the machine' do
+              expect(subject).to be_an_instance_of(start_state)
+            end
+          end
+
+          context 'when given a block' do
+            subject { fsm.current_state { |current_state| current_state } }
+
+            it 'returns the value of calling the block with the current state' do
+              expect(subject).to be_an_instance_of(start_state)
+            end
           end
         end
 
-        context 'when given a block' do
-          subject { fsm.current_state { |current_state| current_state } }
+        context 'when machine has no current state' do
+          context 'when not given a block' do
+            subject { fsm.current_state }
 
-          it 'returns the value of calling the block with the current state' do
-            # expect(subject).to e
+            it 'returns the current state of the machine' do
+              expect(subject).to be_nil
+            end
+          end
+
+          context 'when given a block' do
+            subject { fsm.current_state { |current_state| current_state } }
+
+            it 'returns the value of calling the block with the current state' do
+              expect(subject).to be_nil
+            end
           end
         end
       end
