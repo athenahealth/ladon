@@ -8,15 +8,15 @@ See the wiki (TODO) for further reading on the philosophy behind the Ladon proje
 
 ## Table of Contents
 
-1. [Project Structure](#Project Structure)
-2. [Installation](#Installation)
-3. [Usage](#Usage)
-  - [Modeler](#Modeler) 
-  - [Automator](#Automator)
+1. [Project Structure](#project-structure)
+2. [Installation](#installation)
+3. [Usage](#usage)
+  - [Modeler](#modeler) 
+  - [Automator](#automator)
   - [ladon-run](#ladon-run)
-4. [Contributing](#Contributing)
-5. [Credits](#Credits)
-6. [License](#License)
+4. [Contributing](#contributing)
+5. [Credits](#credits)
+6. [License](#license)
 
 ##  Project Structure
   
