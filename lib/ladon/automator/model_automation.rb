@@ -47,6 +47,17 @@ module Ladon
       def verify_model
         raise StandardError, 'The model must be a Ladon FSM' unless model.is_a?(Ladon::Modeler::FiniteStateMachine)
       end
+
+      # Phase should be skipped if it is after the verify_model phase and the model is not defined.
+      #
+      # @param [Symbol] phase Phase name to determine the current reason to skip (or lack thereof.)
+      # @return [String] Description of reason why +phase+ will be skipped; nil if it should not be skipped.
+      def skip_reason(phase)
+        all_phases = self.class.all_phases
+        phase_idx = all_phases.index(phase)
+        return if phase_idx <= all_phases.index(VERIFY_MODEL_PHASE)  || model.is_a?(Ladon::Modeler::FiniteStateMachine)
+        "Skipping #{phase}: model is '#{model}' but should be a Ladon FSM!"
+      end
     end
   end
 end
