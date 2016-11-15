@@ -1,10 +1,7 @@
 source 'http://rubygems.org'
 
 gem 'rake'
+gem 'rspec', '~> 3.0'
+gem 'rubocop'
 
-group :minispec do
-  gem 'rspec', '~> 3.0'
-  gem 'simplecov', require: false
-end
-
-# gemspec
+gem 'simplecov', require: false, group: :test
