@@ -135,8 +135,6 @@ module Ladon
         valid_groups = transitions.group_by { |transition| transition.is_a?(Ladon::Modeler::Transition) }
         on_invalid_transitions(valid_groups[false]) if valid_groups.key?(false)
 
-        #return nil unless valid_groups.key?(true)
-
         added = Set.new(valid_groups.fetch(true, [])) - @transitions[state_class] # detect the truly "new" transitions
         @transitions[state_class] += added # add them
         added # return them

@@ -55,7 +55,7 @@ module Ladon
       def skip_reason(phase)
         all_phases = self.class.all_phases
         phase_idx = all_phases.index(phase)
-        return if phase_idx <= all_phases.index(VERIFY_MODEL_PHASE)  || model.is_a?(Ladon::Modeler::FiniteStateMachine)
+        return if phase_idx <= all_phases.index(VERIFY_MODEL_PHASE) || model.is_a?(Ladon::Modeler::FiniteStateMachine)
         "Skipping #{phase}: model is '#{model}' but should be a Ladon FSM!"
       end
     end
