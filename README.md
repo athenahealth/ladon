@@ -1,4 +1,4 @@
-# Ladon - A Software Modeling and Automation Framework
+# Ladon - A Software Construction, Automation, and Reliability Framework
 
 [![build status](https://gitlab.athenahealth.com/ssnow/ladon/badges/master/build.svg)](https://gitlab.athenahealth.com/ssnow/ladon/commits/master) [![coverage report](https://gitlab.athenahealth.com/ssnow/ladon/badges/master/coverage.svg)](https://gitlab.athenahealth.com/ssnow/ladon/commits/master)
 
@@ -6,49 +6,9 @@
 
 Ladon is a Ruby framework for codifying software architecture models and scripting automation through those models.
 
-See the wiki (TODO) for further reading on the philosophy behind the Ladon project.
+**This is just a README.** 
 
-## Table of Contents
-
-1. [Project Structure](#project-structure)
-2. [Installation](#installation)
-3. [Usage](#usage)
-  - [Modeler](#modeler) 
-  - [Automator](#automator)
-  - [ladon-run](#ladon-run)
-4. [Contributing](#contributing)
-5. [Credits](#credits)
-6. [License](#license)
-
-##  Project Structure
-  
-   - `README.md`: The file you are currently reading, you rascal. You knew that.
-   - `LICENSE.txt`: Framework licensing details. 
-   - `CHANGELOG`: Per-version framework revision log.
-   - `CONTRIBUTING.md`: Specifies the requirements for contributing to the Ladon framework.
-   - `lib/`: Contains the Ladon framework source code.
-   - `spec/`: RSpec BDD-style test implementations for the Ladon framework.
-   - `bin/`: Holds executables that are installed onto your path when installing the Ladon framework gem.
-
-## Installation
-
-TODO: update when Ladon is available as a public Ruby gem. Once Ladon is open sourced, installation will be simple: `gem install ladon` command.
-
-Until then, you will have to clone this repo and build/install the gem manually. This is simple to do:
-
-1. Install Ruby 2.1+
-2. Clone this repository and `cd` into your checkout directory
-4. **Build** the Ladon gem: `gem build ladon.gemspec`
-5. **Install** the built Ladon gem: `gem install ladon-1.0.0.gem`
-
-To confirm you've successfully installed Ladon:
-
-1. start a Ruby interpreter: `irb`
-2. In your `irb` session, run: `require 'ladon'`
-3. You should see `irb` return `true` for that require commands, which means the require was successful
-4. Type `Ladon::Version::STRING` and confirm that a valid-looking semantic version number is returned and printed to your terminal.
-
-If step 4 works, you're ready to go!
+See the [wiki](https://gitlab.athenahealth.com/ssnow/ladon/wikis/home) for complete high-level documentation.
 
 ## Usage
 
@@ -93,10 +53,6 @@ Fun fact: `ladon-run` is implemented as a Ladon `Automation` itself, and can ser
 - [pry-stack_explorer](https://github.com/pry/pry-stack_explorer)
 
 Installing these gems will increase the power and control you have to observe and debug your automation executions.
-
-## Contributing
-
-Contributions definitely welcome! Refer to [CONTRIBUTING.md](CONTRIBUTING.md) for rules and guidelines. 
 
 ## Credits
 
