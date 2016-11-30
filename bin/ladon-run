@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
+require 'pathname'
 require 'pp'
 require 'pry'
 require 'ladon'
@@ -15,6 +16,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
 | | (_| | (_| | (_) | | | | |_____| | |  | |_| | | | | | | |  __/ |
 |_|\\__,_|\\__,_|\\___/|_| |_|         |_|   \\__,_|_| |_|_| |_|\\___|_|   ".freeze
   AUTOMATION_DIR_BASENAME = 'automations'.freeze
+  MODEL_DIR_BASENAME = 'models'.freeze
 
   def setup
     argv_given = flags.get(ARGV_FLAG, default_to: nil)
@@ -163,11 +165,22 @@ class LadonAutomationRunner < Ladon::Automator::Automation
   # Look for a conventional directory to add to the load path. This runner
   # assumes a directory structure in which all automations are located under a
   # single directory with a conventional name at the root of another directory
-  # that contains all other files (models, etc.) required for the automation to
-  # run. If found, the directory is added to the load path.
+  # that contains all other files, and specifically a directory for models,
+  # required for the automation to run. Specifically, it is looking for a
+  # directory with the following structure:
+  #
+  # <project_dir>/ (this is what gets added to the load path)
+  #   AUTOMATION_DIR_BASENAME/
+  #     ... (the automation being run is somewhere in here)
+  #   MODEL_DIR_BASENAME/
+  #     ...
+  #   ... (any other directories and files)
+  #
+  # If found, the directory is added to the load path.
   def _include_load_path
     Pathname.new(@options.automation_path).ascend do |path|
-      if path.basename.to_s.eql? AUTOMATION_DIR_BASENAME
+      if path.basename.to_s.eql?(AUTOMATION_DIR_BASENAME) &&
+         Pathname.new(path.dirname.to_s + '/' + MODEL_DIR_BASENAME).directory?
         $LOAD_PATH.unshift(path.dirname)
         break
       end
