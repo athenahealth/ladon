@@ -181,7 +181,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     Pathname.new(@options.automation_path).ascend do |path|
       if path.basename.to_s.eql?(AUTOMATION_DIR_BASENAME) &&
          Pathname.new(path.dirname.to_s + '/' + MODEL_DIR_BASENAME).directory?
-        $LOAD_PATH.unshift(path.dirname)
+        $LOAD_PATH.unshift(path.dirname.to_s)
         break
       end
     end
