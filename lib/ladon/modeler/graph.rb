@@ -75,8 +75,7 @@ module Ladon
       # @abstract
       #
       # @param [Array<Transition>] transitions List of detected invalid transitions.
-      def on_invalid_transitions(transitions)
-      end
+      def on_invalid_transitions(transitions); end
 
       # Loads the given +state_class+ into this state machine.
       #
