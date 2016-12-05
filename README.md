@@ -1,6 +1,6 @@
 # Ladon - A Software Construction, Automation, and Reliability Framework
 
-[![build status](https://gitlab.athenahealth.com/ssnow/ladon/badges/master/build.svg)](https://gitlab.athenahealth.com/ssnow/ladon/commits/master) [![coverage report](https://gitlab.athenahealth.com/ssnow/ladon/badges/master/coverage.svg)](https://gitlab.athenahealth.com/ssnow/ladon/commits/master)
+[![build status](https://gitlab.athenahealth.com/ladon/ladon/badges/master/build.svg)](https://gitlab.athenahealth.com/ladon/ladon/commits/master) [![coverage report](https://gitlab.athenahealth.com/ladon/ladon/badges/master/coverage.svg)](https://gitlab.athenahealth.com/ladon/ladon/commits/master)
 
 ## Description
 
@@ -8,7 +8,7 @@ Ladon is a Ruby framework for codifying software architecture models and creatin
 
 **This is just a README.** 
 
-See the [wiki](https://gitlab.athenahealth.com/ssnow/ladon/wikis/home) for complete high-level documentation.
+See the [wiki](https://gitlab.athenahealth.com/ladon/ladon/wikis/home) for complete high-level documentation.
 
 ## Credits
 
