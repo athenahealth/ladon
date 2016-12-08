@@ -21,5 +21,12 @@ module Ladon
     def get(flag, default_to:)
       @flags.fetch(flag.to_sym, default_to)
     end
+
+    # Get hash of all passed-in flags
+    #
+    # @return [Hash] The hash containing all flags (keys) and associated values in this instance
+    def get_all
+      @flags
+    end
   end
 end

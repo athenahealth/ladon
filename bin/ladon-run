@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-
 require 'optparse'
 require 'pathname'
 require 'pp'
@@ -16,6 +15,8 @@ class LadonAutomationRunner < Ladon::Automator::Automation
 | | (_| | (_| | (_) | | | | |_____| | |  | |_| | | | | | | |  __/ |
 |_|\\__,_|\\__,_|\\___/|_| |_|         |_|   \\__,_|_| |_|_| |_|\\___|_|   ".freeze
   AUTOMATION_DIR_BASENAME = 'automations'.freeze
+  RESULTS_FLAGS = {:type => 'res_type', :file => 'res_file'}
+
 
   def setup
     argv_given = flags.get(ARGV_FLAG, default_to: nil)
@@ -59,9 +60,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
 
   def teardown
     _go_interactive if @options.nil? || @options.review
-
-    puts "Result: #{@target_automation.result.status}"
-    _print_log_entries if @target_automation.result.error?
+    _make_results
   end
 
   # If there was a failure in setup, don't run execute.
@@ -72,13 +71,25 @@ class LadonAutomationRunner < Ladon::Automator::Automation
 
   private
 
-  def _print_log_entries
-    return if @target_automation.result.logger.entries.empty?
-    puts ''
-    _print_separator_line('-')
-    pp(@target_automation.result.logger.entries)
-    _print_separator_line('-')
-    puts ''
+  # determine which result representation to generate, and where to output it
+  def _make_results
+    result_type = @options.flags.fetch(RESULTS_FLAGS[:type], 'text').to_sym
+    result_file = @options.flags.fetch(RESULTS_FLAGS[:file], nil)
+
+    unless result_type == :none
+      if result_type == :json
+        my_result = @target_automation.result.to_json
+      else
+        my_result = @target_automation.result.to_s
+      end
+      if result_file.nil?
+        _print_separator_line('-',' Results ')
+        puts my_result
+      else
+        File.write(result_file, my_result)
+        puts "Results written to #{File.absolute_path(result_file)}"
+      end
+    end
   end
 
   def _go_interactive
@@ -218,13 +229,14 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     end
   end
 
-  def _print_separator_line(sep = '*')
-    puts sep.to_s * 80
+  def _print_separator_line(sep = '*', title = '')
+    line_len = 80
+    half_width = (line_len - title.to_s.length) / 2.0
+    puts sep.to_s * half_width.floor + title.to_s + sep.to_s * half_width.ceil
   end
 end
 
 flags = Hash[LadonAutomationRunner::ARGV_FLAG, ARGV]
 runner = LadonAutomationRunner.spawn(flags: Ladon::Flags.new(in_hash: flags))
 runner.run
-
 puts 'ladon-run complete!'
