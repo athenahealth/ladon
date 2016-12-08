@@ -18,7 +18,6 @@ module Ladon
       SUCCESS_FLAG = :SUCCESS # Indicates that the Automation completed normally
       FAILURE_FLAG = :FAILURE # Indicates that the Automation failed as the result of some assertion
       ERROR_FLAG = :ERROR # Indicates that the Automation failed due to some unexpected error
-      SUPPORTED_TYPES = ['json', 'string', 'hash']
 
       # Create a new Automator Result instance.
       #
@@ -100,7 +99,6 @@ module Ladon
         rep_str = ''
         rep_h = to_h
         # 1. Status of test
-        # rep_str += 'Status: ' + rep_h[:status].to_s + "\n"
         rep_str << "Status: #{rep_h[:status].to_s}\n"
 
         # 2. ID & Invoked flags
@@ -115,12 +113,10 @@ module Ladon
         rep_h[:timings].each { |k,v| max_name_len = [max_name_len, v[:name].length].max }
 
         rep_str << '  Name' + ' ' * [max_name_len-4,0].max + ' ' * 5 + ' Start' + ' ' * 5 + '   End    Duration' + "\n"
-
         rep_str << '  ----' + ' ' * [max_name_len-4,0].max + ' ' * 5 + ' -----' + ' ' * 5 + ' -----    --------' + "\n"
         
         rep_h[:timings].sort.map do |k,v|
           name_str = v[:name] + ' ' * [max_name_len-v[:name].length,0].max
-          # times_str = '   ' + k.strftime("%T") + '   ' + v[:end].strftime("%T") + '  '
           times_str = "   #{k.strftime("%T")}   #{v[:end].strftime("%T")}  "
           duration_str = ' ' * [10-v[:duration].round(3).to_s.length,0].max + v[:duration].round(3).to_s
           rep_str << "  #{name_str}#{times_str}#{duration_str}\n"
@@ -132,7 +128,6 @@ module Ladon
           rep_str << "  - #{entry.level.to_s} at #{entry.time.strftime("%T")}:\n"
 
           entry.msg_lines.each { |msg_line| rep_str << "      #{msg_line.to_s}\n" }
-          end
         end
 
         # 5. Data Log
