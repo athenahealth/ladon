@@ -25,7 +25,7 @@ module Ladon
     # Get hash of all passed-in flags
     #
     # @return [Hash] The hash containing all flags (keys) and associated values in this instance
-    def get_all
+    def all_flags
       @flags
     end
   end

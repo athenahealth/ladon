@@ -3,7 +3,6 @@ require 'json'
 
 module Ladon
   module Automator
-
     # Represents the accumulated outcome data for an Automation.
     # Includes success/failure info, as well as any timing, log, and data_log information.
     #
@@ -77,20 +76,22 @@ module Ladon
       # Create a hash-formatted version of result
       # @return [Hash] value containing result attributes in a neat format
       def to_h
-        log = { :level => logger.level , :entries => logger.entries }
+        log = { level: logger.level, entries: logger.entries }
         
-        timings = Hash.new
+        timings = {}
         @timer.entries.each do |entry|
-          time_details = { :name => entry.name, :end => entry.end_time, :duration => (entry.end_time - entry.start_time) / 60.0 }
+          time_details = { name: entry.name,
+                           end: entry.end_time,
+                           duration: (entry.end_time - entry.start_time) / 60.0 }
           timings[entry.start_time] = time_details
         end
 
-         return {:data_log => @data_log, 
-          :log => log, 
-          :timings => timings, 
-          :id => @id, 
-          :status => @status, 
-          :flags => @flags.get_all }
+        return { data_log: @data_log,
+                 log: log,
+                 timings: timings,
+                 id: @id,
+                 status: @status,
+                 flags: @flags.all_flags }
       end
 
       # Create a string-formatted version of result
@@ -99,10 +100,10 @@ module Ladon
         rep_str = ''
         rep_h = to_h
         # 1. Status of test
-        rep_str << "Status: #{rep_h[:status].to_s}\n"
+        rep_str << "Status: #{rep_h[:status]}\n"
 
         # 2. ID & Invoked flags
-        rep_str << "\nID: #{rep_h[:id].to_s}\n"
+        rep_str << "\nID: #{rep_h[:id]}\n"
         rep_str << "\nFlags: \n"
         rep_h[:flags].each { |flag, value| rep_str += "  #{flag}  =>  #{value}\n" }
 
@@ -110,28 +111,28 @@ module Ladon
         rep_str << "\nTimings: \n"
         # for spacing, we have variable-length names, so get max length and buffer accordingly
         max_name_len = 0
-        rep_h[:timings].each { |k,v| max_name_len = [max_name_len, v[:name].length].max }
+        rep_h[:timings].each { |_, v| max_name_len = [max_name_len, v[:name].length].max }
 
-        rep_str << '  Name' + ' ' * [max_name_len-4,0].max + ' ' * 5 + ' Start' + ' ' * 5 + '   End    Duration' + "\n"
-        rep_str << '  ----' + ' ' * [max_name_len-4,0].max + ' ' * 5 + ' -----' + ' ' * 5 + ' -----    --------' + "\n"
-        
-        rep_h[:timings].sort.map do |k,v|
-          name_str = v[:name] + ' ' * [max_name_len-v[:name].length,0].max
+        rep_str << '  Name' + ' ' * [max_name_len - 4, 0].max + ' ' * 5 + ' Start' + ' ' * 5 + '   End    Duration' + "\n"
+        rep_str << '  ----' + ' ' * [max_name_len - 4, 0].max + ' ' * 5 + ' -----' + ' ' * 5 + ' -----    --------' + "\n"
+
+        rep_h[:timings].sort.map do |k, v|
+          name_str = v[:name] + ' ' * [max_name_len - v[:name].length, 0].max
           times_str = "   #{k.strftime("%T")}   #{v[:end].strftime("%T")}  "
-          duration_str = ' ' * [10-v[:duration].round(3).to_s.length,0].max + v[:duration].round(3).to_s
+          duration_str = ' ' * [10 - v[:duration].round(3).to_s.length, 0].max + v[:duration].round(3).to_s
           rep_str << "  #{name_str}#{times_str}#{duration_str}\n"
         end
 
         # 4. Log Messages
         rep_str << "\nLog Entries: \n"
         rep_h[:log][:entries].each do |entry|
-          rep_str << "  - #{entry.level.to_s} at #{entry.time.strftime("%T")}:\n"
+          rep_str << "  - #{entry.level} at #{entry.time.strftime("%T")}:\n"
 
-          entry.msg_lines.each { |msg_line| rep_str << "      #{msg_line.to_s}\n" }
+          entry.msg_lines.each { |msg_line| rep_str << "      #{msg_line}\n" }
         end
 
         # 5. Data Log
-        rep_str << "\nData Log: \n  #{rep_h[:data_log].inspect.to_s}\n"
+        rep_str << "\nData Log: \n  #{rep_h[:data_log].inspect}\n"
       end
 
       # Create a JSON-formatted version of result
@@ -140,8 +141,6 @@ module Ladon
         rep_h = to_h
         return JSON.pretty_generate(rep_h)
       end
-
     end
-
   end
 end

@@ -15,8 +15,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
 | | (_| | (_| | (_) | | | | |_____| | |  | |_| | | | | | | |  __/ |
 |_|\\__,_|\\__,_|\\___/|_| |_|         |_|   \\__,_|_| |_|_| |_|\\___|_|   ".freeze
   AUTOMATION_DIR_BASENAME = 'automations'.freeze
-  RESULTS_FLAGS = {:type => 'res_type', :file => 'res_file'}
-
+  RESULTS_FLAGS = { type: 'res_type', file: 'res_file' }.freeze
 
   def setup
     argv_given = flags.get(ARGV_FLAG, default_to: nil)
@@ -76,19 +75,21 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     result_type = @options.flags.fetch(RESULTS_FLAGS[:type], 'text').to_sym
     result_file = @options.flags.fetch(RESULTS_FLAGS[:file], nil)
 
-    unless result_type == :none
-      if result_type == :json
-        my_result = @target_automation.result.to_json
-      else
-        my_result = @target_automation.result.to_s
-      end
-      if result_file.nil?
-        _print_separator_line('-',' Results ')
-        puts my_result
-      else
-        File.write(result_file, my_result)
-        puts "Results written to #{File.absolute_path(result_file)}"
-      end
+    return if result_type == :none
+    if result_type == :json
+      my_result = @target_automation.result.to_json
+    elsif result_type == :text
+      my_result = @target_automation.result.to_s
+    else
+      return
+    end
+    # handle ouptut
+    if result_file.nil?
+      _print_separator_line('-', ' Results ')
+      puts my_result
+    else
+      File.write(result_file, my_result)
+      puts "Results written to #{File.absolute_path(result_file)}"
     end
   end
 
