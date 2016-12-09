@@ -37,10 +37,10 @@ module Ladon
         def to_h
           timings = {}
           @entries.each do |entry|
-            time_details = { name: entry.name,
+            time_details = { start: entry.start_time,
                              end: entry.end_time,
                              duration: entry.duration }
-            timings[entry.start_time] = time_details
+            timings[entry.name] = time_details
           end
           timings
         end
@@ -53,9 +53,9 @@ module Ladon
           entries.each do |entry|
             time_name = entry.name
             time_duration = entry.duration.round(3)
-            str << "  #{time_name}#{_add_buffer(max_len, time_name)}"\
+            str << "  #{time_name}#{_buffer(max_len, time_name)}"\
                    "   #{entry.start_time.strftime('%T')}   #{entry.end_time.strftime('%T')}  "\
-                   "   #{_add_buffer(7, time_duration)}#{time_duration}\n"
+                   "   #{_buffer(7, time_duration)}#{time_duration}\n"
           end
           str
         end
@@ -68,7 +68,7 @@ module Ladon
       # @param [Object] offset The amount to shorten the returned string
       # @return [String] string containing only spaces of length +len+ - +offset+.length
       #   or the empty string if +offset+.length > +len+
-        def _add_buffer(len, offset = '')
+        def _buffer(len, offset = '')
           ' ' * [len - offset.to_s.length, 0].max
         end
 
@@ -85,8 +85,8 @@ module Ladon
         def _to_s_header
           buffer = _max_len + 1
           "\nTimings: \n"\
-          "  Name#{_add_buffer(buffer)} Start#{_add_buffer(5)}   End    Duration\n"\
-          "  ----#{_add_buffer(buffer)} -----#{_add_buffer(5)} -----    --------\n"
+          "  Name#{_buffer(buffer)} Start#{_buffer(5)}   End    Duration\n"\
+          "  ----#{_buffer(buffer)} -----#{_buffer(5)} -----    --------\n"
         end
       end
 
