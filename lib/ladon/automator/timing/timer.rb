@@ -62,12 +62,12 @@ module Ladon
 
         private
 
-      # Provide a string containing only spaces (used for formatting strings)
-      #
-      # @param [Integer] len The maximum length of the string to generate
-      # @param [Object] offset The amount to shorten the returned string
-      # @return [String] string containing only spaces of length +len+ - +offset+.length
-      #   or the empty string if +offset+.length > +len+
+        # Provide a string containing only spaces (used for formatting strings)
+        #
+        # @param [Integer] len The maximum length of the string to generate
+        # @param [Object] offset The amount to shorten the returned string
+        # @return [String] string containing only spaces of length +len+ - +offset+.length
+        #   or the empty string if +offset+.length > +len+
         def _buffer(len, offset = '')
           ' ' * [len - offset.to_s.length, 0].max
         end

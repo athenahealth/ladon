@@ -106,8 +106,8 @@ module Ladon
           { level: @level, entries: @entries }
         end
 
-      # Create a string-formatted version of logger
-      # @return [String] printable string containing logger attributes in a neat format
+        # Create a string-formatted version of logger
+        # @return [String] printable string containing logger attributes in a neat format
         def to_s
           str = "\nLog Entries: \n"
           @entries.each do |entry|
