@@ -1,6 +1,7 @@
 module Ladon
   # Represents arbitrary flags/arguments given to a Ladon model or automation.
   class Flags
+    attr_reader :flags
     # Create a new +Flags+ instance. All +Flags+ instances are frozen upon instantiation.
     #
     # @param [Hash] in_hash Optional hash used to fill out the new +Flags+ instance.
@@ -20,13 +21,6 @@ module Ladon
     # @return [Object] The object registered with the given +flag+ name if it exists, else +default_to+.
     def get(flag, default_to:)
       @flags.fetch(flag.to_sym, default_to)
-    end
-
-    # Get hash of all passed-in flags
-    #
-    # @return [Hash] The hash containing all flags (keys) and associated values in this instance
-    def all_flags
-      @flags
     end
   end
 end

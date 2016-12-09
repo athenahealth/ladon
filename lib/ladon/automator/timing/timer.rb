@@ -31,6 +31,63 @@ module Ladon
           timer.end
           timer
         end
+
+        # Create a hash-formatted version of timer
+        # @return [Hash] value containing timer attributes in a neat format
+        def to_h
+          timings = {}
+          @entries.each do |entry|
+            time_details = { name: entry.name,
+                             end: entry.end_time,
+                             duration: entry.duration }
+            timings[entry.start_time] = time_details
+          end
+          timings
+        end
+
+        # Create a string-formatted version of timer
+        # @return [String] printable string containing timer attributes in a neat format
+        def to_s
+          max_len = _max_len
+          str = _to_s_header
+          entries.each do |entry|
+            time_name = entry.name
+            time_duration = entry.duration.round(3)
+            str << "  #{time_name}#{_add_buffer(max_len, time_name)}"\
+                   "   #{entry.start_time.strftime('%T')}   #{entry.end_time.strftime('%T')}  "\
+                   "   #{_add_buffer(7, time_duration)}#{time_duration}\n"
+          end
+          str
+        end
+
+        private
+
+      # Provide a string containing only spaces (used for formatting strings)
+      #
+      # @param [Integer] len The maximum length of the string to generate
+      # @param [Object] offset The amount to shorten the returned string
+      # @return [String] string containing only spaces of length +len+ - +offset+.length
+      #   or the empty string if +offset+.length > +len+
+        def _add_buffer(len, offset = '')
+          ' ' * [len - offset.to_s.length, 0].max
+        end
+
+        # Determines the maximum length of name from existing entries
+        # @return [Integer] the maximum length of an existing entry name
+        def _max_len
+          max_len = 0
+          @entries.each { |e| max_len = [max_len, e.name.length].max }
+          max_len
+        end
+
+        # Create a header string
+        # @return [String] A formatted header
+        def _to_s_header
+          buffer = _max_len + 1
+          "\nTimings: \n"\
+          "  Name#{_add_buffer(buffer)} Start#{_add_buffer(5)}   End    Duration\n"\
+          "  ----#{_add_buffer(buffer)} -----#{_add_buffer(5)} -----    --------\n"
+        end
       end
 
       # Represents a single timing performed by a +Timer+ instance.
@@ -61,6 +118,14 @@ module Ladon
         # @return [Time] The UTC time that was noted.
         def end
           @end_time = Time.now.utc
+        end
+
+        # Get the duration of the time entry in minutes.
+        # @return [Float] The difference in minutes between start_time and end_time
+        #   Equals -1.0 if either value is missing
+        def duration
+          return -1.0 if @start_time.nil? || @end_time.nil?
+          (@end_time - @start_time) / 60.0
         end
       end
     end

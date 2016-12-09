@@ -99,6 +99,24 @@ module Ladon
         def fatal(msg)
           log(msg, level: Level::FATAL)
         end
+
+        # Create a hash-formatted version of logger
+        # @return [Hash] value containing logger attributes in a neat format
+        def to_h
+          { level: @level, entries: @entries }
+        end
+
+      # Create a string-formatted version of logger
+      # @return [String] printable string containing logger attributes in a neat format
+        def to_s
+          str = "\nLog Entries: \n"
+          @entries.each do |entry|
+            str << "  - #{entry.level} at #{entry.time.strftime('%T')}:\n"
+
+            entry.msg_lines.each { |msg_line| str << "      #{msg_line}\n" }
+          end
+          str
+        end
       end
 
       # Represents a single item in a Logger's record.

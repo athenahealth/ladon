@@ -5,7 +5,6 @@ require 'pp'
 require 'pry'
 require 'ladon'
 
-# FIXME: eventually we should model Ladon in Ladon and use ModelAutomation here
 class LadonAutomationRunner < Ladon::Automator::Automation
   ARGV_FLAG = :argv
   RIDICULOUS_BANNER =
@@ -70,19 +69,13 @@ class LadonAutomationRunner < Ladon::Automator::Automation
 
   private
 
-  # determine which result representation to generate, and where to output it
+  # generate a result representation and to output it according to provided flags
   def _make_results
-    result_type = @options.flags.fetch(RESULTS_FLAGS[:type], 'text').to_sym
-    result_file = @options.flags.fetch(RESULTS_FLAGS[:file], nil)
+    result_type = @options.flags.fetch(RESULTS_FLAGS[:type], nil).to_sym
+    return if result_type.nil? || !@target_automation.result.respond_to?(result_type)
 
-    return if result_type == :none
-    if result_type == :json
-      my_result = @target_automation.result.to_json
-    elsif result_type == :text
-      my_result = @target_automation.result.to_s
-    else
-      return
-    end
+    my_result = @target_automation.result.send(result_type)
+    result_file = @options.flags.fetch(RESULTS_FLAGS[:file], nil)
     # handle ouptut
     if result_file.nil?
       _print_separator_line('-', ' Results ')
@@ -239,5 +232,6 @@ end
 
 flags = Hash[LadonAutomationRunner::ARGV_FLAG, ARGV]
 runner = LadonAutomationRunner.spawn(flags: Ladon::Flags.new(in_hash: flags))
-runner.run
+res = runner.run
+pp(res)
 puts 'ladon-run complete!'
