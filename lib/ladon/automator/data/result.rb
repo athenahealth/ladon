@@ -77,7 +77,8 @@ module Ladon
         { data_log: @data_log,
           log: @logger.to_h,
           timings: @timer.to_h,
-          status: @status }.merge(@config.to_h)
+          status: @status,
+          config: @config.to_h }
       end
 
       # Create a string-formatted version of result
@@ -85,14 +86,13 @@ module Ladon
       def to_s
         # 1. Status
         rep_str = "Status: #{@status}\n"
-        # 2. Config
-        rep_str << @config.to_s
+        rep_str << "Configurations:\n  #{@config.to_s.gsub(/\n/, "\n  ")}\n"
         # 3. Timings
-        rep_str << @timer.to_s
+        rep_str << "Timings:\n  #{@timer.to_s.gsub(/\n/, "\n  ")}\n"
         # 4. Log Messages
-        rep_str << @logger.to_s
+        rep_str << "Log Messages:\n  #{@logger.to_s.gsub(/\n/, "\n  ")}\n"
         # 5. Data Log
-        rep_str << "\nData-Log: \n  #{@data_log}\n"
+        rep_str << "Data-Log:\n  #{@data_log}\n"
       end
 
       # Create a JSON-formatted version of result

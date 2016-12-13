@@ -37,10 +37,7 @@ module Ladon
         def to_h
           timings = {}
           @entries.each do |entry|
-            time_details = { start: entry.start_time,
-                             end: entry.end_time,
-                             duration: entry.duration }
-            timings[entry.name] = time_details
+            timings[entry.name] = entry.to_h
           end
           timings
         end
@@ -48,45 +45,11 @@ module Ladon
         # Create a string-formatted version of timer
         # @return [String] printable string containing timer attributes in a neat format
         def to_s
-          max_len = _max_len
-          str = _to_s_header
+          str = ''
           entries.each do |entry|
-            time_name = entry.name
-            time_duration = entry.duration.round(3)
-            str << "  #{time_name}#{_buffer(max_len, time_name)}"\
-                   "   #{entry.start_time.strftime('%T')}   #{entry.end_time.strftime('%T')}  "\
-                   "   #{_buffer(7, time_duration)}#{time_duration}\n"
+            str << entry.to_s
           end
           str
-        end
-
-        private
-
-        # Provide a string containing only spaces (used for formatting strings)
-        #
-        # @param [Integer] len The maximum length of the string to generate
-        # @param [Object] offset The amount to shorten the returned string
-        # @return [String] string containing only spaces of length +len+ - +offset+.length
-        #   or the empty string if +offset+.length > +len+
-        def _buffer(len, offset = '')
-          ' ' * [len - offset.to_s.length, 0].max
-        end
-
-        # Determines the maximum length of name from existing entries
-        # @return [Integer] the maximum length of an existing entry name
-        def _max_len
-          max_len = 0
-          @entries.each { |e| max_len = [max_len, e.name.length].max }
-          max_len
-        end
-
-        # Create a header string
-        # @return [String] A formatted header
-        def _to_s_header
-          buffer = _max_len + 1
-          "\nTimings: \n"\
-          "  Name#{_buffer(buffer)} Start#{_buffer(5)}   End    Duration\n"\
-          "  ----#{_buffer(buffer)} -----#{_buffer(5)} -----    --------\n"
         end
       end
 
@@ -126,6 +89,20 @@ module Ladon
         def duration
           return -1.0 if @start_time.nil? || @end_time.nil?
           (@end_time - @start_time) / 60.0
+        end
+
+        def to_h
+          { name: @name,
+            start: @start_time,
+            end: @end_time,
+            duration: duration }
+        end
+
+        def to_s
+            "Name: #{@name}\n"\
+            "  - Time Elapsed: #{duration.round(3)}\n"\
+            "  - Started: #{@start_time.strftime('%T')}\n"\
+            "  - Ended: #{@end_time.strftime('%T')}\n"
         end
       end
     end
