@@ -30,7 +30,7 @@ module Ladon
       # Create a string-formatted version of config
       # @return [String] printable string containing config attributes in a neat format
       def to_s
-        "ID: #{@id}\n\nFLAGS:\n#{@flags.to_s}"
+        "ID: #{@id}\n\nFLAGS:\n#{@flags}"
       end
     end
   end

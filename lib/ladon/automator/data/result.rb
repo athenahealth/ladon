@@ -86,11 +86,11 @@ module Ladon
       def to_s
         # 1. Status
         rep_str = "STATUS: #{@status}\n"
-        rep_str << "\n#{@config.to_s}\n"
+        rep_str << "\n#{@config}\n"
         # 3. Timings
-        rep_str << "\nTIMINGS:\n#{@timer.to_s}\n"
+        rep_str << "\nTIMINGS:\n#{@timer}\n"
         # 4. Log Messages
-        rep_str << "\nLOG MESSAGES:\n#{@logger.to_s}\n"
+        rep_str << "\nLOG MESSAGES:\n#{@logger}\n"
         # 5. Data Log
         rep_str << "\nDATA LOG:\n#{@data_log}\n"
       end

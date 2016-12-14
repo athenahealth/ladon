@@ -111,7 +111,7 @@ module Ladon
         # Create a string-formatted version of logger
         # @return [String] printable string containing logger attributes in a neat format
         def to_s
-          entries.map{ |entry| entry.to_s }.join("\n")
+          entries.map( &:to_s ).join("\n")
         end
       end
 
@@ -144,7 +144,7 @@ module Ladon
         # @return [String] printable string containing log entry attributes in a neat format
         def to_s
           str = "#{@level} at #{@time.strftime('%T')}\n"
-          str << @msg_lines.map{ |msg_line| "\t#{msg_line}" }.join("\n")
+          str << @msg_lines.map { |msg_line| "\t#{msg_line}" }.join("\n")
         end
 
         # Create a hash-formatted version of log entry
