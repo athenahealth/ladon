@@ -35,9 +35,7 @@ module Ladon
         # Create a hash-formatted version of timer
         # @return [Hash] value containing timer attributes in a neat format
         def to_h
-          timings = {}
-          @entries.each { |entry| timings[entry.name] = entry.to_h }
-          timings
+          @entries.each_with_object({}) { |entry, timings| timings[entry.name] = entry.to_h }
         end
 
         # Create a string-formatted version of timer
@@ -88,10 +86,12 @@ module Ladon
         # Create a hash-formatted version of time entry
         # @return [Hash] value containing time entry attributes in a neat format
         def to_h
-          { name: @name,
+          {
+            name: @name,
             start: @start_time,
             end: @end_time,
-            duration: duration }
+            duration: duration
+          }
         end
 
         # Create a string-formatted version of time entry

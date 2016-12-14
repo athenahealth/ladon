@@ -103,15 +103,18 @@ module Ladon
         # Create a hash-formatted version of logger
         # @return [Hash] value containing logger attributes in a neat format
         def to_h
-          log_hash = {}
-          @entries.each { |entry| log_hash[entry.time] = entry.to_h }
-          log_hash
+          {
+            level: @level,
+            entries: @entries.map(&:to_h)
+          }
         end
 
         # Create a string-formatted version of logger
         # @return [String] printable string containing logger attributes in a neat format
         def to_s
-          entries.map(&:to_s).join("\n")
+          str = "Level: #{@level}\n"\
+                "Entries:\n"
+          str << entries.map(&:to_s).join("\n")
         end
       end
 
@@ -150,9 +153,11 @@ module Ladon
         # Create a hash-formatted version of log entry
         # @return [Hash] value containing log entry attributes in a neat format
         def to_h
-          { level: @level,
+          {
+            level: @level,
             time: @time,
-            msg_lines: @msg_lines }
+            msg_lines: @msg_lines
+          }
         end
       end
     end

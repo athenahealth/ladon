@@ -24,13 +24,17 @@ module Ladon
       # Create a hash-formatted version of config
       # @return [Hash] value containing config attributes in a neat format
       def to_h
-        { id: @id, flags: @flags.to_h }
+        {
+          id: @id,
+          flags: @flags.to_h
+        }
       end
 
       # Create a string-formatted version of config
       # @return [String] printable string containing config attributes in a neat format
       def to_s
-        "ID: #{@id}\n\nFLAGS:\n#{@flags}"
+        "ID: #{@id}\n\n"\
+        "FLAGS:\n#{@flags}"
       end
     end
   end
