@@ -43,7 +43,7 @@ module Ladon
         # Create a string-formatted version of timer
         # @return [String] printable string containing timer attributes in a neat format
         def to_s
-          entries.map( &:to_s ).join("\n")
+          entries.map(&:to_s).join("\n")
         end
       end
 

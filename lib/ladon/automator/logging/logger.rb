@@ -111,7 +111,7 @@ module Ladon
         # Create a string-formatted version of logger
         # @return [String] printable string containing logger attributes in a neat format
         def to_s
-          entries.map( &:to_s ).join("\n")
+          entries.map(&:to_s).join("\n")
         end
       end
 
