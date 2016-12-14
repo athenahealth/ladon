@@ -40,10 +40,33 @@ module Ladon
       context 'when requesting the value for a non-existing flag key' do
         let(:request_key) { :b }
 
-        it { is_expected.not_to raise_error }
-
         it 'returns the existing value mapped to the given key' do
           expect(subject.call).to eq(default_value)
+        end
+      end
+    end
+
+    describe 'to_ methods' do
+      let(:in_hash) { { a: 1, b: 2 } }
+
+      describe '#to_h' do
+        subject { -> { flags.to_h } }
+
+        it { is_expected.not_to raise_error }
+
+        it 'returns the existing flags arrtibute as a hash' do
+          expect(subject.call).to eq(in_hash)
+        end
+      end
+
+      describe '#to_s' do
+        let(:expected_string) { "a  => 1\nb  => 2" }
+        subject { -> { flags.to_s } }
+
+        it { is_expected.not_to raise_error }
+
+        it 'returns the existing flags arrtibute as a string' do
+          expect(subject.call).to eq(expected_string)
         end
       end
     end

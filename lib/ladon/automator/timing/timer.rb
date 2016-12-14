@@ -97,10 +97,12 @@ module Ladon
         # Create a string-formatted version of time entry
         # @return [String] printable string containing time entry attributes in a neat format
         def to_s
-          "#{@name}\n"\
-          " - Time Elapsed:  #{duration.round(3)}\n"\
-          " - Started:  #{@start_time.strftime('%T')}\n"\
-          " - Ended:  #{@end_time.strftime('%T')}"
+          [
+            "#{@name}",
+            " - Time Elapsed:  #{duration.round(3)}",
+            " - Started:  #{@start_time.strftime('%T')}",
+            " - Ended:  #{@end_time.strftime('%T')}"
+          ].join("\n")
         end
       end
     end

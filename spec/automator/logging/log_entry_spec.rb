@@ -34,6 +34,50 @@ module Ladon
             it { is_expected.to have_attributes(level: @level, msg_lines: @message, time: @time) }
           end
         end
+
+        describe 'to_ methods' do
+          before do
+            @message = [:msg1, :msg2]
+            @level = Level::ERROR
+            @time = Time.now
+            allow(Time).to receive(:now).and_return(@time)
+          end
+
+          let(:entry) { LogEntry.new(@message, @level) }
+
+          describe '#to_h' do
+            subject { -> { entry.to_h } }
+
+            let(:expected_hash) do
+              {
+                level: @level,
+                time: @time,
+                msg_lines: @message
+              }
+            end
+
+            it { is_expected.not_to raise_error }
+
+            it 'returns the existing flags arrtibute as a hash' do
+              expect(subject.call).to eq(expected_hash)
+            end
+          end
+
+          describe '#to_s' do
+            subject { -> { entry.to_s } }
+
+            let(:expected_string) do
+              "#{@level} at #{@time.strftime('%T')}\n"\
+              "\t#{@message[0]}\n\t#{@message[1]}"
+            end
+
+            it { is_expected.not_to raise_error }
+
+            it 'returns the existing flags arrtibute as a string' do
+              expect(subject.call).to eq(expected_string)
+            end
+          end
+        end
       end
     end
   end

@@ -26,6 +26,7 @@ module Ladon
       def to_h
         {
           id: @id,
+          log_level: @log_level.to_s,
           flags: @flags.to_h
         }
       end
@@ -33,8 +34,12 @@ module Ladon
       # Create a string-formatted version of config
       # @return [String] printable string containing config attributes in a neat format
       def to_s
-        "ID: #{@id}\n\n"\
-        "FLAGS:\n#{@flags}"
+        [
+          "Id: #{@id}",
+          "Log Level: #{@log_level}",
+          'Flags:',
+          "#{@flags}"
+        ].join("\n")
       end
     end
   end

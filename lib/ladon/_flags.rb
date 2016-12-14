@@ -31,9 +31,7 @@ module Ladon
     # Create a string-formatted version of flags
     # @return [String] printable string containing flags attributes in a neat format
     def to_s
-      str = ''
-      @flags.each { |flag, value| str << "#{flag}  => #{value}\n" }
-      str.chomp
+      @flags.map { |flag, value| "#{flag}  => #{value}" }.join("\n")
     end
   end
 end

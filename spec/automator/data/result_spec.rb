@@ -80,6 +80,53 @@ module Ladon
           it { is_expected.to be false }
         end
       end
+
+      describe 'to_ methods' do
+        let(:result) { Ladon::Automator::Result.new(Ladon::Automator::Config.new(id: '123456')) }
+
+        describe '#to_h' do
+          subject { -> { result.to_h } }
+
+          let(:expected_hash) do
+            {
+              data_log: {},
+              log: { level: :ERROR, entries: [] },
+              timings: {},
+              status: :SUCCESS,
+              config: { id: '123456', log_level: 'ERROR', flags: {} }
+            }
+          end
+
+          it { is_expected.not_to raise_error }
+
+          it 'returns the results representation as a hash' do
+            expect(subject.call).to eq(expected_hash)
+          end
+        end
+
+        describe '#to_s' do
+          subject { -> { result.to_s } }
+
+          let(:expected_string) do
+            [
+              "STATUS: SUCCESS\n",
+              'CONFIGURATIONS:',
+              "Id: 123456\nLog Level: ERROR\nFlags:\n\n",
+              "TIMINGS:\n\n",
+              'LOG MESSAGES:',
+              "Level: ERROR\nEntries:\n\n",
+              'DATA LOG:',
+              "{}\n"
+            ].join("\n")
+          end
+
+          it { is_expected.not_to raise_error }
+
+          it 'returns the existing flags arrtibute as a string' do
+            expect(subject.call).to eq(expected_string)
+          end
+        end
+      end
     end
   end
 end

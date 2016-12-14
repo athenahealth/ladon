@@ -74,28 +74,29 @@ module Ladon
       # Create a hash-formatted version of result
       # @return [Hash] value containing result attributes in a neat format
       def to_h
-        { data_log: @data_log,
+        {
+          data_log: @data_log,
           log: @logger.to_h,
           timings: @timer.to_h,
           status: @status,
-          config: @config.to_h }
+          config: @config.to_h
+        }
       end
 
       # Create a string-formatted version of result
       # @return [String] printable string containing result attributes in a neat format
       def to_s
-        # 1. Status
-        rep_str = "STATUS: #{@status}\n"
-        rep_str << "\n#{@config}\n"
-        # 3. Timings
-        rep_str << "\nTIMINGS:\n"\
-                   "#{@timer}\n"
-        # 4. Log Messages
-        rep_str << "\nLOG MESSAGES:\n"\
-                   "#{@logger}\n"
-        # 5. Data Log
-        rep_str << "\nDATA LOG:\n"\
-                   "#{@data_log}\n"
+        [
+          "STATUS: #{@status}\n",
+          'CONFIGURATIONS:',
+          "#{@config}\n",
+          'TIMINGS:',
+          "#{@timer}\n",
+          'LOG MESSAGES:',
+          "#{@logger}\n",
+          'DATA LOG:',
+          "#{@data_log}\n"
+        ].join("\n")
       end
 
       # Create a JSON-formatted version of result
