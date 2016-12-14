@@ -20,6 +20,27 @@ module Ladon
         @flags = flags.is_a?(Ladon::Flags) ? flags : Ladon::Flags.new(in_hash: flags)
         @log_level = Automator::Logging::Level::ALL.include?(log_level) ? log_level : Automator::Logging::Level::ERROR
       end
+
+      # Create a hash-formatted version of config
+      # @return [Hash] value containing config attributes in a neat format
+      def to_h
+        {
+          id: @id,
+          log_level: @log_level.to_s,
+          flags: @flags.to_h
+        }
+      end
+
+      # Create a string-formatted version of config
+      # @return [String] printable string containing config attributes in a neat format
+      def to_s
+        [
+          "Id: #{@id}",
+          "Log Level: #{@log_level}",
+          'Flags:',
+          "#{@flags}"
+        ].join("\n")
+      end
     end
   end
 end

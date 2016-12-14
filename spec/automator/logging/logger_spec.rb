@@ -46,6 +46,31 @@ module Ladon
           end
         end
 
+        describe 'to_ methods' do
+          let(:logger) { Logger.new }
+          describe '#to_h' do
+            subject { -> { logger.to_h } }
+            let(:expected_hash) { { level: Level::ERROR, entries: [] } }
+
+            it { is_expected.not_to raise_error }
+
+            it 'returns the existing flags arrtibute as a hash' do
+              expect(subject.call).to eq(expected_hash)
+            end
+          end
+
+          describe '#to_s' do
+            let(:expected_string) { "Level: ERROR\nEntries:\n" }
+            subject { -> { logger.to_s } }
+
+            it { is_expected.not_to raise_error }
+
+            it 'returns the existing flags arrtibute as a string' do
+              expect(subject.call).to eq(expected_string)
+            end
+          end
+        end
+
         describe 'convenience methods' do
           let(:test_msg) { 'message' }
           let(:compare_to) { Logger.new(level: Level::DEBUG).log(test_msg, level: level).msg_lines }

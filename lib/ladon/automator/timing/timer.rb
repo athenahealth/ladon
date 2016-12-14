@@ -31,6 +31,18 @@ module Ladon
           timer.end
           timer
         end
+
+        # Create a hash-formatted version of timer
+        # @return [Hash] value containing timer attributes in a neat format
+        def to_h
+          @entries.each_with_object({}) { |entry, timings| timings[entry.name] = entry.to_h }
+        end
+
+        # Create a string-formatted version of timer
+        # @return [String] printable string containing timer attributes in a neat format
+        def to_s
+          entries.map(&:to_s).join("\n")
+        end
       end
 
       # Represents a single timing performed by a +Timer+ instance.
@@ -61,6 +73,36 @@ module Ladon
         # @return [Time] The UTC time that was noted.
         def end
           @end_time = Time.now.utc
+        end
+
+        # Get the duration of the time entry in minutes.
+        # @return [Float] The difference in minutes between start_time and end_time
+        #   Equals -1.0 if either value is missing
+        def duration
+          return -1.0 if @start_time.nil? || @end_time.nil?
+          (@end_time - @start_time) / 60.0
+        end
+
+        # Create a hash-formatted version of time entry
+        # @return [Hash] value containing time entry attributes in a neat format
+        def to_h
+          {
+            name: @name,
+            start: @start_time,
+            end: @end_time,
+            duration: duration
+          }
+        end
+
+        # Create a string-formatted version of time entry
+        # @return [String] printable string containing time entry attributes in a neat format
+        def to_s
+          [
+            "#{@name}",
+            " - Time Elapsed:  #{duration.round(3)}",
+            " - Started:  #{@start_time.strftime('%T')}",
+            " - Ended:  #{@end_time.strftime('%T')}"
+          ].join("\n")
         end
       end
     end

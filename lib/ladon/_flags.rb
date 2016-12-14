@@ -21,5 +21,17 @@ module Ladon
     def get(flag, default_to:)
       @flags.fetch(flag.to_sym, default_to)
     end
+
+    # Return the hash-formatted +@flags+ attribute of flags
+    # @return [Hash] value of the flags attribute
+    def to_h
+      @flags
+    end
+
+    # Create a string-formatted version of flags
+    # @return [String] printable string containing flags attributes in a neat format
+    def to_s
+      @flags.map { |flag, value| "#{flag}  => #{value}" }.join("\n")
+    end
   end
 end

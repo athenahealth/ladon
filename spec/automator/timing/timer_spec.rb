@@ -35,7 +35,7 @@ module Ladon
                 subject.for(timer_name) {}
                 new_entry = subject.entries.last
                 expect(new_entry.end_time).to be_a(Time) # end time should be a time
-                expect(new_entry.end_time).to be > new_entry.start_time # end time should be after start time
+                expect(new_entry.end_time).to be >= new_entry.start_time # end time should be after start time
               end
             end
 
@@ -44,6 +44,36 @@ module Ladon
               it 'will raise the error from the block' do
                 expect { subject.for(timer_name) { raise error_type } }.to raise_error(error_type)
               end
+            end
+          end
+        end
+
+        describe 'to_ methods' do
+          before(:each) do
+            @timer = Timer.new
+            @timer.for(timer_name) {}
+            @new_entry = @timer.entries.last
+          end
+
+          describe '#to_h' do
+            subject { -> { @timer.to_h } }
+            let(:expected_hash) { { @new_entry.name => @new_entry.to_h } }
+
+            it { is_expected.not_to raise_error }
+
+            it 'returns the existing entries arrtibute as a hash' do
+              expect(subject.call).to eq(expected_hash)
+            end
+          end
+
+          describe '#to_s' do
+            subject { -> { @timer.to_s } }
+            let(:expected_string) { @new_entry.to_s }
+
+            it { is_expected.not_to raise_error }
+
+            it 'returns the existing entries arrtibute as a string' do
+              expect(subject.call).to eq(expected_string)
             end
           end
         end
