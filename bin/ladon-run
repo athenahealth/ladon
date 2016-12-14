@@ -82,8 +82,8 @@ class LadonAutomationRunner < Ladon::Automator::Automation
       puts my_result
       _print_separator_line('-')
     else
-      File.write(result_file, my_result)
-      puts "Results written to #{File.absolute_path(result_file)}"
+      File.write(File.expand_path(result_file), my_result)
+      puts "Results written to #{File.expand_path(result_file)}"
     end
   end
 

@@ -30,10 +30,7 @@ module Ladon
       # Create a string-formatted version of config
       # @return [String] printable string containing config attributes in a neat format
       def to_s
-        # str = 
-        flags_str = @flags.to_s.gsub(/\n(.)/, "\n  - \1")
-        # @flags.to_h.each { |flag, value| str << "  - #{flag} \t=>  #{value}\n" }
-        "ID: #{@id}\nFlags:\n  - #{flags_str}"
+        "ID: #{@id}\n\nFLAGS:\n#{@flags.to_s}"
       end
     end
   end

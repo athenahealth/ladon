@@ -22,14 +22,18 @@ module Ladon
       @flags.fetch(flag.to_sym, default_to)
     end
 
+    # Return the hash-formatted +@flags+ attribute of flags
+    # @return [Hash] value of the flags attribute
     def to_h
       @flags
     end
 
+    # Create a string-formatted version of flags
+    # @return [String] printable string containing flags attributes in a neat format
     def to_s
       str = ''
-      @flags.each { |flag, value| str << "#{flag}\t=> #{value}\n" }
-      str
+      @flags.each { |flag, value| str << "#{flag}  => #{value}\n" }
+      str.chomp
     end
   end
 end

@@ -85,14 +85,14 @@ module Ladon
       # @return [String] printable string containing result attributes in a neat format
       def to_s
         # 1. Status
-        rep_str = "Status: #{@status}\n"
-        rep_str << "Configurations:\n  #{@config.to_s.gsub(/\n/, "\n  ")}\n"
+        rep_str = "STATUS: #{@status}\n"
+        rep_str << "\n#{@config.to_s}\n"
         # 3. Timings
-        rep_str << "Timings:\n  #{@timer.to_s.gsub(/\n/, "\n  ")}\n"
+        rep_str << "\nTIMINGS:\n#{@timer.to_s}\n"
         # 4. Log Messages
-        rep_str << "Log Messages:\n  #{@logger.to_s.gsub(/\n/, "\n  ")}\n"
+        rep_str << "\nLOG MESSAGES:\n#{@logger.to_s}\n"
         # 5. Data Log
-        rep_str << "Data-Log:\n  #{@data_log}\n"
+        rep_str << "\nDATA LOG:\n#{@data_log}\n"
       end
 
       # Create a JSON-formatted version of result

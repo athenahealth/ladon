@@ -36,20 +36,14 @@ module Ladon
         # @return [Hash] value containing timer attributes in a neat format
         def to_h
           timings = {}
-          @entries.each do |entry|
-            timings[entry.name] = entry.to_h
-          end
+          @entries.each { |entry| timings[entry.name] = entry.to_h }
           timings
         end
 
         # Create a string-formatted version of timer
         # @return [String] printable string containing timer attributes in a neat format
         def to_s
-          str = ''
-          entries.each do |entry|
-            str << entry.to_s
-          end
-          str
+          entries.map{ |entry| entry.to_s }.join("\n")
         end
       end
 
@@ -91,6 +85,8 @@ module Ladon
           (@end_time - @start_time) / 60.0
         end
 
+        # Create a hash-formatted version of time entry
+        # @return [Hash] value containing time entry attributes in a neat format
         def to_h
           { name: @name,
             start: @start_time,
@@ -98,11 +94,13 @@ module Ladon
             duration: duration }
         end
 
+        # Create a string-formatted version of time entry
+        # @return [String] printable string containing time entry attributes in a neat format
         def to_s
-            "Name: #{@name}\n"\
-            "  - Time Elapsed: #{duration.round(3)}\n"\
-            "  - Started: #{@start_time.strftime('%T')}\n"\
-            "  - Ended: #{@end_time.strftime('%T')}\n"
+          "#{@name}\n"\
+          " - Time Elapsed:  #{duration.round(3)}\n"\
+          " - Started:  #{@start_time.strftime('%T')}\n"\
+          " - Ended:  #{@end_time.strftime('%T')}"
         end
       end
     end
