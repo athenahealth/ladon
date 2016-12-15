@@ -115,9 +115,9 @@ module Ladon
         end
       end
 
-      describe '#to_load_target_state_type' do
+      describe '#target_loader' do
         let(:transition) { Transition.new }
-        let(:behavior) { transition.to_load_target_state_type }
+        let(:behavior) { transition.target_loader }
         subject { -> { behavior } }
 
         context 'when no block is given' do
@@ -125,7 +125,7 @@ module Ladon
         end
 
         context 'when block is given' do
-          let(:behavior) { transition.to_load_target_state_type {} }
+          let(:behavior) { transition.target_loader {} }
 
           before { allow(transition).to receive(:target_loaded?).and_return(loaded_status) }
 
@@ -143,16 +143,16 @@ module Ladon
         end
       end
 
-      describe '#load_target_state_type' do
+      describe '#load_target' do
         let(:transition) { Transition.new { |t| block_behavior.call(t) } }
         let(:block_behavior) { ->(t) {} }
-        let(:behavior) { transition.load_target_state_type }
+        let(:behavior) { transition.load_target }
         subject { -> { behavior } }
 
         context 'when target is loaded' do
-          let(:block_behavior) { ->(t) { t.to_load_target_state_type {} } }
+          let(:block_behavior) { ->(t) { t.target_loader {} } }
 
-          before { transition.load_target_state_type }
+          before { transition.load_target }
 
           it { is_expected.not_to change(transition, :target_loaded?).from(true) }
 
@@ -173,7 +173,7 @@ module Ladon
           end
 
           context 'when a target loader has been specified' do
-            let(:block_behavior) { ->(t) { t.to_load_target_state_type {} } }
+            let(:block_behavior) { ->(t) { t.target_loader {} } }
 
             it { is_expected.to change { transition.target_loaded? }.from(false).to(true) }
 
@@ -186,9 +186,9 @@ module Ladon
         end
       end
 
-      describe '#to_identify_target_state_type' do
+      describe '#target_identifier' do
         let(:transition) { Transition.new }
-        let(:behavior) { transition.to_identify_target_state_type }
+        let(:behavior) { transition.target_identifier }
         subject { -> { behavior } }
 
         context 'when no block is given' do
@@ -196,7 +196,7 @@ module Ladon
         end
 
         context 'when block is given' do
-          let(:behavior) { transition.to_identify_target_state_type {} }
+          let(:behavior) { transition.target_identifier {} }
 
           before { allow(transition).to receive(:target_loaded?).and_return(loaded_status) }
 
@@ -214,16 +214,16 @@ module Ladon
         end
       end
 
-      describe '#identify_target_state_type' do
+      describe '#target_type' do
         let(:transition) { Transition.new { |t| block_behavior.call(t) } }
         let(:block_behavior) { ->(t) {} }
-        let(:behavior) { transition.identify_target_state_type }
+        let(:behavior) { transition.target_type }
 
         subject { -> { behavior } }
 
         context 'when a target identifier is specified' do
           let(:target_type) { Class.new(State) }
-          let(:block_behavior) { ->(t) { t.to_identify_target_state_type { target_type } } }
+          let(:block_behavior) { ->(t) { t.target_identifier { target_type } } }
 
           context 'when the target has not been loaded' do
             it { is_expected.to raise_error(StandardError) }
@@ -276,11 +276,11 @@ module Ladon
       end
 
       describe '#execute' do
-        let(:target_state_type) { Class.new(State) }
+        let(:target_type) { Class.new(State) }
         let(:transition) do
           Transition.new do |t|
-            t.to_load_target_state_type { target_state_type }
-            t.to_identify_target_state_type { target_state_type }
+            t.target_loader { target_type }
+            t.target_identifier { target_type }
             t.by { |_| 1 }
             t.by { |_| '2' }
             t.by { |_| :three }

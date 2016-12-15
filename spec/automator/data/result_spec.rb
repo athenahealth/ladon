@@ -122,8 +122,18 @@ module Ladon
 
           it { is_expected.not_to raise_error }
 
-          it 'returns the existing flags arrtibute as a string' do
+          it 'returns the existing flags attribute as a string' do
             expect(subject.call).to eq(expected_string)
+          end
+        end
+
+        describe '#to_json' do
+          subject { -> { result.to_json } }
+
+          it { is_expected.not_to raise_error }
+
+          it 'produces valid JSON' do
+            expect{JSON.parse(subject.call)}.not_to raise_error
           end
         end
       end

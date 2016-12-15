@@ -17,7 +17,7 @@ module Ladon
         @metadata = {}
 
         @identifier = nil
-        @target_state_type = nil
+        @target_type = nil
         @target_loaded = false
 
         yield(self) if block_given?
@@ -85,30 +85,30 @@ module Ladon
       # @param [Ladon::Modeler::State] current_state Instance of current state to execute against.
       # @return [Array<Object>] An array containing the return value of each "by" block.
       def execute(current_state)
-        load_target_state_type
+        load_target
         @by_blocks.map { |executor| executor.call(current_state) }
       end
 
       # The +&block+ given to this method will be used as the routine that should load
       # the transition's target state type into the Ruby interpreter.
       #
-      # Running this block should guarantee that the return value of +identify_target_state_type+
+      # Running this block should guarantee that the return value of +target_type+
       # will be resolvable and not result in a reference error.
       #
       # @raise [BlockRequiredError] if called without a block.
       # @raise [AlreadyLoadedError] if called when the target state type has already been loaded.
-      def to_load_target_state_type(&block)
+      def target_loader(&block)
         raise BlockRequiredError, 'Required block was not provided!' unless block_given?
         raise AlreadyLoadedError, 'Already loaded!' if target_loaded?
         @loader = block
       end
 
-      # Runs the +@loader+ Proc that was specified via +to_load_target_state_type+.
+      # Runs the +@loader+ Proc that was specified via +target_loader+.
       # Short circuits execution if the target state type is already loaded.
       #
       # @raise [NoMethodError] if called without a +@loader+ defined.
       # @return [Boolean] True if the target state type is loaded.
-      def load_target_state_type
+      def load_target
         return true if target_loaded?
         @loader.call
         @target_loaded = true
@@ -119,20 +119,20 @@ module Ladon
       #
       # @raise [BlockRequiredError] if called without a block.
       # @raise [AlreadyLoadedError] if called when the target state type has already been loaded.
-      def to_identify_target_state_type(&block)
+      def target_identifier(&block)
         raise BlockRequiredError, 'Required block was not provided!' unless block_given?
         raise AlreadyLoadedError, 'Already loaded!' if target_loaded?
         @identifier = block
       end
 
       # Returns a reference to the state type of this transition's target.
-      # Calls the identifier block specified via +to_identify_target_state_type+ to
+      # Calls the identifier block specified via +target_identifier+ to
       # ensure that the target is loaded before exposing the bare reference to it.
       #
       # @return [Class] Reference to the target State class type.
-      def identify_target_state_type
-        load_target_state_type
-        @target_state_type ||= @identifier.call
+      def target_type
+        load_target
+        @target_type ||= @identifier.call
       end
     end
   end
