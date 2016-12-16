@@ -64,8 +64,8 @@ module Ladon
         let(:transitions) do
           [
             Transition.new do |t|
-              t.to_load_target_state_type {}
-              t.to_identify_target_state_type { target_state }
+              t.target_loader {}
+              t.target_identifier { target_state }
             end
           ]
         end
@@ -76,9 +76,85 @@ module Ladon
         end
 
         describe '#load_transitions' do
+          let(:load_strategy) { LoadStrategy::LAZY }
+          subject { -> { graph.load_transitions(start_state, strategy: load_strategy) } }
+
+          context 'when the state is loaded' do
+            before { graph.load_state_type(start_state) }
+
+            it { is_expected.not_to raise_error }
+
+            context 'when transitions are already loaded for the given state' do
+              before { graph.load_transitions(start_state, strategy: load_strategy) }
+
+              it 'returns true' do
+                expect(subject.call).to be true
+              end
+
+              it 'does not cause changes to the graph registry' do
+                expect{subject.call}.not_to change{graph.transitions}
+              end
+            end
+
+            context 'when load strategy is none' do
+              let(:load_strategy) { LoadStrategy::NONE }
+
+              it 'returns false' do
+                expect(subject.call).to be false
+              end
+
+              it 'does not cause changes to the graph registry' do
+                expect{subject.call}.not_to change{graph.transitions}
+              end
+            end
+
+            context 'when load strategy is CONNECTED or higher' do
+              let(:load_strategy) { LoadStrategy::CONNECTED }
+
+              it 'loads the target state of the transition' do
+                expect(graph).to receive(:load_state_type).with(target_state, strategy: LoadStrategy::LAZY)
+                subject.call
+              end
+            end
+          end
+
+          context 'when the state is not loaded' do
+            it { is_expected.to raise_error(ArgumentError) }
+          end
         end
 
         describe '#add_transitions' do
+          # simulate trying to add a transition twice, plus something that is not a transition
+          let(:invalid_transition) { Object.new }
+          let(:adding_transitions) { transitions + transitions + [invalid_transition] }
+          subject { -> { graph.add_transitions(start_state, adding_transitions) } }
+
+          context 'when called with a state type currently unknown to the graph' do
+            it { is_expected.to raise_error(ArgumentError) }
+          end
+
+          context 'when called with a state type currently known to the graph' do
+            before { graph.load_state_type(start_state, strategy: Ladon::Modeler::LoadStrategy::LAZY) }
+
+            it { is_expected.not_to raise_error }
+
+            it 'returns a set' do
+              expect(subject.call).to be_an_instance_of(Set)
+            end
+
+            it 'does not return duplicates' do
+              expect(subject.call.size).to eq(1)
+            end
+
+            it "does not cause duplicates in the graph's transition registry" do
+              expect{subject.call}.to change{graph.transitions[start_state]}.from(Set.new).to(transitions)
+            end
+
+            it 'makes the graph report invalid transitions' do
+              expect(graph).to receive(:on_invalid_transitions).with([invalid_transition])
+              subject.call
+            end
+          end
         end
 
         describe '#transitions_loaded?' do

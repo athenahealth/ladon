@@ -100,9 +100,10 @@ module Ladon
       end
 
       # Create a JSON-formatted version of result
+      #
       # @return [String] containing result attributes in a JSON format
       def to_json
-        return JSON.pretty_generate(to_h)
+        JSON.pretty_generate(to_h)
       end
     end
   end

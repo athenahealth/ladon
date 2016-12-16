@@ -111,10 +111,10 @@ module Ladon
 
         added = add_transitions(state_class, state_class.transitions)
 
-        unless added.nil?
+        unless added.empty?
           next_strategy = LoadStrategy.nested_strategy_for(strategy)
           unless next_strategy == LoadStrategy::NONE
-            added.each { |transition| load_state_type(transition.identify_target_state_type, strategy: next_strategy) }
+            added.each { |transition| load_state_type(transition.target_type, strategy: next_strategy) }
           end
         end
 

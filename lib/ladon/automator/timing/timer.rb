@@ -98,7 +98,7 @@ module Ladon
         # @return [String] printable string containing time entry attributes in a neat format
         def to_s
           [
-            "#{@name}",
+            @name.to_s,
             " - Time Elapsed:  #{duration.round(3)}",
             " - Started:  #{@start_time.strftime('%T')}",
             " - Ended:  #{@end_time.strftime('%T')}"

@@ -38,7 +38,7 @@ module Ladon
           "Id: #{@id}",
           "Log Level: #{@log_level}",
           'Flags:',
-          "#{@flags}"
+          @flags.to_s
         ].join("\n")
       end
     end

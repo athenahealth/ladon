@@ -99,6 +99,40 @@ module Ladon
         end
       end
 
+      describe '#execute_transition' do
+        subject { -> { fsm.execute_transition(transition) } }
+
+        context 'when transition is a Ladon::Modeler::Transition instance' do
+          let(:target_state) { Class.new(State) }
+          let(:transition) do
+            Transition.new do |t|
+              t.target_loader { }
+              t.target_identifier { target_state }
+              t.by { |current_state|  }
+            end
+          end
+
+          before { fsm.use_state_type(start_state) }
+
+          it { is_expected.not_to raise_error }
+
+          it 'calls the execute method of the transition' do
+            expect(transition).to receive(:execute)
+            subject.call
+          end
+
+          it "updates the FSM's current_state to an instance of the target's type" do
+            expect{subject.call}.to change(fsm, :current_state).to instance_of(target_state)
+          end
+        end
+
+        context 'when transition is not a Ladon::Modeler::Transition instance' do
+          let(:transition) { Object.new }
+
+          it { is_expected.to raise_error(ArgumentError) }
+        end
+      end
+
       describe '#prefiltered_transitions' do
         let(:key) { 'key' }
         let(:wanted_value) { 123 }
