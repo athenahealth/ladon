@@ -18,6 +18,8 @@ module Ladon
     class Automation
       include API::Assertions # load assertions API
 
+      @is_abstract = true
+
       attr_reader :config, :result, :phase, :flags
 
       SETUP_PHASE = :setup # name for the setup phase
@@ -75,7 +77,7 @@ module Ladon
       #
       # @return [Boolean] True if this class is abstract, false if not (e.g., is executable.)
       def self.abstract?
-        true
+        !@is_abstract.nil? && @is_abstract == true
       end
 
       # Run the automation, from the next phase to be executed through the phase at the index specified.

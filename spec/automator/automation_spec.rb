@@ -1,6 +1,12 @@
 require 'spec_helper'
 require 'ladon'
 
+class ConcreteAutomation < Ladon::Automator::Automation; end
+
+class AbstractAutomation < ConcreteAutomation
+  @is_abstract = true
+end
+
 module Ladon
   module Automator
     RSpec.describe Automation do
@@ -45,9 +51,20 @@ module Ladon
       end
 
       describe '#abstract?' do
-        subject(:abstract_status) { Automation.abstract? }
+        subject(:abstract_status) { automation_class.abstract? }
 
-        it { is_expected.to be true }
+        context 'when automation is abstract' do
+          let(:automation_class) { AbstractAutomation }
+
+          it { is_expected.to be true }
+        end
+
+        context 'when automation is concrete' do
+          let(:automation_class) { ConcreteAutomation }
+
+          it { is_expected.to be false }
+        end
+
       end
 
       describe '#sandbox' do
