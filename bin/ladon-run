@@ -6,6 +6,8 @@ require 'pry'
 require 'ladon'
 
 class LadonAutomationRunner < Ladon::Automator::Automation
+  abstract
+
   ARGV_FLAG = :argv
   RIDICULOUS_BANNER =
     " _           _

@@ -4,7 +4,7 @@ require 'ladon'
 class ConcreteAutomation < Ladon::Automator::Automation; end
 
 class AbstractAutomation < ConcreteAutomation
-  @is_abstract = true
+  abstract
 end
 
 module Ladon

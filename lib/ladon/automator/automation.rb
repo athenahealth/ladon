@@ -70,10 +70,15 @@ module Ladon
         [SETUP_PHASE, EXECUTE_PHASE, TEARDOWN_PHASE]
       end
 
-      # Subclass implementations should override this method to return false if the subclass is intended as
-      # a concrete, runnable Automation implementation.
-      #
+      # Declares the class to be abstract. Ladon utilities will not attempt to execute Automations of any class that
+      # returns true for this method.
+      def self.abstract
+        @is_abstract = true
+      end
+
       # Ladon utilities will not attempt to execute Automations of any class that returns true for this method.
+      # If false, the subclass is intended as a concrete, runnable Automation implementation.
+      # Return false by default unless the subclass calls `.abstract` in the class definition.
       #
       # @return [Boolean] True if this class is abstract, false if not (e.g., is executable.)
       def self.abstract?
