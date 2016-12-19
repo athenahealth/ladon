@@ -14,6 +14,8 @@ module Ladon
     #
     # @attr_reader [Ladon::Modeler::FiniteStateMachine] model The model instance underlying this automation.
     class ModelAutomation < Automation
+      abstract
+
       attr_accessor :model
 
       BUILD_MODEL_PHASE = :build_model # name of the phase used to construct the model instance
