@@ -11,10 +11,10 @@ module Ladon
   module Automator
     RSpec.describe Automation do
       describe '#new' do
-        subject(:automation) { Automation.new(config) }
+        subject(:automation) { Automation.new(config: config) }
 
         context 'when given a valid config' do
-          let(:config) { Ladon::Automator::Config.new }
+          let(:config) { Ladon::Config.new }
 
           it 'raises no error' do
             expect { automation }.not_to raise_error
@@ -23,17 +23,15 @@ module Ladon
           it { is_expected.to have_attributes(config: config) }
 
           it 'has a Result object' do
-            expect(automation.result).to be_a(Ladon::Automator::Result)
+            expect(automation.result).to be_a(Ladon::Result)
           end
 
-          it 'has a private logger' do
-            expect { automation.logger }.to raise_error(NoMethodError)
-            expect(automation.instance_variable_get('@logger')).to be_a(Ladon::Automator::Logging::Logger)
+          it 'has a logger' do
+            expect { automation.logger }.not_to raise_error
           end
 
-          it 'has a private timer' do
-            expect { automation.timer }.to raise_error(NoMethodError)
-            expect(automation.instance_variable_get('@timer')).to be_a(Ladon::Automator::Timing::Timer)
+          it 'has a timer' do
+            expect { automation.timer }.not_to raise_error
           end
 
           it 'is marked abstract' do
@@ -68,7 +66,7 @@ module Ladon
       end
 
       describe '#sandbox' do
-        subject(:automation) { Automation.new(Ladon::Automator::Config.new) }
+        subject(:automation) { Automation.new(config: Ladon::Config.new) }
 
         context 'when given a block' do
           context 'when the block does not raise' do
@@ -105,8 +103,8 @@ module Ladon
       end
 
       describe '#run' do
-        let(:config) { Ladon::Automator::Config.new }
-        subject(:automation) { Automation.new(config) }
+        let(:config) { Ladon::Config.new }
+        subject(:automation) { Automation.new(config: config) }
 
         context 'when a required phase is not defined for the Automation' do
           it 'raises an error' do
@@ -122,7 +120,7 @@ module Ladon
             end
           end
 
-          subject(:automation) { phased_class.new(Ladon::Automator::Config.new) }
+          subject(:automation) { phased_class.new(config: Ladon::Config.new) }
 
           it 'calls the defined phases of the automation, in order' do
             phased_class.all_phases.each do |phase|

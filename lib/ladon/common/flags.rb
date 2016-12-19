@@ -16,7 +16,7 @@ module Ladon
     # Get the value associated with a specified flag.
     #
     # @param [Object] flag The flag to load.
-    # @param [Object] default_to Defaut value to assume if the given +flag+ isn't found.
+    # @param [Object] default_to Default value to assume if the given +flag+ isn't found.
     # @return [Object] The object registered with the given +flag+ name if it exists, else +default_to+.
     def get(flag, default_to:)
       @flags.fetch(flag.to_sym, default_to)
