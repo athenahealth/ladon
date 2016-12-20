@@ -15,7 +15,7 @@ module Ladon
       #
       # @param [Ladon::Modeler::Config] config The object providing configuration for this new Graph model.
       # @return [FiniteStateMachine] The new graph instance.
-      def initialize(config = Ladon::Modeler::Config.new)
+      def initialize(config: Ladon::Config.new, timer: nil, logger: nil)
         super
         @current_state = nil
       end

@@ -1,5 +1,4 @@
 require 'set'
-require 'ladon/modeler/data/config'
 require 'ladon/modeler/components/load_strategy'
 require 'ladon/modeler/components/state'
 require 'ladon/modeler/components/transition'
@@ -10,22 +9,19 @@ module Ladon
     #
     # @attr_reader [Set] states Set containing the +State+ classes loaded in this Graph.
     # @attr_reader [Hash] transitions Hash mapping loaded +State+ classes to loaded +Transition+ instances associated.
-    # @attr_reader [Ladon::Flags] flags The flags given to this Graph at instantiation.
-    class Graph
-      attr_reader :states, :transitions, :flags
+    class Graph < Bundle
+      attr_reader :states, :transitions
 
       # Create a new +Graph+ instance.
       #
-      # @raise [ArgumentError] If the +config+ is not a Ladon::Modeler::Config instance.
+      # @raise [ArgumentError] If the +config+ is not a Ladon::Config instance.
       #
-      # @param [Ladon::Modeler::Config] config The object providing configuration for this new Graph model.
+      # @param [Ladon::Config] config The object providing configuration for this new Graph model.
       # @return [Graph] The new graph instance.
-      def initialize(config = Ladon::Modeler::Config.new)
-        raise ArgumentError, 'Graph requires a Ladon::Modeler::Config' unless config.is_a?(Ladon::Modeler::Config)
-        @config = config
+      def initialize(config: Ladon::Config.new, timer: nil, logger: nil)
+        super(config: config, timer: timer, logger: logger)
         @states = Set.new
         @transitions = Hash.new { |h, k| h[k] = Set.new }
-        @flags = config.flags
       end
 
       # Count the number of states loaded in this FSM.

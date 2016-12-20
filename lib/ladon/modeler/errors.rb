@@ -1,12 +1,4 @@
 module Ladon
-  # Error raised as default implementation of "abstract" methods, to signal missing method definitions.
-  class MissingImplementationError < StandardError
-  end
-
-  # Error used to signal that a block was required but not given.
-  class BlockRequiredError < StandardError
-  end
-
   module Modeler
     # Error raised when trying to call +Graph#merge+ with an incompatible source Graph.
     class InvalidMergeError < StandardError

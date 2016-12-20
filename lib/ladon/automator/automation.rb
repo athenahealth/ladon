@@ -1,9 +1,3 @@
-require 'ladon/automator/api/assertions'
-require 'ladon/automator/data/config'
-require 'ladon/automator/data/result'
-require 'ladon/automator/logging/logger'
-require 'ladon/automator/timing/timer'
-
 module Ladon
   module Automator
     # Base class for Ladon automation. This class is exposed to encapsulate the
@@ -11,16 +5,11 @@ module Ladon
     #
     # @abstract
     #
-    # @attr_reader [Ladon::Automator::Config] config The config object used to instantiate this Automation.
-    # @attr_reader [Ladon::Automator::Result] result The current result data for this Automation.
     # @attr_reader [Fixnum] phase The current phase number, as index into return value of +all_phases+
-    # @attr_reader [Ladon::Flags] flags The flags given to this automation at instantiation.
-    class Automation
-      include API::Assertions # load assertions API
+    class Automation < Bundle
+      attr_reader :phase
 
       @is_abstract = true
-
-      attr_reader :config, :result, :phase, :flags
 
       SETUP_PHASE = :setup # name for the setup phase
       EXECUTE_PHASE = :execute # name for the execute phase
@@ -28,26 +17,23 @@ module Ladon
 
       # Create an instance based on the +config+ provided.
       #
-      # @raise [ArgumentError] if provided config is not a Ladon::Automator::Config instance.
+      # @raise [ArgumentError] if provided config is not a Ladon::Config instance.
       #
-      # @param [Ladon::Automator::Config] config The configuration object for this automation.
-      def initialize(config)
-        raise ArgumentError, 'Ladon::Automator::Config required!' unless config.is_a?(Ladon::Automator::Config)
-        @config = config
-        @flags = config.flags
-        @result = Result.new(config)
-        @logger = @result.logger
-        @timer = @result.timer
+      # @param [Ladon::Config] config The configuration object for this automation.
+      # @param [Ladon::Logging::Logger] logger The logger to use in this automation.
+      # @param [Ladon::Timing::Timer] timer The timer to use in this automation.
+      def initialize(config: Ladon::Config.new, timer: nil, logger: nil)
+        super(config: config, timer: timer, logger: logger)
         @phase = 0
       end
 
       # Convenience method to spawn an instance of this class without having to manually build a config.
       #
       # @param [Object] id The id to associate with the spawned Automation.
-      # @param [Ladon::Automator::Logging:Level] log_level The log level to configure the Automation at.
+      # @param [Ladon::Logging::Level] log_level The log level to configure the Automation at.
       # @param [Ladon::Flags|Hash] flags The flags to pass to the spawned automation.
       def self.spawn(id: SecureRandom.uuid, log_level: nil, flags: nil)
-        self.new(Ladon::Automator::Config.new(id: id, log_level: log_level, flags: flags))
+        self.new(config: Ladon::Config.new(id: id, log_level: log_level, flags: flags))
       end
 
       # Identifies the phases from +all_phases+ that *must* be defined for automations of this type.
@@ -90,7 +76,7 @@ module Ladon
       # that have not yet been executed in the phase plan (see: +all_phases+).
       #
       # @param [Fixnum] to_index Phase number (zero indexed) to run through.
-      # @return [Ladon::Automator::Result] The result object for this Automation.
+      # @return [Ladon::Result] The result object for this Automation.
       def run(to_index: nil)
         self.class.required_phases.each do |phase|
           raise StandardError, "'#{phase}' not implemented!" unless respond_to?(phase)
@@ -101,22 +87,6 @@ module Ladon
         all_phases[@phase..to_index].each { |phase| do_phase(phase) }
 
         @result
-      end
-
-      # Given an arbitrary code block, this method will execute that block in a rescue construct.
-      # Should be used to ensure that the block does not cause the entire execution to die.
-      #
-      # @raise [BlockRequiredError] if no block given.
-      #
-      # @param [String] activity_name Description of the behavior taking place in the block.
-      def sandbox(activity_name)
-        raise BlockRequiredError, 'No block given!' unless block_given?
-
-        begin
-          yield
-        rescue => ex
-          on_error(ex, activity_name)
-        end
       end
 
       # Return a string to indicate why the current automation is skipping the given phase.
@@ -149,28 +119,6 @@ module Ladon
             @logger.info("#{phase} completed normally")
           end
         end
-      end
-
-      # Behavior to exhibit when a test run phase has an error that is not rescued by the test script's implementation.
-      # Marks the Automation as +errored+ and logs the error information.
-      #
-      # @param [Error] err The error to handle.
-      # @param [Symbol] phase The phase during which the +err+ occurred.
-      def on_error(err, phase)
-        @result.error
-        @logger.error(error_to_array(err, description: "#{err.class} in #{phase}: #{err}"))
-      end
-
-      # Takes an Error instance and converts it to an array of message lines.
-      #
-      # @param [Error] err The error to handle.
-      # @param [String] description Optional description string to prepend to backtrace.
-      #
-      # @return [Array<String>] An Array of strings containing error information and backtrace.
-      def error_to_array(err, description: nil)
-        msg_lines = err.backtrace
-        msg_lines.unshift(description) unless description.nil? || description.empty?
-        msg_lines
       end
     end
   end

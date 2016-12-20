@@ -4,6 +4,7 @@ module Ladon
   end
 end
 
-require 'ladon/_errors'
+require 'ladon/common'
+require 'ladon/modeler/errors'
 require 'ladon/modeler/graph'
 require 'ladon/modeler/fsm'
