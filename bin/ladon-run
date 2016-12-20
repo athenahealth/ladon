@@ -204,7 +204,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     detected_automations = ObjectSpace.each_object(Ladon::Automator::Automation.singleton_class)
 
     # Filter to only those Automation subclasses that are marked executable
-    executable_automations = detected_automations.select { |cls| cls.respond_to?(:abstract?) && !cls.abstract? }
+    executable_automations = detected_automations.reject(&:abstract?) #{ |cls| cls.respond_to?(:abstract?) && !cls.abstract? }
 
     # Select a single executable Automation subclass to run
     raise StandardError, 'No non-abstract Automation subclasses detected! Exiting...' if executable_automations.empty?
@@ -218,8 +218,8 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     class_options.each_with_index { |cls, idx| puts "\t#{idx + 1}. #{cls.name}" }
     begin
       idx = gets.to_i
-      raise StandardError unless idx > 0 && idx < class_options.size
-      return class_options[idx]
+      raise StandardError unless idx > 0 && idx <= class_options.size
+      return class_options[idx - 1]
     rescue
       puts 'Nope. Try again.'
       retry
