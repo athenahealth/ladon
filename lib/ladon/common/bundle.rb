@@ -29,5 +29,45 @@ module Ladon
       @result = Ladon::Result.new(config: config, timer: @timer, logger: @logger)
       @flags = config.flags
     end
+
+    # Given an arbitrary code block, this method will execute that block in a rescue construct.
+    # Should be used to ensure that the block does not cause the entire execution to die.
+    #
+    # @raise [BlockRequiredError] if no block given.
+    #
+    # @param [String] activity_name Description of the behavior taking place in the block.
+    def sandbox(activity_name)
+      raise BlockRequiredError, 'No block given!' unless block_given?
+
+      begin
+        yield
+      rescue => ex
+        on_error(ex, activity_name)
+      end
+    end
+
+    private
+
+    # Behavior to exhibit when a test run phase has an error that is not rescued by the test script's implementation.
+    # Marks the Automation as +errored+ and logs the error information.
+    #
+    # @param [Error] err The error to handle.
+    # @param [Symbol] phase The phase during which the +err+ occurred.
+    def on_error(err, phase)
+      @result.error
+      @logger.error(error_to_array(err, description: "#{err.class} in #{phase}: #{err}"))
+    end
+
+    # Takes an Error instance and converts it to an array of message lines.
+    #
+    # @param [Error] err The error to handle.
+    # @param [String] description Optional description string to prepend to backtrace.
+    #
+    # @return [Array<String>] An Array of strings containing error information and backtrace.
+    def error_to_array(err, description: nil)
+      msg_lines = err.backtrace
+      msg_lines.unshift(description) unless description.nil? || description.empty?
+      msg_lines
+    end
   end
 end
