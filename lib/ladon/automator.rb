@@ -5,5 +5,6 @@ module Ladon
 end
 
 require 'ladon/common'
+require 'ladon/automator/phase'
 require 'ladon/automator/automation'
 require 'ladon/automator/model_automation'

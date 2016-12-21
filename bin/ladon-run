@@ -6,8 +6,6 @@ require 'pry'
 require 'ladon'
 
 class LadonAutomationRunner < Ladon::Automator::Automation
-  abstract
-
   ARGV_FLAG = :argv
   RIDICULOUS_BANNER =
     " _           _
@@ -17,6 +15,16 @@ class LadonAutomationRunner < Ladon::Automator::Automation
 |_|\\__,_|\\__,_|\\___/|_| |_|         |_|   \\__,_|_| |_|_| |_|\\___|_|   ".freeze
   AUTOMATION_DIR_BASENAME = 'automations'.freeze
   RESULTS_FLAGS = { type: 'res_type', file: 'res_file' }.freeze
+
+  # Ladon-run uses a setup-execute-teardown cycle.
+  # If setup results in a non-success status, execute is skipped but teardown will still occur.
+  def self.phases
+    [
+      Ladon::Automator::Phase.new(:setup, required: true),
+      Ladon::Automator::Phase.new(:execute, required: true, validator: -> automation { automation.result.success? }),
+      Ladon::Automator::Phase.new(:teardown, required: true)
+    ]
+  end
 
   def setup
     argv_given = flags.get(ARGV_FLAG, default_to: nil)
@@ -44,29 +52,28 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     _print_separator_line
 
     puts "\nStarting: #{@target_automation_class.name}"
-    @target_automation = @target_automation_class.spawn(flags: @options.flags)
 
-    @target_automation_class.all_phases.each_with_index do |phase_name, idx|
-      _go_interactive if @options.interactive_before.include?(phase_name)
-
-      print "Beginning phase: #{phase_name}..."
-      @target_automation.run(to_index: idx) # this is the interesting line
-      puts 'complete!'
-
-      _go_interactive if @options.interactive_post.include?(phase_name)
+    wrapper = Class.new(@target_automation_class) do
+      def self.make_phases_interactive(phase_names)
+        phase_names.uniq.each do |name|
+          define_method name do
+            binding.pry
+            super
+          end
+        end
+      end
     end
+
+    wrapper.make_phases_interactive(@options.interactive)
+    @target_automation = wrapper.spawn(flags: @options.flags)
+    @target_automation.run
+
     puts "\nExecution complete"
   end
 
   def teardown
+    binding.pry if @options.nil? || @options.review
     _make_results
-    _go_interactive if @options.nil? || @options.review
-  end
-
-  # If there was a failure in setup, don't run execute.
-  def skip_reason(phase)
-    return "Failure detected in #{SETUP_PHASE}" if phase == EXECUTE_PHASE && !@result.success?
-    super
   end
 
   private
@@ -78,6 +85,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
 
     my_result = @target_automation.result.send(result_type)
     result_file = @options.flags.fetch(RESULTS_FLAGS[:file], nil)
+
     # handle ouptut
     if result_file.nil?
       _print_separator_line('-', ' Results ')
@@ -89,23 +97,10 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     end
   end
 
-  def _go_interactive
-    puts ''
-    _print_separator_line('-')
-    puts "\tStarting interactive mode\n"
-
-    binding.pry
-
-    puts "\n\tInteractive mode exited, continuing..."
-    _print_separator_line('-')
-    puts ''
-  end
-
   def _parse_options(flags: [])
     vals = Struct.new(:automation_path,
                       :automation_class_name,
-                      :interactive_before,
-                      :interactive_post,
+                      :interactive,
                       :review,
                       :flags).new
     OptionParser.new do |opts|
@@ -125,18 +120,11 @@ class LadonAutomationRunner < Ladon::Automator::Automation
         vals.automation_class_name = val
       end
 
-      opts.on('-b PHASE_LIST',
-              '--interactive_before PHASE_LIST',
+      opts.on('-i PHASE_LIST',
+              '--interactive PHASE_LIST',
               String,
-              'Comma-separated list of phases to enter interactive mode BEFORE running') do |val|
-        vals.interactive_before = val.split(',').map { |phase| phase.strip.to_sym }
-      end
-
-      opts.on('-p PHASE_LIST',
-              '--interactive_post PHASE_LIST',
-              String,
-              'Comma-separated list of phases to enter interactive mode AFTER running.') do |val|
-        vals.interactive_post = val.split(',').map { |phase| phase.strip.to_sym }
+              'Comma-separated list of phase names to enter interactive mode BEFORE running') do |val|
+        vals.interactive = val.split(',').map { |phase| phase.strip.to_sym }
       end
 
       opts.on('-f FLAGS',
@@ -163,8 +151,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
   # returns true if the options are valid.
   def _validate_options?
     raise StandardError, 'Automation not specified!' unless @options.automation_path
-    @options.interactive_post = [] unless @options.interactive_post.is_a?(Array)
-    @options.interactive_before = [] unless @options.interactive_before.is_a?(Array)
+    @options.interactive = [] unless @options.interactive.is_a?(Array)
     @options.flags = {} unless @options.flags.is_a?(Hash)
     true
   end
@@ -204,7 +191,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     detected_automations = ObjectSpace.each_object(Ladon::Automator::Automation.singleton_class)
 
     # Filter to only those Automation subclasses that are marked executable
-    executable_automations = detected_automations.reject(&:abstract?)
+    executable_automations = detected_automations.reject(&:abstract?) - [LadonAutomationRunner]
 
     # Select a single executable Automation subclass to run
     raise StandardError, 'No non-abstract Automation subclasses detected! Exiting...' if executable_automations.empty?
@@ -236,4 +223,7 @@ end
 flags = Hash[LadonAutomationRunner::ARGV_FLAG, ARGV]
 runner = LadonAutomationRunner.spawn(flags: Ladon::Flags.new(in_hash: flags))
 runner.run
+
+binding.pry
+
 puts 'ladon-run complete!'
