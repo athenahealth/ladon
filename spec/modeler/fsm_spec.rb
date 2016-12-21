@@ -114,8 +114,6 @@ module Ladon
 
           before { fsm.use_state_type(start_state) }
 
-          it { is_expected.not_to raise_error }
-
           it 'calls the execute method of the transition' do
             expect(transition).to receive(:execute)
             subject.call
@@ -123,6 +121,22 @@ module Ladon
 
           it "updates the FSM's current_state to an instance of the target's type" do
             expect{subject.call}.to change(fsm, :current_state).to instance_of(target_state)
+          end
+
+          context 'when target is able to verify current state' do
+            it { is_expected.not_to raise_error }
+          end
+
+          context 'when target is NOT able to verify current state' do
+            let(:target_state) do
+              Class.new(State) do
+                def verify_as_current_state?
+                  false
+                end
+              end
+            end
+
+            it { is_expected.to raise_error(TransitionFailedError) }
           end
         end
 

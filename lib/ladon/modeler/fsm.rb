@@ -95,7 +95,10 @@ module Ladon
       def execute_transition(transition)
         raise ArgumentError, 'Must be called with a Transition instance!' unless transition.is_a?(Transition)
         transition.execute(current_state)
-        use_state_type(transition.target_type)
+        new_state = use_state_type(transition.target_type)
+
+        return new_state if new_state.verify_as_current_state?
+        raise TransitionFailedError, "Failed to verify '#{new_state.class}' as current state"
       end
 
       # Filter the given list of transitions based on the model prefilter and current state.
