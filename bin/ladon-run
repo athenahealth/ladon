@@ -53,12 +53,18 @@ class LadonAutomationRunner < Ladon::Automator::Automation
 
     puts "\nStarting: #{@target_automation_class.name}"
 
+    # To facilitate interactive mode, we create a magic subclass of the target type.
+    # On this subclass, we redefine the methods that have been specified for interactive mode with a
+    # hook to start a pry session. The immediate next call is a +super()+ so you can easily "step" into the
+    # target method.
     wrapper = Class.new(@target_automation_class) do
       def self.make_phases_interactive(phase_names)
         phase_names.uniq.each do |name|
+          next unless method_defined?(name) # avoid incidentally implementing a missing phase
+
           define_method name do
             binding.pry
-            super
+            super()
           end
         end
       end
@@ -223,7 +229,5 @@ end
 flags = Hash[LadonAutomationRunner::ARGV_FLAG, ARGV]
 runner = LadonAutomationRunner.spawn(flags: Ladon::Flags.new(in_hash: flags))
 runner.run
-
-binding.pry
 
 puts 'ladon-run complete!'
