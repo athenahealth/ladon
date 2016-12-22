@@ -130,7 +130,7 @@ module Ladon
         subject { -> { automation.send(:process_phase, target_phase) } }
 
         it 'validates the phase' do
-          expect(automation).to receive(:phase_valid?).with(target_phase)
+          expect(target_phase).to receive(:valid_for?).with(automation)
           subject.call
         end
 

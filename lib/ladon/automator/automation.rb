@@ -36,48 +36,34 @@ module Ladon
         @result
       end
 
+      # Determines if the specified phase is actually available to this automation.
+      #
+      # @param [Phase] phase The phase to check.
+      # @return [Boolean] True if the automation defines the phase method, false otherwise.
+      def phase_available?(phase)
+        respond_to?(phase.name)
+      end
+
       private
 
-      # Run a phase of the Automation script, auto-timing the duraction of its execution.
-      # The phase will be sandboxed such that an unrescued error during the phase will not crash the entire execution.
-      #
-      # @param [Phase] phase The phase to execute.
+      # Run a phase of the Automation script, auto-timing the duration of its execution.
+      # @param [Phase] phase The phase to process.
       def process_phase(phase)
         @logger.info("Processing phase: '#{phase.name}'")
 
-        return unless phase_valid?(phase)
+        unless phase.valid_for?(self)
+          @logger.warn("Phase validation failed; phase #{phase.name} skipped!")
+          return
+        end
+
         execute_phase(phase)
       end
 
-      # Determines if the given automation validates successfully against the current automation.
-      #
-      # @param [Phase] phase The phase to execute.
-      # @return [Boolean] True if the phase is currently valid for this automation, false otherwise.
-      def phase_valid?(phase)
-        return true if phase.valid_for?(self)
-
-        @logger.warn("Phase validation failed; phase #{phase.name} skipped!")
-        false
-      end
-
-      # Determines if the given automation validates successfully against the current automation.
-      #
-      # @param [Phase] phase The phase to execute.
-      # @return [Boolean] True if the phase is currently valid for this automation, false otherwise.
-      def phase_skipped?(phase)
-        return false if respond_to?(phase.name)
-
-        @logger.log("Phase '#{phase.name}' skipped because it is not defined",
-                    level: phase.required? ? Ladon::Logging::Level::ERROR : Ladon::Logging::Level::WARN)
-        true
-      end
-
+      # Execute the specified phase. The phase will be sandboxed such that an unrescued error during the phase will not
+      # crash the entire execution of this automation.
       # @param [Phase] phase The phase to execute.
       def execute_phase(phase)
-        if phase_skipped?(phase)
-          @result.failure if phase.required?
-          return
-        end
+        return on_phase_skipped(phase) unless phase_available?(phase)
 
         @timer.for(phase.name) do
           sandbox(phase.name) do # mark Automation a failure if a phase fails
@@ -85,6 +71,14 @@ module Ladon
             @logger.info("#{phase.name} completed normally")
           end
         end
+      end
+
+      # Skip the specified phase.
+      # @param [Phase] phase The phase to skip.
+      def on_phase_skipped(phase)
+        @logger.log("Skipping phase '#{phase.name}' because this automation has no such method.",
+                    level: phase.required? ? Ladon::Logging::Level::ERROR : Ladon::Logging::Level::WARN)
+        @result.failure if phase.required?
       end
     end
   end
