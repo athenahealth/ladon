@@ -1,7 +1,14 @@
 require 'spec_helper'
 require 'ladon'
 
-class ConcreteAutomation < Ladon::Automator::Automation; end
+class ConcreteAutomation < Ladon::Automator::Automation
+  PHASE_A = Ladon::Automator::Phase.new(:a, required: true)
+  PHASE_B = Ladon::Automator::Phase.new(:b)
+
+  def self.phases
+    [PHASE_A, PHASE_B]
+  end
+end
 
 class AbstractAutomation < ConcreteAutomation
   abstract
@@ -104,43 +111,44 @@ module Ladon
 
       describe '#run' do
         let(:config) { Ladon::Config.new }
-        subject(:automation) { Automation.new(config: config) }
+        let(:automation) { ConcreteAutomation.new(config: config) }
+        subject { -> { automation.run } }
 
-        context 'when a required phase is not defined for the Automation' do
-          it 'raises an error' do
-            expect { automation.run }.to raise_error(StandardError)
+        it { is_expected.not_to raise_error }
+
+        it 'processes each phase in the order they are defined' do
+          expect(automation).to receive(:process_phase).with(ConcreteAutomation::PHASE_A)
+          expect(automation).to receive(:process_phase).with(ConcreteAutomation::PHASE_B)
+          subject.call
+        end
+      end
+
+      describe '#process_phase' do
+        let(:config) { Ladon::Config.new }
+        let(:automation) { ConcreteAutomation.new(config: config) }
+        let(:target_phase) { Phase.new(:a) }
+        subject { -> { automation.send(:process_phase, target_phase) } }
+
+        it 'validates the phase' do
+          expect(target_phase).to receive(:valid_for?).with(automation)
+          subject.call
+        end
+
+        context 'when processing a valid phase' do
+          let(:target_phase) { Phase.new(:example, validator: -> automation { !automation.nil? } ) }
+
+          it 'executes the phase' do
+            expect(automation).to receive(:execute_phase).with(target_phase)
+            subject.call
           end
         end
 
-        context 'when the Automation has its required phases defined' do
-          let(:phased_class) do
-            Class.new(Automation) do
-              Automation.required_phases.each { |phase| define_method(phase.to_sym) {} }
-              Automation.all_phases.each { |phase| define_method(phase.to_sym) {} }
-            end
-          end
+        context 'when processing an invalid phase' do
+          let(:target_phase) { Phase.new(:example, validator: -> automation { automation.nil? } ) }
 
-          subject(:automation) { phased_class.new(config: Ladon::Config.new) }
-
-          it 'calls the defined phases of the automation, in order' do
-            phased_class.all_phases.each do |phase|
-              expect(automation).to receive(:do_phase).with(phase, any_args).ordered
-            end
-            automation.run
-          end
-
-          it 'calls the required phases' do
-            phased_class.required_phases.each { |phase| expect(subject).to receive(phase) }
-            automation.run
-          end
-
-          context 'when a to_index is specified' do
-            it 'runs from the next scheduled phase through the phase at the specified index' do
-              phased_class.all_phases.each_with_index do |phase, idx|
-                expect(automation).to receive(phase)
-                expect { automation.run(to_index: idx) }.to change(automation, :phase).by(1)
-              end
-            end
+          it 'does not execute the phase' do
+            expect(automation).not_to receive(:execute_phase)
+            subject.call
           end
         end
       end

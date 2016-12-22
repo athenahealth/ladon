@@ -30,6 +30,15 @@ module Ladon
       @flags = config.flags
     end
 
+    # Convenience method to spawn an instance of this class without having to manually build a config.
+    #
+    # @param [Object] id The id to associate with the spawned Bundle.
+    # @param [Ladon::Logging::Level] log_level The log level to configure the Bundle's logger at.
+    # @param [Ladon::Flags|Hash] flags The flags to pass to the spawned Bundle.
+    def self.spawn(id: SecureRandom.uuid, log_level: nil, flags: nil)
+      self.new(config: Ladon::Config.new(id: id, log_level: log_level, flags: flags))
+    end
+
     # Given an arbitrary code block, this method will execute that block in a rescue construct.
     # Should be used to ensure that the block does not cause the entire execution to die.
     #

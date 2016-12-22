@@ -21,16 +21,11 @@ module Ladon
       BUILD_MODEL_PHASE = :build_model # name of the phase used to construct the model instance
       VERIFY_MODEL_PHASE = :verify_model # name of the phase used to verify validity of the model instance
 
-      # Identifies the phases from +all_phases+ that *must* be defined for automations of this type.
-      # @return [Array<Symbol>] Array of Symbols identifying methods that must be defined to facilitate required phases.
-      def self.required_phases
-        [BUILD_MODEL_PHASE, VERIFY_MODEL_PHASE, EXECUTE_PHASE]
-      end
-
-      # Identifies the phases involved in this automation.
-      # @return [Array<Symbol>] Array of Symbols identifying methods that may be defined to facilitate expected phases.
-      def self.all_phases
-        [BUILD_MODEL_PHASE, VERIFY_MODEL_PHASE, SETUP_PHASE, EXECUTE_PHASE, TEARDOWN_PHASE]
+      def self.phases
+        super + [
+          Phase.new(:build_model, required: true),
+          Phase.new(:verify_model, required: true)
+        ]
       end
 
       # Subclasses _MUST_ override this method. This method should return an instance of
@@ -48,17 +43,6 @@ module Ladon
       # @raise [StandardError] If the model is not a FSM.
       def verify_model
         raise StandardError, 'The model must be a Ladon FSM' unless model.is_a?(Ladon::Modeler::FiniteStateMachine)
-      end
-
-      # Phase should be skipped if it is after the verify_model phase and the model is not defined.
-      #
-      # @param [Symbol] phase Phase name to determine the current reason to skip (or lack thereof.)
-      # @return [String] Description of reason why +phase+ will be skipped; nil if it should not be skipped.
-      def skip_reason(phase)
-        all_phases = self.class.all_phases
-        phase_idx = all_phases.index(phase)
-        return if phase_idx <= all_phases.index(VERIFY_MODEL_PHASE) || model.is_a?(Ladon::Modeler::FiniteStateMachine)
-        "Skipping #{phase}: model is '#{model}' but should be a Ladon FSM!"
       end
     end
   end
