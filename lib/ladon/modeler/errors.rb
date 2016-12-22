@@ -12,6 +12,10 @@ module Ladon
     class NoCurrentStateError < StandardError
     end
 
+    # Error raised when a FiniteStateMachine attempts a transition and fails.
+    class TransitionFailedError < StandardError
+    end
+
     # Error raised when a +Ladon::Automator::Graph+ is instructed to load a state type that is invalid.
     class InvalidStateTypeError < StandardError
       # Create a new instance of this error.

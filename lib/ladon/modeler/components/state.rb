@@ -15,6 +15,17 @@ module Ladon
       def self.transitions
         raise MissingImplementationError, 'self.transitions'
       end
+
+      # Method used by State instances to determine whether or not they are currently valid.
+      # The +FiniteStateMachine+ leverages this method when making Transitions to confirm that the new state
+      # is accurate to the software
+      #
+      # @abstract
+      #
+      # @return [Boolean] true by default. Subclasses should redefine to implement custom verification semantics.
+      def verify_as_current_state?
+        true
+      end
     end
   end
 end
