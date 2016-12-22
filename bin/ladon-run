@@ -86,8 +86,8 @@ class LadonAutomationRunner < Ladon::Automator::Automation
 
   # generate a result representation and to output it according to provided flags
   def _make_results
-    result_type = @options.flags.fetch(RESULTS_FLAGS[:type], nil).to_sym
-    return if result_type.nil? || !@target_automation.result.respond_to?(result_type)
+    result_type = @options.flags.fetch(RESULTS_FLAGS[:type], nil)
+    return if result_type.nil? || !@target_automation.result.respond_to?(result_type.to_sym)
 
     my_result = @target_automation.result.send(result_type)
     result_file = @options.flags.fetch(RESULTS_FLAGS[:file], nil)
@@ -231,3 +231,5 @@ runner = LadonAutomationRunner.spawn(flags: Ladon::Flags.new(in_hash: flags))
 runner.run
 
 puts 'ladon-run complete!'
+exit_code = runner.result.success? ? 0 : 1
+exit(exit_code)
