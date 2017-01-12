@@ -129,13 +129,13 @@ module Ladon
       end
 
       # Track the given argument as metadata on this transition.
+      # If +target_identifier+ has not been set, this will automatically call it such that the identifier simply
+      # looks up the class with the given name.
       #
       # @param [String] name The name of the transition's target type.
-      # @param [Boolean] identifier If true, will auto-call +target_identifier+ with a block that looks up the class
-      #   mapping to the specified name. By default, this argument is +false+.
-      def target_name=(name, identifier: false)
+      def target_name=(name)
         meta(TARGET_NAME_KEY, name)
-        target_identifier { Object.const_get(name) } if identifier
+        target_identifier { Object.const_get(name) } if @identifier.nil?
       end
 
       # Get the metadata mapping to the standard target name key.

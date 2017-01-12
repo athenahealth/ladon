@@ -106,7 +106,6 @@ module Ladon
         let(:target_class) { ExampleState }
         let(:transition) do
           Ladon::Modeler::Transition.new do |t|
-            t.target_identifier { ExampleState }
             t.target_name = 'ExampleState'
             t.target_loader {}
           end
