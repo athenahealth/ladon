@@ -87,6 +87,21 @@ module Ladon
         execute_transition(to_execute)
       end
 
+      # This is a convenience method wrapping +make_transition+. It works the exact same way, except that
+      # it accepts a specification of the type of state to transition into.
+      #
+      # *WARNING*: This method assumes that the Transition to be executed has metadata identifying the name of the
+      #   target state type. If no such transition exists, this call will result in a failed transition.
+      #
+      # @param [LoadStrategy] strategy The load strategy for +@current_state+'s class' transitions, if they're
+      #   not already loaded.
+      # @param [String|Class] target_type Specification of the target type. May either be a bare class reference,
+      #   or a string identifying the class name.
+      def make_transition_to(target_type, strategy: LoadStrategy::LAZY, &block)
+        name = target_type.is_a?(Class) ? target_type.name : target_type
+        make_transition(strategy: strategy) { |trx| name.eql?(trx.target_name) && transition_match?(trx, &block) }
+      end
+
       # Execute the given transition.
       #
       # @raise [ArgumentError] If +transition+ is not a Ladon Transition instance.
@@ -110,10 +125,10 @@ module Ladon
       # @param [Enumerable<Transition>] transition_options List-like enumerable containing Transition
       #   instances to filter.
       # @return [Enumerable<Transition>] List-like enumerable containing Transitions that passed the specified filters.
-      def prefiltered_transitions(transition_options)
+      def prefiltered_transitions(transition_options, &block)
         transition_options.select do |transition|
           # keep transitions that pass the filter block (if one is provided) AND pass the model-level prefilter
-          (!block_given? || yield(transition) == true) && passes_prefilter?(transition)
+          transition_match?(transition, &block) && passes_prefilter?(transition)
         end
       end
 
@@ -153,6 +168,14 @@ module Ladon
       # @return [Transition] Must return a Transition instance that should be executed.
       def selection_strategy(_transition_options)
         raise Ladon::MissingImplementationError, '#selection_strategy'
+      end
+
+      private
+
+      # Given a transition, validate it against a given block.
+      # @return True if no block given or the block returns true when called with the given transition, false otherwise.
+      def transition_match?(transition, &_block)
+        !block_given? || yield(transition) == true
       end
     end
 

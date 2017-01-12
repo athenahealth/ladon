@@ -8,6 +8,9 @@ module Ladon
       attr_reader :metadata, :target_loaded
       alias target_loaded? target_loaded
 
+      # Standard key to be used to map transition target state name metadata
+      TARGET_NAME_KEY = :target_name
+
       # Create a new Transition instance, optionally specifying a block to customize the transition.
       #
       # @yield [new_transition] The transition instance being created.
@@ -36,6 +39,7 @@ module Ladon
 
       # Retrieves the metadata associated with the given +key+.
       #
+      # @param key The key to look up in the metadata map.
       # @return [Object] The value currently mapped to the given +key+.
       def meta_for(key)
         @metadata[key]
@@ -123,6 +127,24 @@ module Ladon
         raise BlockRequiredError, 'Required block was not provided!' unless block_given?
         raise AlreadyLoadedError, 'Already loaded!' if target_loaded?
         @identifier = block
+      end
+
+      # Track the given argument as metadata on this transition.
+      # If +target_identifier+ has not been set, this will automatically call it such that the identifier simply
+      # looks up the class with the given name.
+      #
+      # @param [String] name The name of the transition's target type.
+      def target_name=(name)
+        meta(TARGET_NAME_KEY, name)
+        target_identifier { Object.const_get(name) } if @identifier.nil?
+      end
+
+      # Get the metadata mapping to the standard target name key.
+      #
+      # @return Whatever metadata is associated with the +TARGET_NAME_KEY+. This _should_ map to a class. Will be +nil+
+      #   if no metadata exists for this key.
+      def target_name
+        meta_for(TARGET_NAME_KEY)
       end
 
       # Returns a reference to the state type of this transition's target.
