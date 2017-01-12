@@ -174,7 +174,7 @@ module Ladon
 
       # Given a transition, validate it against a given block.
       # @return True if no block given or the block returns true when called with the given transition, false otherwise.
-      def transition_match?(transition, &block)
+      def transition_match?(transition, &_block)
         !block_given? || yield(transition) == true
       end
     end
