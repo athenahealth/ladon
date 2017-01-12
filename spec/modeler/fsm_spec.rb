@@ -1,6 +1,9 @@
 require 'spec_helper'
 require 'ladon'
 
+class ExampleState < Ladon::Modeler::State
+end
+
 module Ladon
   module Modeler
     RSpec.describe FiniteStateMachine do
@@ -96,6 +99,38 @@ module Ladon
               end
             end
           end
+        end
+      end
+
+      describe '#make_transition_to' do
+        let(:target_class) { ExampleState }
+        let(:transition) do
+          Ladon::Modeler::Transition.new do |t|
+            t.target_identifier { ExampleState }
+            t.target_name = 'ExampleState'
+            t.target_loader {}
+          end
+        end
+        subject { -> { fsm.make_transition_to(target_type) } }
+        before do
+          fsm.use_state_type(start_state)
+          fsm.add_transitions(start_state, [transition])
+
+          def fsm.selection_strategy(options)
+            options[0]
+          end
+        end
+
+        context 'when target_type is a string' do
+          let(:target_type) { 'ExampleState' }
+
+          it { is_expected.to change(fsm, :current_state).to be_an_instance_of(ExampleState) }
+        end
+
+        context 'when target_type is a Class reference' do
+          let(:target_type) { ExampleState }
+
+          it { is_expected.to change(fsm, :current_state).to be_an_instance_of(ExampleState) }
         end
       end
 
