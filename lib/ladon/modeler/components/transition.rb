@@ -8,6 +8,7 @@ module Ladon
       attr_reader :metadata, :target_loaded
       alias target_loaded? target_loaded
 
+      # Standard key to be used to map transition target state name metadata
       TARGET_NAME_KEY = :target_name
 
       # Create a new Transition instance, optionally specifying a block to customize the transition.
