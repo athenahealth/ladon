@@ -2,21 +2,21 @@ require 'spec_helper'
 require 'ladon'
 
 class ExampleState < Ladon::Modeler::State
-  transition 'ExampleTransition1' do |t|
+  transition 'ExampleTransitionTarget1' do |t|
     t.meta('index', 1)
   end
 
-  transition 'ExampleTransition1' do |t|
-    t.meta('index', 1)
+  transition 'ExampleTransitionTarget2' do |t|
+    t.meta('index', 2)
   end
 end
 
 class ExampleStateSubclass < ExampleState
-  transition 'ExampleTransition2' do |t|
+  transition 'ExampleTransitionTarget3' do |t|
     t.meta('index', 3)
   end
 
-  transition 'ExampleTransition3' do |t|
+  transition 'ExampleTransitionTarget4' do |t|
     t.meta('index', 4)
   end
 end

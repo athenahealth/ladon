@@ -19,7 +19,7 @@ module Ladon
         return ts + parent_class_transitions
       end
 
-      # Class-level method for declaring a new transition that will be available froma given state
+      # Class-level method for declaring a new transition that will be available from a given state
       # type.
       #
       # @param [String] target_name The name of the transition target class.
