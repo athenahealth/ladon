@@ -28,6 +28,8 @@ module Ladon
       # @return [Ladon::Modeler::State] An instance of the given +state_class+.
       def new_state_instance(state_class)
         @current_state = state_class.new
+        @current_state.instance_variable_set(:@model, self)
+        return @current_state
       end
 
       # Method used to change the current state to an instance of the specified state class.
