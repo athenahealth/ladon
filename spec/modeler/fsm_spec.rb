@@ -283,6 +283,18 @@ module Ladon
           end
         end
       end
+
+      describe '#new_state_instance' do
+        subject { fsm.new_state_instance(start_state) }
+
+        before { fsm.use_state_type(start_state) }
+
+        it { is_expected.to be_an_instance_of(start_state) }
+
+        it 'has @model referencing the fsm that created it' do
+          expect(subject.instance_variable_get(:@model)).to eq(fsm)
+        end
+      end
     end
   end
 end
