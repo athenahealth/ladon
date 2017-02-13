@@ -32,12 +32,12 @@ module Ladon
         else
           # if no format is available, try to infer from file extension, defaulting to :to_s
           if @formatter.nil?
-            case File.extname(file_path)
-              when '.json'
-                @formatter = :to_json
-              else
-                @formatter = :to_s
-            end
+            @formatter = case File.extname(file_path)
+                         when '.json'
+                           :to_json
+                         else
+                           :to_s
+                         end
           end
 
           formatted_info = result.send(@formatter)
@@ -89,6 +89,11 @@ module Ladon
         respond_to?(phase.name)
       end
 
+      # Handle outputting the Result information.
+      def handle_output
+        self.handle_flag(Automation::OUTPUT_FILE)
+      end
+
       private
 
       # Run a phase of the Automation script, auto-timing the duration of its execution.
@@ -126,9 +131,11 @@ module Ladon
         @result.failure if phase.required?
       end
 
-      # Handle outputting the Result information.
-      def handle_output
-        self.handle_flag(Automation::OUTPUT_FILE)
+      # Print a separator line string.
+      def _print_separator_line(sep = '*', title = '')
+        line_len = 80
+        half_width = (line_len - title.to_s.length) / 2.0
+        puts sep.to_s * half_width.floor + title.to_s + sep.to_s * half_width.ceil
       end
     end
   end

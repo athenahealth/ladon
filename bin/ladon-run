@@ -145,13 +145,6 @@ class LadonAutomationRunner < Ladon::Automator::Automation
       end
     end
   end
-
-  # Print a separator line string.
-  def _print_separator_line(sep = '*', title = '')
-    line_len = 80
-    half_width = (line_len - title.to_s.length) / 2.0
-    puts sep.to_s * half_width.floor + title.to_s + sep.to_s * half_width.ceil
-  end
 end
 
 def _parse_options(argv)
