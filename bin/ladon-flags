@@ -1,0 +1,137 @@
+#!/usr/bin/env ruby
+require 'optparse'
+require 'pathname'
+require 'pp'
+require 'pry'
+require 'ladon'
+
+class LadonFlagsIdentifier < Ladon::Automator::Automation
+  AUTOMATION_DIR_BASENAME = 'automations'.freeze
+
+  TARGET_AUTOMATION_PATH = make_flag(:target_path, default: nil) do |auto_path|
+    halting_assert('Automation path must point to an existing file') do
+      auto_path = File.expand_path(auto_path)
+      File.file?(auto_path)
+    end
+
+    halting_assert('Configures the load path and loads the target automation without error') do
+      _include_load_path(auto_path)
+      require_relative auto_path
+    end
+  end
+
+  TARGET_AUTOMATION_CLASS_NAME = make_flag(:target_class_name, default: nil) do |name|
+    @target_automation_class = nil
+
+    if name.nil? || name.empty?
+      # Detect all Automation subclasses
+      detected_automations = ObjectSpace.each_object(Ladon::Automator::Automation.singleton_class)
+
+      # Filter to only those Automation subclasses that are marked executable
+      executable_automations = detected_automations.reject { |cls| cls.abstract? || cls <= LadonFlagsIdentifier}
+
+      if executable_automations.size == 1
+        @target_automation_class = executable_automations[0]
+      else
+        @target_automation_class = _interactive_class_select(executable_automations)
+      end
+    else
+      @target_automation_class = Object.const_get(name)
+    end
+
+    halting_assert('Target Automation class must be a subclass of Ladon::Automator::Automation') do
+      @target_automation_class < Ladon::Automator::Automation
+    end
+  end
+
+  def self.phases
+    [ Ladon::Automator::Phase.new(:execute, required: true) ]
+  end
+
+  # During setup, ladon-run parses and validates the invocation options it was given.
+  # It then uses that information to load the target Automation class it will run.
+  def setup
+
+  end
+
+  # During execute, ladon-run prepares the functionality of the -i flag, spawns the
+  # target Automation instance, and runs it.
+  def execute
+    self.handle_flag(TARGET_AUTOMATION_PATH)
+    self.handle_flag(TARGET_AUTOMATION_CLASS_NAME)
+
+    @target_automation_class.all_flags.each do |flag|
+      puts "#{flag.to_s}\n\n"
+    end
+  end
+
+  private
+
+  # Look for a conventional directory to add to the load path. This runner
+  # assumes a directory structure in which all automations are located under a
+  # single directory with a conventional name at the root of another directory
+  # that contains all other files required for the automation to run.
+  # Specifically, it is looking for a directory with the following structure:
+  #
+  # <project_dir>/ (this is what gets added to the load path)
+  #   AUTOMATION_DIR_BASENAME/
+  #     ... (the automation being run is somewhere in here)
+  #   ... (any other directories and files)
+  #
+  # If found, the directory is added to the load path.
+  def _include_load_path(automation_path)
+    Pathname.new(automation_path).ascend do |path|
+      if path.basename.to_s.eql?(AUTOMATION_DIR_BASENAME)
+        $LOAD_PATH.unshift(path.dirname.to_s)
+        break
+      end
+    end
+  end
+
+  def _interactive_class_select(class_options)
+    puts "\nPlease select the Automation you wish to run by entering one of the following numbers:"
+    class_options.each_with_index { |cls, idx| puts "\t#{idx + 1}. #{cls.name}" }
+    begin
+      idx = gets.to_i
+      raise StandardError unless idx > 0 && idx <= class_options.size
+      return class_options[idx - 1]
+    rescue
+      puts 'Nope. Try again.'
+      retry
+    end
+  end
+end
+
+
+def _parse_options(argv)
+  flags = {}
+  OptionParser.new do |opts|
+    opts.banner = 'Usage: ladon-flags [options]'
+
+    opts.on('-a PATH',
+            '--automation PATH',
+            String,
+            '[REQUIRED] Path to the target automation script to be executed') do |val|
+      flags[LadonFlagsIdentifier::TARGET_AUTOMATION_PATH.name] = val
+    end
+
+    opts.on('-s NAME',
+            '--automation_class NAME',
+            String,
+            'Name of the target Automation class to run.') do |val|
+      flags[LadonFlagsIdentifier::TARGET_AUTOMATION_CLASS_NAME.name] = val
+    end
+
+    opts.on('-h', '--help', 'Prints this help message') do
+      puts opts
+      exit
+    end
+  end.parse!(argv)
+
+  flags
+end
+
+runner = LadonFlagsIdentifier.spawn(flags: _parse_options(ARGV))
+runner.run
+exit_code = runner.result.success? ? 0 : 1
+exit(exit_code) # exit with code

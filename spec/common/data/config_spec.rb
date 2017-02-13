@@ -16,7 +16,7 @@ module Ladon
 
         it { is_expected.not_to raise_error }
 
-        it 'returns the existing flags arrtibute as a hash' do
+        it 'returns the existing flags attribute as a hash' do
           expect(subject.call).to eq(expected_hash)
         end
       end
@@ -35,7 +35,7 @@ module Ladon
 
         it { is_expected.not_to raise_error }
 
-        it 'returns the existing flags arrtibute as a string' do
+        it 'returns the existing flags attribute as a string' do
           expect(subject.call).to eq(expected_string)
         end
       end
@@ -44,7 +44,7 @@ module Ladon
     describe '#flags' do
       subject { Config.new.flags }
 
-      it { is_expected.to be_an_instance_of(Ladon::Flags) }
+      it { is_expected.to be_an_instance_of(Hash) }
     end
   end
 end

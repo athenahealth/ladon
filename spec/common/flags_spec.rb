@@ -2,72 +2,136 @@ require 'spec_helper'
 require 'ladon'
 
 module Ladon
-  RSpec.describe Flags do
-    let(:flags) { Ladon::Flags.new(in_hash: in_hash) }
-
+  RSpec.describe Flag do
     describe '#new' do
-      subject { -> { flags } }
+      subject { -> { Flag.new(:flag_name) } }
 
-      context 'when called without an in_hash or a non-hash value' do
-        let(:in_hash) { nil }
+      it { is_expected.not_to raise_error }
+    end
 
-        it { is_expected.not_to raise_error }
+    describe '#feed' do
+      context 'when the flag has no handler' do
+        subject { -> { Flag.new(:flag_name_two).feed(Bundle.new) } }
+
+        it { is_expected.to raise_error(BlockRequiredError) }
       end
 
-      context 'when called with an in_hash' do
-        let(:in_hash) { { a: 1, b: 2 } }
+      context 'when the flag has a handler' do
+        let(:flag) { Flag.new(:flag_name_three) {} }
+        subject { -> { flag.feed(Bundle.new) } }
 
         it { is_expected.not_to raise_error }
       end
     end
 
-    describe '#get' do
-      let(:key) { :a }
-      let(:value) { 1 }
-      let(:default_value) { 2 }
-      let(:in_hash) { { key => value } }
-      subject { -> { flags.get(request_key, default_to: default_value) } }
+    describe '#get_value' do
+      let(:flag) { Flag.new(:a_name, default: :hard_default, class_override: can_override) }
+      let(:bundle) { Bundle.new }
+      subject { flag.get_value(bundle) }
 
-      context 'when requesting the value for an existing flag key' do
-        let(:request_key) { key }
-        it { is_expected.not_to raise_error }
+      context 'when class override is enabled' do
+        let(:can_override) { true }
 
-        it 'returns the existing value mapped to the given key' do
-          expect(subject.call).to eq(value)
+        context "when the bundle's class defines the conventional override method" do
+          let(:bundle) do
+            Class.new(Bundle) do
+              def self.default_a_name
+                :overridden_default
+              end
+            end.new
+          end
+
+          it { is_expected.to eq(:overridden_default) }
+        end
+
+        context "when the bundle's class does not define the conventional override method" do
+          it { is_expected.to eq(:hard_default) }
         end
       end
 
-      context 'when requesting the value for a non-existing flag key' do
-        let(:request_key) { :b }
+      context 'when class override is disabled' do
+        let(:can_override) { false }
 
-        it 'returns the existing value mapped to the given key' do
-          expect(subject.call).to eq(default_value)
-        end
+        it { is_expected.to eq(:hard_default) }
       end
     end
 
-    describe 'to_ methods' do
-      let(:in_hash) { { a: 1, b: 2 } }
+    describe '#to_s' do
+      subject { Flag.new(:flag_name).to_s }
 
-      describe '#to_h' do
-        subject { -> { flags.to_h } }
+      it { is_expected.to be_an_instance_of(String) }
+    end
+
+    describe '#to_h' do
+      subject { Flag.new(:flag_name).to_h }
+
+      it { is_expected.to be_an_instance_of(Hash) }
+    end
+
+    describe '#to_json' do
+      subject { Flag.new(:flag_name).to_json }
+
+      it { is_expected.to be_an_instance_of(String) }
+
+      it 'is valid JSON' do
+        expect{JSON.parse(subject.to_json)}.not_to raise_error
+      end
+    end
+  end
+
+  class ExampleOne; extend HasFlags; end
+
+  class ExampleTwo
+    extend HasFlags
+
+    B_FLAG = make_flag(:b_flag)
+
+    def flags; {}; end
+  end
+
+  class ExampleThree < ExampleTwo; D_FLAG = make_flag(:d_flag) {}; end
+
+  RSpec.describe HasFlags do
+    describe '.make_flag' do
+      subject { ExampleOne.make_flag(:c_flag, default: :c, class_override: true) {} }
+
+      it { is_expected.to be_an_instance_of(Flag) }
+
+      it { is_expected.to be_frozen }
+
+      it 'matches the args passed to the make_flag function' do
+        expect(subject.name).to eq(:c_flag)
+        expect(subject.default).to eq(:c)
+        expect(subject.class_override).to eq(true)
+        expect(subject.handler).to be_an_instance_of(Proc)
+      end
+    end
+
+    describe '.get_flags' do
+      subject { ExampleThree.all_flags }
+
+      it { is_expected.to be_an_instance_of(Array) }
+
+      it { is_expected.to contain_exactly(ExampleThree::D_FLAG, ExampleTwo::B_FLAG) }
+    end
+
+    describe '#get_flag_value' do
+      subject { -> { ExampleTwo.new.get_flag_value(ExampleTwo::B_FLAG) } }
+
+      it { is_expected.not_to raise_error }
+    end
+
+    describe '#handle_flag' do
+      context 'when flag has a handler' do
+        subject { -> { ExampleThree.new.handle_flag(ExampleThree::D_FLAG) } }
 
         it { is_expected.not_to raise_error }
-
-        it 'returns the existing flags arrtibute as a hash' do
-          expect(subject.call).to eq(in_hash)
-        end
       end
 
-      describe '#to_s' do
-        let(:expected_string) { "a  => 1\nb  => 2" }
-        subject { -> { flags.to_s } }
+      context 'when flag does not have a handler' do
+        subject { -> { ExampleTwo.new.handle_flag(ExampleTwo::B_FLAG) } }
 
-        it { is_expected.not_to raise_error }
-
-        it 'returns the existing flags arrtibute as a string' do
-          expect(subject.call).to eq(expected_string)
-        end
+        it { is_expected.to raise_error(BlockRequiredError) }
       end
     end
   end

@@ -5,58 +5,54 @@ require 'pp'
 require 'pry'
 require 'ladon'
 
+# Automation that facilitates running Ladon Automation scripts.
 class LadonAutomationRunner < Ladon::Automator::Automation
-  ARGV_FLAG = :argv
-  RIDICULOUS_BANNER =
-    " _           _
-| | __ _  __| | ___  _ __            _ __ _   _ _ __  _ __   ___ _ __
-| |/ _` |/ _` |/ _ \\| '_ \\   _____  | '__| | | | '_ \\| '_ \\ / _ \\ '__|
-| | (_| | (_| | (_) | | | | |_____| | |  | |_| | | | | | | |  __/ |
-|_|\\__,_|\\__,_|\\___/|_| |_|         |_|   \\__,_|_| |_|_| |_|\\___|_|   ".freeze
+  # Conventional name for a directory containing Ladon automations;
+  # If found as an ancestor in the TARGET_AUTOMATION_PATH, this directory will be added to the load path.
   AUTOMATION_DIR_BASENAME = 'automations'.freeze
-  RESULTS_FLAGS = { type: 'res_type', file: 'res_file' }.freeze
 
-  # Ladon-run uses a setup-execute-teardown cycle.
-  # If setup results in a non-success status, execute is skipped but teardown will still occur.
-  def self.phases
-    [
-      Ladon::Automator::Phase.new(:setup, required: true),
-      Ladon::Automator::Phase.new(:execute, required: true, validator: -> automation { automation.result.success? }),
-      Ladon::Automator::Phase.new(:teardown, required: true)
-    ]
+  # Flag that handles loading the target automation Ruby script.
+  TARGET_AUTOMATION_PATH = make_flag(:target_path, default: nil) do |auto_path|
+    halting_assert('Automation path must point to an existing file') do
+      auto_path = File.expand_path(auto_path)
+      File.file?(auto_path)
+    end
+
+    halting_assert('Configures the load path and loads the target automation without error') do
+      _include_load_path(auto_path)
+      require_relative auto_path
+    end
   end
 
-  def setup
-    argv_given = flags.get(ARGV_FLAG, default_to: nil)
-    halting_assert('ARGV flag must be provided') do
-      argv_given.is_a?(Array)
+  # Flag to identify the target Automation Class
+  TARGET_AUTOMATION_CLASS_NAME = make_flag(:target_class_name, default: nil) do |name|
+    @target_automation_class = nil
+
+    if name.nil? || name.empty?
+      # Detect all Automation subclasses
+      detected_automations = ObjectSpace.each_object(Ladon::Automator::Automation.singleton_class)
+
+      # Filter to only those Automation subclasses that are marked executable
+      executable_automations = detected_automations.reject { |cls| cls.abstract? || cls <= LadonAutomationRunner}
+      halting_assert('Must detect a single non-abstract automation') { executable_automations.size == 1 }
+      @target_automation_class = executable_automations[0]
+    else
+      @target_automation_class = Object.const_get(name)
     end
 
-    halting_assert('Options provided must be valid') do
-      @options = _parse_options(flags: argv_given)
-      _validate_options?
+    halting_assert('Target Automation class must be a subclass of Ladon::Automator::Automation') do
+      @target_automation_class < Ladon::Automator::Automation
     end
-
-    _include_load_path
-
-    halting_assert('Must be able to load a file at the specified path') do
-      _load_automation_source
-    end
-
-    @target_automation_class = _select_automation_class
   end
 
-  def execute
-    _print_separator_line
-    puts RIDICULOUS_BANNER
-    _print_separator_line
-
-    puts "\nStarting: #{@target_automation_class.name}"
+  # Flag that can modify the target Automation so that interactive mode is triggered before various phases.
+  INTERACTIVE_PHASES = make_flag(:interactive_phases, default: []) do |phase_names|
+    halting_assert('Interactive phases must be an array') { phase_names.is_a?(Array) }
 
     # To facilitate interactive mode, we create a magic subclass of the target type.
     # On this subclass, we redefine the methods that have been specified for interactive mode with a
     # hook to start a pry session. The immediate next call is a +super()+ so you can easily "step" into the
-    # target method.
+    # target method. There is probably a better way to do this, but I haven't come up with it yet.
     wrapper = Class.new(@target_automation_class) do
       def self.make_phases_interactive(phase_names)
         phase_names.uniq.each do |name|
@@ -70,97 +66,64 @@ class LadonAutomationRunner < Ladon::Automator::Automation
       end
     end
 
-    wrapper.make_phases_interactive(@options.interactive)
-    @target_automation = wrapper.spawn(flags: @options.flags)
-    @target_automation.run
-
-    puts "\nExecution complete"
+    wrapper.make_phases_interactive(phase_names)
+    @target_automation = wrapper.spawn(flags: self.get_flag_value(TARGET_AUTOMATION_FLAGS))
   end
 
-  def teardown
-    binding.pry if @options.nil? || @options.review
-    _make_results
+  # Flag containing the Flags to pass to the target Automation.
+  TARGET_AUTOMATION_FLAGS = make_flag(:target_flags, default: {})
+
+  # Flag to use to trigger interactive mode after the target Automation finishes executing.
+  PRY = make_flag(:pry, default: false) { |activate| self.pry if activate }
+
+  # Ladon-run uses a setup-execute-teardown cycle.
+  # If setup results in a non-success status, execute is skipped but teardown will still occur.
+  def self.phases
+    [
+      Ladon::Automator::Phase.new(:setup, required: true),
+      Ladon::Automator::Phase.new(:execute, required: true, validator: -> automation { automation.result.success? }),
+      Ladon::Automator::Phase.new(:teardown, required: true)
+    ]
   end
 
-  private
+  # During setup, ladon-run parses and validates the invocation options it was given.
+  # It then uses that information to load the target Automation class it will run.
+  def setup
+    puts "\nSetting up ladon-run..."
+    _print_separator_line
 
-  # generate a result representation and to output it according to provided flags
-  def _make_results
-    result_type = @options.flags.fetch(RESULTS_FLAGS[:type], nil)
-    return if result_type.nil? || !@target_automation.result.respond_to?(result_type.to_sym)
+    self.handle_flag(TARGET_AUTOMATION_PATH)
+    self.handle_flag(TARGET_AUTOMATION_CLASS_NAME)
+    self.handle_flag(INTERACTIVE_PHASES)
 
-    my_result = @target_automation.result.send(result_type)
-    result_file = @options.flags.fetch(RESULTS_FLAGS[:file], nil)
+    puts 'A problem occurred; the target automation will not be executed.' unless result.success?
+  end
 
-    # handle ouptut
-    if result_file.nil?
-      _print_separator_line('-', ' Results ')
-      puts my_result
-      _print_separator_line('-')
-    else
-      File.write(File.expand_path(result_file), my_result)
-      puts "Results written to #{File.expand_path(result_file)}"
+  # During execute, ladon-run prepares the functionality of the -i flag, spawns the
+  # target Automation instance, and runs it.
+  def execute
+    puts "\nExecuting ladon-run of: #{@target_automation_class.name}"
+    _print_separator_line
+
+    halting_assert('Target automation must run successfully') do
+      @target_automation.run
+      @target_automation.result.success?
     end
   end
 
-  def _parse_options(flags: [])
-    vals = Struct.new(:automation_path,
-                      :automation_class_name,
-                      :interactive,
-                      :review,
-                      :flags).new
-    OptionParser.new do |opts|
-      opts.banner = 'Usage: ladon-run [options]'
+  # Teardown occurs once the target Automation instance stops running.
+  # If the -p/--pry option was given, you will enter interactive mode here.
+  #
+  # This will also handle formatting and outputting the Automation's Result,
+  # if the appropriate options were specified.
+  def teardown
+    puts "\nWrapping up ladon-run..."
+    _print_separator_line
 
-      opts.on('-a PATH',
-              '--automation PATH',
-              String,
-              '[REQUIRED] Path to the automation script to be executed') do |val|
-        vals.automation_path = val
-      end
-
-      opts.on('-s NAME',
-              '--automation_class NAME',
-              String,
-              'Name of the Automation class to run.') do |val|
-        vals.automation_class_name = val
-      end
-
-      opts.on('-i PHASE_LIST',
-              '--interactive PHASE_LIST',
-              String,
-              'Comma-separated list of phase names to enter interactive mode BEFORE running') do |val|
-        vals.interactive = val.split(',').map { |phase| phase.strip.to_sym }
-      end
-
-      opts.on('-f FLAGS',
-              '--flags FLAGS',
-              String,
-              'Comma-separated list of name:value pairs') do |val|
-        # HACK: won't work with flags that have commas in them
-        vals.flags = val.split(',').map { |el| el.split(':', 2) }.to_h
-      end
-
-      opts.on('-r', '--review', 'Pause after automation completes') do
-        vals.review = true
-      end
-
-      opts.on('-h', '--help', 'Prints this help message') do
-        puts opts
-        exit
-      end
-    end.parse!(flags)
-
-    vals
+    self.handle_flag(PRY)
   end
 
-  # returns true if the options are valid.
-  def _validate_options?
-    raise StandardError, 'Automation not specified!' unless @options.automation_path
-    @options.interactive = [] unless @options.interactive.is_a?(Array)
-    @options.flags = {} unless @options.flags.is_a?(Hash)
-    true
-  end
+  private
 
   # Look for a conventional directory to add to the load path. This runner
   # assumes a directory structure in which all automations are located under a
@@ -174,62 +137,79 @@ class LadonAutomationRunner < Ladon::Automator::Automation
   #   ... (any other directories and files)
   #
   # If found, the directory is added to the load path.
-  def _include_load_path
-    automation_absolute_path = File.expand_path(@options.automation_path)
-
-    Pathname.new(automation_absolute_path).ascend do |path|
+  def _include_load_path(automation_path)
+    Pathname.new(automation_path).ascend do |path|
       if path.basename.to_s.eql?(AUTOMATION_DIR_BASENAME)
         $LOAD_PATH.unshift(path.dirname.to_s)
         break
       end
     end
   end
-
-  def _load_automation_source
-    require_relative File.expand_path(@options.automation_path, Dir.pwd) # load that path
-  end
-
-  def _select_automation_class
-    # Attempt to load the specified class, if provided
-    return Object.const_get(@options.automation_class_name) if @options.automation_class_name
-
-    # Detect all Automation subclasses
-    detected_automations = ObjectSpace.each_object(Ladon::Automator::Automation.singleton_class)
-
-    # Filter to only those Automation subclasses that are marked executable
-    executable_automations = detected_automations.reject(&:abstract?) - [LadonAutomationRunner]
-
-    # Select a single executable Automation subclass to run
-    raise StandardError, 'No non-abstract Automation subclasses detected! Exiting...' if executable_automations.empty?
-    return executable_automations[0] if executable_automations.size == 1
-
-    _interactive_class_select(executable_automations)
-  end
-
-  def _interactive_class_select(class_options)
-    puts "\nPlease select the Automation you wish to run by entering one of the following numbers:"
-    class_options.each_with_index { |cls, idx| puts "\t#{idx + 1}. #{cls.name}" }
-    begin
-      idx = gets.to_i
-      raise StandardError unless idx > 0 && idx <= class_options.size
-      return class_options[idx - 1]
-    rescue
-      puts 'Nope. Try again.'
-      retry
-    end
-  end
-
-  def _print_separator_line(sep = '*', title = '')
-    line_len = 80
-    half_width = (line_len - title.to_s.length) / 2.0
-    puts sep.to_s * half_width.floor + title.to_s + sep.to_s * half_width.ceil
-  end
 end
 
-flags = Hash[LadonAutomationRunner::ARGV_FLAG, ARGV]
-runner = LadonAutomationRunner.spawn(flags: Ladon::Flags.new(in_hash: flags))
-runner.run
+def _parse_options(argv)
+  flags = { LadonAutomationRunner::TARGET_AUTOMATION_FLAGS.name => {} }
+  OptionParser.new do |opts|
+    opts.banner = 'Usage: ladon-run [options]'
 
-puts 'ladon-run complete!'
-exit_code = runner.result.success? ? 0 : 1
-exit(exit_code)
+    opts.on('-a PATH',
+            '--automation PATH',
+            String,
+            '[REQUIRED] Path to the target automation script to be executed') do |val|
+      flags[LadonAutomationRunner::TARGET_AUTOMATION_PATH.name] = val
+    end
+
+    opts.on('-s NAME',
+            '--automation_class NAME',
+            String,
+            'Name of the target Automation class to run.') do |val|
+      flags[LadonAutomationRunner::TARGET_AUTOMATION_CLASS_NAME.name] = val
+    end
+
+    opts.on('-i PHASE_LIST',
+            '--interactive PHASE_LIST',
+            String,
+            'Comma-separated list of phase names to enter interactive mode BEFORE running') do |val|
+      flags[LadonAutomationRunner::INTERACTIVE_PHASES.name] = val.split(',').map { |phase| phase.strip.to_sym }
+    end
+
+    # This flag is HACKY: won't work with flag values that have commas in them.
+    opts.on('-f FLAGS',
+            '--flags FLAGS',
+            Array,
+            'Flags to give the target automation. Comma-separated list of name:value pairs; may be repeated.') do |val|
+      val.map {|el| el.split(':', 2) }.each do |flag_name, flag_value|
+        flags[LadonAutomationRunner::TARGET_AUTOMATION_FLAGS.name][flag_name.to_sym] = flag_value
+      end
+    end
+
+    opts.on('-r', '--review', 'Use Pry to review after target automation completes') do
+      flags[LadonAutomationRunner::PRY.name] = true
+    end
+
+    opts.on('-p PATH',
+            '--result_file_path PATH',
+            "File to store target's formatted Result data") do |val|
+      flags[Ladon::Automator::Automation::OUTPUT_FILE.name] = val
+    end
+
+    opts.on('--formatter FMT',
+            "Formatting method to call on target's Result for output (ex: to_s)") do |val|
+      flags[Ladon::Automator::Automation::OUTPUT_FORMAT.name] = val.strip
+    end
+
+    opts.on('-h', '--help', 'Prints this help message') do
+      puts opts; exit
+    end
+  end.parse!(argv)
+
+  flags
+end
+
+options = _parse_options(ARGV)
+runner_result = LadonAutomationRunner.spawn(flags: options).run
+
+puts "\nLadon Run complete (runner status: #{runner_result.status})\n\n"
+
+exit_code = runner_result.success? ? 0 : 1
+exit(exit_code) # exit with code

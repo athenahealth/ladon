@@ -108,6 +108,8 @@ module Ladon
       describe '#to_s' do
         subject { -> { result.to_s } }
 
+        before { result.record_data(:key, :value) }
+
         let(:expected_string) do
           [
             "STATUS: SUCCESS\n",
@@ -117,7 +119,7 @@ module Ladon
             'LOG MESSAGES:',
             "Level: ERROR\nEntries:\n\n",
             'DATA LOG:',
-            "{}\n"
+            'key  => value'
           ].join("\n")
         end
 
