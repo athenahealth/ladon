@@ -13,10 +13,10 @@ module Ladon
     #
     # @param [Object] id Some identifier used to track the object instance.
     # @param [Ladon::Logging::Level] log_level The log level to use for the object's Logger instance.
-    # @param [Ladon::Flags|Hash] flags The Flags instance to use, or a Hash to use to build a Flags instance.
+    # @param [Hash] flags The Hash containing flag values.
     def initialize(id: SecureRandom.uuid, log_level: nil, flags: nil)
       @id = id
-      @flags = flags.is_a?(Ladon::Flags) ? flags : Ladon::Flags.new(in_hash: flags)
+      @flags = flags.is_a?(Hash) ? flags : {}
       @log_level = Logging::Level::ALL.include?(log_level) ? log_level : Logging::Level::ERROR
     end
 
@@ -26,7 +26,7 @@ module Ladon
       {
         id: @id,
         log_level: @log_level.to_s,
-        flags: @flags.to_h
+        flags: @flags
       }
     end
 
@@ -37,7 +37,7 @@ module Ladon
         "Id: #{@id}",
         "Log Level: #{@log_level}",
         'Flags:',
-        @flags.to_s
+        @flags.map { |flag, value| "#{flag}  => #{value}" }.join("\n")
       ].join("\n")
     end
   end

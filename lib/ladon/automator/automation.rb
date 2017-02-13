@@ -7,6 +7,38 @@ module Ladon
     class Automation < Bundle
       @is_abstract = true
 
+      # Flag specifying how to format the Automation's +Result+ object.
+      OUTPUT_FORMAT = make_flag(:output_format, default: nil) do |format_method|
+        unless format_method.nil?
+          assert('Automation result must respond to the formatting method') { result.respond_to?(format_method) }
+        end
+        @formatter = format_method
+      end
+
+      # Flag specifying where to write the formatted result (from OUTPUT_FORMAT flag.)
+      # NOTE: if not specified and OUTPUT_FORMAT is given, will print to terminal.
+      OUTPUT_FILE = make_flag(:output_file, default: nil) do |file_path|
+        next if self.handle_flag(OUTPUT_FORMAT).nil?
+
+        formatted_info = result.send(@formatter)
+        if file_path.nil?
+          sleep 1.0 # just so you have a chance to see previous print statements before the dump happens
+
+          puts "\n"
+          _print_separator_line('-', ' Target Results ')
+          puts formatted_info
+          _print_separator_line('-')
+        else
+          results_written = assert('Must be able to open and write formatted result info to file path given') do
+            File.write(File.expand_path(file_path), formatted_info) == formatted_info.length
+          end
+
+          # Use the class' name, defaulting to the superclass' name
+          class_name = self.class.name || self.class.superclass.name
+          puts "\t#{class_name} results written to #{File.expand_path(file_path)}" if results_written
+        end
+      end
+
       # Identifies the phases involved in this automation.
       # @return [Array<Phase>] Ordered array defining the Phases of this class of automation.
       def self.phases
@@ -33,6 +65,7 @@ module Ladon
       def run
         raise MissingImplementationError, 'Cannot run an abstract automation!' if self.class.abstract?
         sandbox('Run') { self.class.phases.each { |phase| process_phase(phase) } }
+        handle_output
         @result
       end
 
@@ -79,6 +112,11 @@ module Ladon
         @logger.log("Skipping phase '#{phase.name}' because this automation has no such method.",
                     level: phase.required? ? Ladon::Logging::Level::ERROR : Ladon::Logging::Level::WARN)
         @result.failure if phase.required?
+      end
+
+      # Handle outputting the Result information.
+      def handle_output
+        self.handle_flag(Automation::OUTPUT_FILE)
       end
     end
   end

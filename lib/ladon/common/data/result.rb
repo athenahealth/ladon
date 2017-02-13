@@ -95,7 +95,7 @@ module Ladon
         'LOG MESSAGES:',
         "#{@logger}\n",
         'DATA LOG:',
-        "#{@data_log}\n"
+        @data_log.map { |key, value| "#{key}  => #{value}" }.join("\n")
       ].join("\n")
     end
 

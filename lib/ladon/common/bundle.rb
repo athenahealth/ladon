@@ -9,6 +9,7 @@ module Ladon
   # @attr_reader [Ladon::Flags] flags The flags given to this automation at instantiation.
   # @attr_reader [Ladon::Result] result The current result data for this Automation.
   class Bundle
+    extend Ladon::HasFlags
     include Ladon::Assertions
     attr_reader :config, :flags, :logger, :timer, :result
 

@@ -15,6 +15,7 @@ Gem::Specification.new do |gem|
   gem.license     = 'MIT' # TODO
 
   gem.executables << 'ladon-run'
+  gem.executables << 'ladon-flags'
 
   gem.required_ruby_version = '>= 2.1.0' # due to use of required keyword args
   gem.add_runtime_dependency 'pry', '~> 0.10' # for interactive mode support in ladon-run
