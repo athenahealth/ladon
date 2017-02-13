@@ -18,17 +18,29 @@ module Ladon
       # Flag specifying where to write the formatted result (from OUTPUT_FORMAT flag.)
       # NOTE: if not specified and OUTPUT_FORMAT is given, will print to terminal.
       OUTPUT_FILE = make_flag(:output_file, default: nil) do |file_path|
-        next if self.handle_flag(OUTPUT_FORMAT).nil?
+        self.handle_flag(OUTPUT_FORMAT)
 
-        formatted_info = result.send(@formatter)
         if file_path.nil?
+          next if @formatter.nil?
+
           sleep 1.0 # just so you have a chance to see previous print statements before the dump happens
 
           puts "\n"
           _print_separator_line('-', ' Target Results ')
-          puts formatted_info
+          puts result.send(@formatter)
           _print_separator_line('-')
         else
+          # if no format is available, try to infer from file extension, defaulting to :to_s
+          if @formatter.nil?
+            case File.extname(file_path)
+              when '.json'
+                @formatter = :to_json
+              else
+                @formatter = :to_s
+            end
+          end
+
+          formatted_info = result.send(@formatter)
           results_written = assert('Must be able to open and write formatted result info to file path given') do
             File.write(File.expand_path(file_path), formatted_info) == formatted_info.length
           end
