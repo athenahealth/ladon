@@ -14,6 +14,13 @@ def _parse_options(argv)
       flags[LadonBatchRunner::CONFIG_FILE_PATH.name] = val.strip
     end
 
+    opts.on('-d TIME',
+            '--delay TIME',
+            Numeric,
+            'Number of seconds to sleep between calling run on each of the batched automations') do |val|
+      flags[LadonBatchRunner::RUN_DELAY.name] = val
+    end
+
     opts.on('-n NAME',
             '--name NAME',
             String,
