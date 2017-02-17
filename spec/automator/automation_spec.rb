@@ -157,6 +157,9 @@ module Ladon
         let(:file_path) { '/some/file/path' }
         let(:automation) { ConcreteAutomation.spawn(flags: flags) }
         subject { -> { automation.handle_output } }
+
+        before { allow(FileUtils).to receive(:mkdir_p) } # mock out making the obviously fake directories
+
         context 'when output format flag is specified' do
           context 'when output file path is given' do
             let(:flags) { {output_format: :to_s, output_file: file_path } }

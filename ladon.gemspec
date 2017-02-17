@@ -10,11 +10,16 @@ Gem::Specification.new do |gem|
   EOF
   gem.authors     = ['Shayne Snow']
   gem.email       = 'ssnow@athenahealth.com'
-  gem.files       = Dir['lib/**/*.rb']
+
+  # add the runners/ directory to the load path and packaged files
+  gem.require_paths = %w(lib runners)
+  gem.files       = Dir['lib/**/*.rb', 'runners/**/*.rb']
+
   gem.homepage    = 'http://rubygems.org/gems/ladon'
   gem.license     = 'MIT' # TODO
 
   gem.executables << 'ladon-run'
+  gem.executables << 'ladon-batch'
   gem.executables << 'ladon-flags'
 
   gem.required_ruby_version = '>= 2.1.0' # due to use of required keyword args
