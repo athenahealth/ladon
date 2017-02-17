@@ -31,6 +31,9 @@ class LadonBatchRunner < Ladon::Automator::Automation
     end
   end
 
+  # Delay period between triggering the run of individual Automation runs in this batch.
+  RUN_DELAY = make_flag(:run_delay, default: 0.5) { |delay| sleep(delay) if delay.is_a?(Numeric) && delay > 0 }
+
   # Ladon-batch uses a setup-execute-teardown cycle.
   # If setup results in a non-success status, execute is skipped but teardown will still occur.
   def self.phases
@@ -107,8 +110,9 @@ class LadonBatchRunner < Ladon::Automator::Automation
   # During execute, ladon-batch runs the runners compiled during +build+.
   def execute
     threads = []
-    @runners.each do |runner|
-      threads << Thread.new { runner.run }
+    @runners.each_with_index do |runner, idx|
+      threads << Thread.new { sandbox("Execute runner ##{idx}") { runner.run } }
+      self.handle_flag(RUN_DELAY)
     end
     threads.each(&:join)
   end
@@ -116,6 +120,7 @@ class LadonBatchRunner < Ladon::Automator::Automation
   # Simple teardown function.
   def teardown
     puts "\nWrapping up ladon-batch..."
+    @runners.group_by { |r| r.result.status }.each { |status, results| result.record_data(status, results.size) }
     assert('All Automations in the batch should succeed') do
       @runners.all? { |r| r.result.success? }
     end
