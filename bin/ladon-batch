@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+require 'optparse'
+require 'ladon/batch-runner'
+
+def _parse_options(argv)
+  flags = { }
+  OptionParser.new do |opts|
+    opts.banner = 'Usage: ladon-run [options]'
+
+    opts.on('-c PATH',
+            '--config_file PATH',
+            String,
+            '[REQUIRED] Path to the config file specifying the batch to be run') do |val|
+      flags[LadonBatchRunner::CONFIG_FILE_PATH.name] = val.strip
+    end
+
+    opts.on('-d TIME',
+            '--delay TIME',
+            Numeric,
+            'Number of seconds to sleep between calling run on each of the batched automations') do |val|
+      flags[LadonBatchRunner::RUN_DELAY.name] = val
+    end
+
+    opts.on('-n NAME',
+            '--name NAME',
+            String,
+            '[REQUIRED] Name of this batch execution') do |val|
+      flags[LadonBatchRunner::BATCH_NAME.name] = val.strip
+    end
+
+    opts.on('-p PATH',
+            '--result_file_path PATH',
+            "File to store target's formatted Result data") do |val|
+      flags[Ladon::Automator::Automation::OUTPUT_FILE.name] = val
+    end
+
+    opts.on('--formatter FMT',
+            "Formatting method to call on target's Result for output (ex: to_s)") do |val|
+      flags[Ladon::Automator::Automation::OUTPUT_FORMAT.name] = val.strip
+    end
+
+    opts.on('-h', '--help', 'Prints this help message') do
+      puts opts; exit
+    end
+  end.parse!(argv)
+
+  flags
+end
+
+options = _parse_options(ARGV)
+runner_result = LadonBatchRunner.spawn(flags: options).run
+
+puts "\nLadon Batch complete (runner status: #{runner_result.status})\n\n"
+
+exit_code = runner_result.success? ? 0 : 1
+exit(exit_code) # exit with code

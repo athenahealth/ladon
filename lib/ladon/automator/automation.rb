@@ -23,26 +23,22 @@ module Ladon
         if file_path.nil?
           next if @formatter.nil?
 
-          sleep 1.0 # just so you have a chance to see previous print statements before the dump happens
-
           puts "\n"
           _print_separator_line('-', ' Target Results ')
           puts result.send(@formatter)
           _print_separator_line('-')
         else
           # if no format is available, try to infer from file extension, defaulting to :to_s
-          if @formatter.nil?
-            @formatter = case File.extname(file_path)
-                         when '.json'
-                           :to_json
-                         else
-                           :to_s
-                         end
-          end
+          self.send(:detect_output_format, file_path)
 
-          formatted_info = result.send(@formatter)
           results_written = assert('Must be able to open and write formatted result info to file path given') do
-            File.write(File.expand_path(file_path), formatted_info) == formatted_info.length
+            output_file = File.expand_path(file_path)
+            # If the directory the file is going to doesn't exist (likely common), create it now
+            dirname = File.dirname(output_file)
+            FileUtils.mkdir_p(dirname) unless File.directory?(dirname)
+
+            formatted_info = result.send(@formatter)
+            File.write(output_file, formatted_info) == formatted_info.length
           end
 
           # Use the class' name, defaulting to the superclass' name
@@ -50,6 +46,9 @@ module Ladon
           puts "\t#{class_name} results written to #{File.expand_path(file_path)}" if results_written
         end
       end
+
+      # If given a truthy value, "Ladon puts" (+lputs+)
+      SUPPRESS_STDOUT = make_flag(:suppress_stdout, default: false) { |suppress| @suppress = suppress }
 
       # Identifies the phases involved in this automation.
       # @return [Array<Phase>] Ordered array defining the Phases of this class of automation.
@@ -76,6 +75,7 @@ module Ladon
       # @return [Ladon::Result] The result object for this Automation.
       def run
         raise MissingImplementationError, 'Cannot run an abstract automation!' if self.class.abstract?
+        self.handle_flag(SUPPRESS_STDOUT)
         sandbox('Run') { self.class.phases.each { |phase| process_phase(phase) } }
         handle_output
         @result
@@ -92,6 +92,12 @@ module Ladon
       # Handle outputting the Result information.
       def handle_output
         self.handle_flag(Automation::OUTPUT_FILE)
+      end
+
+      # Simple wrapper around +Kernel::puts+ that will be supressed if the SURPRESS_STDOUT flag is truthy.
+      # @param msg The thing to puts to STDOUT.
+      def puts(msg)
+        super(msg) unless @suppress
       end
 
       private
@@ -136,6 +142,19 @@ module Ladon
         line_len = 80
         half_width = (line_len - title.to_s.length) / 2.0
         puts sep.to_s * half_width.floor + title.to_s + sep.to_s * half_width.ceil
+      end
+
+      # Given the +file_path+, default this automation's +formatter+ to the appropriate serializer method
+      # based on file extension. Defaults to +to_s+.
+      # @param [String] file_path The path to which the formatted Result will be written.
+      def detect_output_format(file_path)
+        return unless @formatter.nil?
+        @formatter = case File.extname(file_path)
+                     when '.json'
+                       :to_json
+                     else
+                       :to_s
+                     end
       end
     end
   end
