@@ -32,7 +32,9 @@ class LadonAutomationRunner < Ladon::Automator::Automation
       detected_automations = ObjectSpace.each_object(Ladon::Automator::Automation.singleton_class)
 
       # Filter to only those Automation subclasses that are marked executable
-      executable_automations = detected_automations.reject { |cls| cls.abstract? || cls <= LadonAutomationRunner}
+      executable_automations = detected_automations.reject do |cls|
+        cls.abstract? || cls <= LadonAutomationRunner
+      end
       halting_assert('Must detect a single non-abstract automation') { executable_automations.size == 1 }
       @target_automation_class = executable_automations[0]
     else
@@ -58,7 +60,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
           next unless method_defined?(name) # avoid incidentally implementing a missing phase
 
           define_method name do
-            binding.pry
+            binding.pry # rubocop:disable Lint/Debugger
             super()
           end
         end
@@ -66,7 +68,10 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     end
 
     wrapper.make_phases_interactive(phase_names)
-    @target_automation = wrapper.spawn(flags: self.get_flag_value(TARGET_AUTOMATION_FLAGS))
+    @target_automation = wrapper.spawn(
+      flags: self.get_flag_value(TARGET_AUTOMATION_FLAGS),
+      log_level: self.get_flag_value(LOG_LEVEL)
+    )
   end
 
   # Flag containing the Flags to pass to the target Automation.
@@ -79,9 +84,13 @@ class LadonAutomationRunner < Ladon::Automator::Automation
   # If setup results in a non-success status, execute is skipped but teardown will still occur.
   def self.phases
     [
-        Ladon::Automator::Phase.new(:setup, required: true),
-        Ladon::Automator::Phase.new(:execute, required: true, validator: -> automation { automation.result.success? }),
-        Ladon::Automator::Phase.new(:teardown, required: true)
+      Ladon::Automator::Phase.new(:setup, required: true),
+      Ladon::Automator::Phase.new(
+        :execute,
+        required: true,
+        validator: ->(automation) { automation.result.success? }
+      ),
+      Ladon::Automator::Phase.new(:teardown, required: true)
     ]
   end
 
