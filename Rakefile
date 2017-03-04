@@ -1,4 +1,5 @@
 require 'rubocop/rake_task'
+require 'rubygems/tasks'
 require 'rspec/core/rake_task'
 
 # Run "rake rubocop" to run rubocop against the lib/ folder
@@ -11,3 +12,5 @@ end
 RSpec::Core::RakeTask.new(:spec) do |t|
   t.pattern = 'spec/**/*_spec.rb'
 end
+
+Gem::Tasks.new(push: false)
