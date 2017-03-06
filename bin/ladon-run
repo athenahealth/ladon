@@ -33,7 +33,7 @@ def _parse_options(argv)
             '--flags FLAGS',
             Array,
             'Flags to give the target automation. Comma-separated list of name:value pairs; may be repeated.') do |val|
-      val.map {|el| el.split(':', 2) }.each do |flag_name, flag_value|
+      val.map { |el| el.split(':', 2) }.each do |flag_name, flag_value|
         flags[LadonAutomationRunner::TARGET_AUTOMATION_FLAGS.name][flag_name.to_sym] = flag_value
       end
     end
@@ -53,8 +53,16 @@ def _parse_options(argv)
       flags[Ladon::Automator::Automation::OUTPUT_FORMAT.name] = val.strip
     end
 
+    opts.on('-l LEVEL',
+            '--log_level LOG_LEVEL',
+            String,
+            'Minimum level of log messages to output (ex: INFO)') do |val|
+      flags[:log_level] = val.strip.upcase.to_sym
+    end
+
     opts.on('-h', '--help', 'Prints this help message') do
-      puts opts; exit
+      puts opts
+      exit
     end
   end.parse!(argv)
 
@@ -62,7 +70,8 @@ def _parse_options(argv)
 end
 
 options = _parse_options(ARGV)
-runner_result = LadonAutomationRunner.spawn(flags: options).run
+runner_result = LadonAutomationRunner.spawn(flags: options,
+                                            log_level: options[:log_level]).run
 
 puts "\nLadon Run complete (runner status: #{runner_result.status})\n\n"
 
