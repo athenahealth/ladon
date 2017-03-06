@@ -1,3 +1,9 @@
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
 before_script:
   - ruby -v
   - which ruby
@@ -5,10 +11,32 @@ before_script:
   - gem install bundler --no-ri --no-rdoc
   - bundle install --jobs $(nproc)  "${FLAGS[@]}"
 
+rubocop:
+  stage: lint
+  script:
+    - bundle exec rake rubocop
+
 rspec:
+  stage: test
   script:
     - bundle exec rake spec
 
-rubocop:
+build:
+  stage: build
   script:
-    - bundle exec rake rubocop
+    - bundle exec rake build
+  artifacts:
+    untracked: true
+
+deploy:
+  stage: deploy
+  environment:
+    name: production
+    url: http://rubygems.athenahealth.com
+  script:
+    - bundle exec gem inabox -g http://rubygems.athenahealth.com
+  dependencies:
+    - build
+  only:
+    - master@ladon/ladon
+  when: manual
