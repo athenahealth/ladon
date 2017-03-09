@@ -1,5 +1,3 @@
-require 'Date'
-
 require File.expand_path('../lib/ladon/_version', __FILE__)
 
 Gem::Specification.new do |gem|
