@@ -57,7 +57,7 @@ def _parse_options(argv)
             '--log_level LOG_LEVEL',
             String,
             'Minimum level of log messages to output (ex: INFO)') do |val|
-      flags[:log_level] = val.strip.upcase.to_sym
+      flags[LadonAutomationRunner::LOG_LEVEL.name] = val.strip.upcase.to_sym
     end
 
     opts.on('-h', '--help', 'Prints this help message') do

@@ -46,6 +46,8 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     end
   end
 
+  LOG_LEVEL = make_flag(:log_level, default: :ERROR)
+
   # Flag that can modify the target Automation so that interactive mode is triggered before various phases.
   INTERACTIVE_PHASES = make_flag(:interactive_phases, default: []) do |phase_names|
     halting_assert('Interactive phases must be an array') { phase_names.is_a?(Array) }
