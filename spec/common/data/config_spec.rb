@@ -4,15 +4,30 @@ require 'ladon'
 module Ladon
   RSpec.describe Config do
     describe 'to_ methods' do
-      let(:config) { Ladon::Config.new(id: config_id, log_level: config_level, flags: config_flags) }
+      let(:config) do
+        Ladon::Config.new(
+          id: config_id,
+          log_level: config_level,
+          flags: config_flags,
+          class_name: class_name
+        )
+      end
       let(:config_id) { '123456' }
       let(:config_level) { nil }
       let(:config_flags) { { a: 1, b: 2 } }
+      let(:class_name) { 'FooBar' }
 
       describe '#to_h' do
         subject { -> { config.to_h } }
 
-        let(:expected_hash) { { id: config_id, log_level: 'ERROR', flags: config_flags } }
+        let(:expected_hash) do
+          {
+            id: config_id,
+            log_level: 'ERROR',
+            flags: config_flags,
+            class_name: class_name
+          }
+        end
 
         it { is_expected.not_to raise_error }
 
@@ -27,6 +42,7 @@ module Ladon
         let(:expected_string) do
           [
             "Id: #{config_id}",
+            "Class Name: #{class_name}",
             'Log Level: ERROR',
             'Flags:',
             "a  => 1\nb  => 2"

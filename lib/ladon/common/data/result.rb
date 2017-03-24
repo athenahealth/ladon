@@ -1,5 +1,7 @@
 require 'json'
 
+require_relative 'result/junit'
+
 module Ladon
   # Represents the accumulated outcome data for a Ladon object.
   # Includes success/failure info, as well as any timing, log, and data_log information.
@@ -104,6 +106,18 @@ module Ladon
     # @return [String] containing result attributes in a JSON format
     def to_json
       JSON.pretty_generate(to_h)
+    end
+
+    # Create a JUnit-formatted version of result
+    #
+    # @return [String] containing result attributes in a JUnit format
+    def to_junit
+      Ladon::JUnit.generate(
+        status: @status,
+        config: @config,
+        time: @timer.total_time,
+        log: @logger.to_s
+      )
     end
   end
 end
