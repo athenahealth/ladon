@@ -8,6 +8,7 @@ module Ladon
   #   object's Logger instance.
   # @attr_reader [Ladon::Flags] flags The flags to use to configure a Ladon
   #   model.
+  # @attr_reader [String] class_name The name of the automation.
   class Config
     attr_reader :id, :log_level, :flags, :class_name
 
