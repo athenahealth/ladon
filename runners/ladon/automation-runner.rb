@@ -73,7 +73,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     @target_automation = wrapper.spawn(
       flags: self.get_flag_value(TARGET_AUTOMATION_FLAGS),
       log_level: self.get_flag_value(LOG_LEVEL),
-      class_name: self.get_flag_value(TARGET_AUTOMATION_CLASS_NAME)
+      class_name: @target_automation_class
     )
   end
 
