@@ -7,7 +7,7 @@ module Ladon
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.testsuite(
           name: config.class_name,
-          time: time,
+          time: time * 60, # JUnit expects in seconds but Ladon records in minutes
           tests: 1 # Only one test per result
         ) do
           xml.testcase(
