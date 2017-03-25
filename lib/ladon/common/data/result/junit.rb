@@ -2,7 +2,7 @@ require 'nokogiri'
 
 module Ladon
   # Generates JUnit XML for Jenkins.
-  class JUnit << self
+  class JUnit
     # Generate XML according to the JUnit schema to Jenkins consumption.
     #
     # @param [String] status The status of the automation.
