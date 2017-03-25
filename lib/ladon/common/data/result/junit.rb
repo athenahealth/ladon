@@ -3,7 +3,7 @@ module Ladon
   # Generates JUnit XML for Jenkins.
   class JUnit
     def self.generate(status:, config:, time:, log:)
-      builder = ::Nokogiri::XML::Builder.new do |xml|
+      builder = Nokogiri::XML::Builder.new do |xml|
         xml.testsuite(
           name: config.class_name,
           time: time,
