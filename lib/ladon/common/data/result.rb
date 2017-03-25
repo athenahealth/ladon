@@ -1,7 +1,5 @@
 require 'json'
 
-require_relative 'result/junit'
-
 module Ladon
   # Represents the accumulated outcome data for a Ladon object.
   # Includes success/failure info, as well as any timing, log, and data_log information.

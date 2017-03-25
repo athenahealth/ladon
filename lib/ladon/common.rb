@@ -12,6 +12,7 @@ require 'ladon/common/errors'
 # require data stuff
 require 'ladon/common/data/config'
 require 'ladon/common/data/result'
+require 'ladon/common/data/result/junit'
 
 # require assertion stuff
 require 'ladon/common/assertions/assertions'
