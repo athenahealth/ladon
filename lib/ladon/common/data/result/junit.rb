@@ -2,7 +2,7 @@ require 'nokogiri'
 
 module Ladon
   # Generates JUnit XML for Jenkins.
-  class JUnit
+  class JUnit << self
     # Generate XML according to the JUnit schema to Jenkins consumption.
     #
     # @param [String] status The status of the automation.
@@ -15,7 +15,7 @@ module Ladon
     def self.generate(status:, config:, time:, log:)
       time *= 60 # JUnit expects in seconds but Ladon records in minutes
       binding.pry
-      job_name = convert_target_path_to_job_name(config.flags.target_path)
+      job_name = convert_path_to_job_name(config.path)
 
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.testsuite(
@@ -36,9 +36,15 @@ module Ladon
 
       builder.to_xml
     end
-  end
-end
 
-def convert_target_path_to_job_name(target_path)
-  target_path.match(%r{automations/(.+)\.rb})[1].tr!('/', '.')
+    # Removes automations prefix and rb extension. Converts '/' into '.' for
+    # Jenkins hierachy mapping.
+    #
+    # @param [String] path The path to the automation.
+    #
+    # @return [String] The converted path.
+    private_class_method def self.convert_path_to_job_name(path)
+      path.match(%r{automations/(.+)\.rb})[1].tr!('/', '.')
+    end
+  end
 end
