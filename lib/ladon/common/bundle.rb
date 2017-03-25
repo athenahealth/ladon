@@ -43,7 +43,7 @@ module Ladon
       log_level: nil,
       flags: nil,
       class_name: nil,
-      path: bil
+      path: nil
     )
       self.new(
         config: Ladon::Config.new(
