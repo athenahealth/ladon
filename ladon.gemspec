@@ -4,7 +4,7 @@ require 'date'
 Gem::Specification.new do |gem|
   gem.name        = 'ladon'
   gem.version     = Ladon::Version::STRING
-  gem.date        = ::Date.today.to_s
+  gem.date        = Date.today.to_s
   gem.summary     = 'Ladon'
   gem.description = <<-EOF
     Ladon allows you to create software models and to create automation scripts that work through those models.
