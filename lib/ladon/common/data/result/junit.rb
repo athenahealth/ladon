@@ -1,3 +1,4 @@
+require 'nokogiri'
 
 module Ladon
   # Generates JUnit XML for Jenkins.
