@@ -13,7 +13,7 @@ module Ladon
             classname: config.class_name,
             time: time
           ) do
-            xml.send(status.downcase.to_sym, status) if status == 'SUCCESS'
+            xml.send(status.downcase.to_sym, status) if status != 'SUCCESS'
 
             xml.send(:'system-out', log)
           end
