@@ -87,7 +87,8 @@ module Ladon
         Ladon::Result.new(
           config: Ladon::Config.new(
             id: '123456',
-            class_name: 'FooBar'
+            class_name: 'FooBar',
+            path: './lib/automations/foo/bar.rb'
           ),
           logger: Ladon::Logging::Logger.new(level: Logging::Level::ERROR),
           timer: Ladon::Timing::Timer.new
@@ -104,7 +105,8 @@ module Ladon
               id: '123456',
               log_level: 'ERROR',
               flags: {},
-              class_name: 'FooBar'
+              class_name: 'FooBar',
+               path: './lib/automations/foo/bar.rb'
             },
             timings: {},
             log: { level: :ERROR, entries: [] },
@@ -128,7 +130,11 @@ module Ladon
           [
             "STATUS: SUCCESS\n",
             'CONFIGURATIONS:',
-            "Id: 123456\nClass Name: FooBar\nLog Level: ERROR\nFlags:\n\n",
+            'Id: 123456',
+            'Class Name: FooBar',
+            'Log Level: ERROR',
+            'Path: ./lib/automations/foo/bar.rb',
+            "Flags:\n\n",
             "TIMINGS:\n\n",
             'LOG MESSAGES:',
             "Level: ERROR\nEntries:\n\n",
@@ -150,7 +156,7 @@ module Ladon
         it { is_expected.not_to raise_error }
 
         it 'produces valid JSON' do
-          expect{JSON.parse(subject.call)}.not_to raise_error
+          expect { JSON.parse(subject.call) } .not_to raise_error
         end
       end
 
@@ -160,7 +166,7 @@ module Ladon
         it { is_expected.not_to raise_error }
 
         it 'produces valid XML' do
-          expect{ Nokogiri::XML(subject.call) }.not_to raise_error
+          expect { Nokogiri::XML(subject.call) } .not_to raise_error
         end
       end
     end
