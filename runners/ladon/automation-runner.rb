@@ -70,11 +70,11 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     end
 
     wrapper.make_phases_interactive(phase_names)
-    binding.pry
     @target_automation = wrapper.spawn(
       flags: self.get_flag_value(TARGET_AUTOMATION_FLAGS),
       log_level: self.get_flag_value(LOG_LEVEL),
-      class_name: @target_automation_class
+      class_name: @target_automation_class,
+      path: @flags[:target_path]
     )
   end
 
