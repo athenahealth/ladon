@@ -34,7 +34,7 @@ module Ladon
       # Get the total run time (sum of all entry durations).
       # @return [Float] The sum of the entry durations in minutes.
       def total_time
-        @entries.reduce { |sum, entry| sum + entry.duration }
+        @entries.reduce(0) { |sum, entry| sum + entry.duration }
       end
 
       # Create a hash-formatted version of timer
