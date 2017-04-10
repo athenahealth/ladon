@@ -138,8 +138,8 @@ module Ladon
             Ladon::Modeler::Transition.new do |t|
               t.target_name = 'ExampleState'
               t.target_loader {}
-              t.when { |kwargs:| @result = kwargs }
-              t.by { |kwargs:| @result = kwargs }
+              t.when { |kwargs:| @result_when = kwargs }
+              t.by { |kwargs:| @result_by = kwargs }
             end
           end
 
@@ -147,7 +147,8 @@ module Ladon
 
           it 'keyword arguments should be available in the when and by methods for use' do
             subject.call
-            expect(@result).to be true
+            expect(@result_when).to be true
+            expect(@result_by).to be true
           end
         end
       end
