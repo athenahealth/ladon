@@ -77,16 +77,18 @@ module Ladon
       #
       # @param [LoadStrategy] strategy The load strategy for +@current_state+'s class' transitions, if they're
       #   not already loaded.
+      # @param [KeywordArguments] **kwargs Arbitrary named arguments that will be provided
+      #   to the 'when' and 'by' methods
       # @return [State] The new +@current_state+ value.
-      def make_transition(strategy: LoadStrategy::LAZY, &block)
+      def make_transition(strategy: LoadStrategy::LAZY, **kwargs, &block)
         raise NoCurrentStateError, 'No current state to validate against!' if current_state.nil?
         state_class = current_state.class
         load_transitions(state_class, strategy: strategy) unless transitions_loaded?(state_class)
         all_transitions = @transitions[state_class]
         prefiltered_transitions = prefiltered_transitions(all_transitions, &block)
-        valid_transitions = valid_transitions(prefiltered_transitions)
+        valid_transitions = valid_transitions(prefiltered_transitions, **kwargs)
         to_execute = selection_strategy(valid_transitions)
-        execute_transition(to_execute)
+        execute_transition(to_execute, **kwargs)
       end
 
       # This is a convenience method wrapping +make_transition+. It works the exact same way, except that
@@ -99,19 +101,25 @@ module Ladon
       #   not already loaded.
       # @param [String|Class] target_type Specification of the target type. May either be a bare class reference,
       #   or a string identifying the class name.
-      def make_transition_to(target_type, strategy: LoadStrategy::LAZY, &block)
+      # @param [KeywordArguments] **kwargs Arbitrary named arguments that will be provided
+      #   to the 'when' and 'by' methods
+      def make_transition_to(target_type, strategy: LoadStrategy::LAZY, **kwargs, &block)
         name = target_type.is_a?(Class) ? target_type.name : target_type
-        make_transition(strategy: strategy) { |trx| name.eql?(trx.target_name) && transition_match?(trx, &block) }
+        make_transition(strategy: strategy, **kwargs) do |trx|
+          name.eql?(trx.target_name) && transition_match?(trx, &block)
+        end
       end
 
       # Execute the given transition.
       #
       # @raise [ArgumentError] If +transition+ is not a Ladon Transition instance.
       #
+      # @param [KeywordArguments] **kwargs Arbitrary named arguments that will be provided
+      #   to the 'by' method
       # @return [State] The new +@current_state+ value after executing the transition.
-      def execute_transition(transition)
+      def execute_transition(transition, **kwargs)
         raise ArgumentError, 'Must be called with a Transition instance!' unless transition.is_a?(Transition)
-        transition.execute(current_state)
+        transition.execute(current_state, **kwargs)
         new_state = use_state_type(transition.target_type)
 
         return new_state if new_state.verify_as_current_state?
@@ -152,11 +160,13 @@ module Ladon
       #
       # @param [Enumerable<Transition>] transition_options List-like enumerable containing Transition
       #   instances to validate.
+      # @param [KeywordArguments] **kwargs Arbitrary named arguments that will be provided
+      #   to the 'when' method
       # @return [Enumerable<Transition>] List of transitions from the argument that are valid in context
       #   of the FSM's current state.
-      def valid_transitions(transition_options)
+      def valid_transitions(transition_options, **kwargs)
         raise NoCurrentStateError, 'No current state to validate against!' if current_state.nil?
-        transition_options.select { |transition| transition.valid_for?(current_state) }
+        transition_options.select { |transition| transition.valid_for?(current_state, **kwargs) }
       end
 
       # Method to select transition to execute from a set of currently valid transitions.

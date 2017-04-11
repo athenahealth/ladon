@@ -74,9 +74,17 @@ module Ladon
       # +when_blocks+ returns true.
       #
       # @param [Ladon::Modeler::State] current_state Instance of current state to validate against.
+      # @param [KeywordArguments] **kwargs Arbitrary named arguments that will be provided
+      #   to the 'when' method
       # @return [Boolean] True if the transition is found to be currently valid, false otherwise.
-      def valid_for?(current_state)
-        @when_blocks.empty? || @when_blocks.any? { |condition| condition.call(current_state) == true }
+      def valid_for?(current_state, **kwargs)
+        @when_blocks.empty? || @when_blocks.any? do |condition|
+          if kwargs.empty?
+            condition.call(current_state) == true
+          else
+            condition.call(current_state, **kwargs) == true
+          end
+        end
       end
 
       # Execute this transition. If the target state has not been loaded, this method will load it.
@@ -87,10 +95,18 @@ module Ladon
       # may be invalid when given to subsequent "by" blocks.)
       #
       # @param [Ladon::Modeler::State] current_state Instance of current state to execute against.
+      # @param [KeywordArguments] **kwargs Arbitrary named arguments that will be provided
+      #   to the 'by' method
       # @return [Array<Object>] An array containing the return value of each "by" block.
-      def execute(current_state)
+      def execute(current_state, **kwargs)
         load_target
-        @by_blocks.map { |executor| executor.call(current_state) }
+        @by_blocks.map do |executor|
+          if kwargs.empty?
+            executor.call(current_state)
+          else
+            executor.call(current_state, **kwargs)
+          end
+        end
       end
 
       # The +&block+ given to this method will be used as the routine that should load

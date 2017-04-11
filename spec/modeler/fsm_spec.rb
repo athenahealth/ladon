@@ -131,6 +131,26 @@ module Ladon
 
           it { is_expected.to change(fsm, :current_state).to be_an_instance_of(ExampleState) }
         end
+
+        context 'when keyword arguments are passed' do
+          let(:target_type) { 'ExampleState' }
+          let(:transition) do
+            Ladon::Modeler::Transition.new do |t|
+              t.target_name = 'ExampleState'
+              t.target_loader {}
+              t.when { |kwargs:| @result_when = kwargs }
+              t.by { |kwargs:| @result_by = kwargs }
+            end
+          end
+
+          subject { -> { fsm.make_transition_to(target_type, kwargs: true) } }
+
+          it 'keyword arguments should be available in the when and by methods for use' do
+            subject.call
+            expect(@result_when).to be true
+            expect(@result_by).to be true
+          end
+        end
       end
 
       describe '#execute_transition' do
