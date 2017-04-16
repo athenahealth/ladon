@@ -36,8 +36,12 @@ module Ladon
     # @param [Object] id The id to associate with the spawned Bundle.
     # @param [Ladon::Logging::Level] log_level The log level to configure the Bundle's logger at.
     # @param [Ladon::Flags|Hash] flags The flags to pass to the spawned Bundle.
-    def self.spawn(id: SecureRandom.uuid, log_level: nil, flags: nil)
-      self.new(config: Ladon::Config.new(id: id, log_level: log_level, flags: flags))
+    def self.spawn(id: SecureRandom.uuid, log_level: nil, flags: nil, test_class_name: nil, test_file_path: nil)
+      self.new(config: Ladon::Config.new(id: id,
+                                         log_level: log_level,
+                                         flags: flags,
+                                         test_class_name: test_class_name,
+                                         test_file_path: test_file_path))
     end
 
     # Given an arbitrary code block, this method will execute that block in a rescue construct.
