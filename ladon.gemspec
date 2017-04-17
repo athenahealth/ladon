@@ -1,4 +1,5 @@
 require File.expand_path('../lib/ladon/_version', __FILE__)
+require 'date'
 
 Gem::Specification.new do |gem|
   gem.name        = 'ladon'
@@ -24,6 +25,7 @@ Gem::Specification.new do |gem|
 
   gem.required_ruby_version = '>= 2.1.0' # due to use of required keyword args
   gem.add_runtime_dependency 'pry', '~> 0.10' # for interactive mode support in ladon-run
+  gem.add_runtime_dependency 'nokogiri', '~> 1.7' # for junit generation
 
   # NOT REQUIRED: install this gem to get byebug features baked into pry sessions
   # s.add_runtime_dependency 'pry-byebug'
