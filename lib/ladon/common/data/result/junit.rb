@@ -16,6 +16,8 @@ module Ladon
       time *= 60 # JUnit expects in seconds but Ladon records in minutes
       job_name = convert_path_to_job_name(config.path)
 
+      binding.pry
+
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.testsuite(
           name: job_name,
