@@ -40,10 +40,10 @@ module Ladon
     def to_h
       {
         id: @id,
+        test_class_name: @class_name,
+        test_file_path: @path,
         log_level: @log_level.to_s,
-        flags: @flags,
-        class_name: @class_name,
-        path: @path
+        flags: @flags
       }
     end
 
@@ -52,9 +52,9 @@ module Ladon
     def to_s
       [
         "Id: #{@id}",
-        "Class Name: #{@class_name}",
+        "Test Class Name: #{@class_name}",
+        "Test File Path: #{@path}",
         "Log Level: #{@log_level}",
-        "Path: #{@path}",
         'Flags:',
         @flags.map { |flag, value| "#{flag}  => #{value}" }.join("\n")
       ].join("\n")
