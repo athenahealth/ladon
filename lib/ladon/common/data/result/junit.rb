@@ -15,17 +15,19 @@ module Ladon
     def self.generate(status:, config:, time:, log:)
       time *= 60 # JUnit expects in seconds but Ladon records in minutes
       job_name = convert_path_to_job_name(config.path)
-
-      binding.pry
+      fragments = job_name.rpartition('.')
+      suite_name = fragments.first
+      case_name = fragments.last
 
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.testsuite(
-          name: job_name,
+          name: suite_name,
           time: time,
           tests: 1 # Only one test per result
         ) do
           xml.testcase(
-            classname: job_name,
+            classname: suite_name,
+            name: case_name,
             time: time
           ) do
             xml.send(status.downcase.to_sym, status) if status != 'SUCCESS'
