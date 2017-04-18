@@ -47,6 +47,30 @@ module Ladon
         end
       end
 
+      describe '#total_time' do
+        context 'when no entries exist' do
+          it 'returns a total duration of 0' do
+            expect(subject.total_time).to eq(0)
+          end
+        end
+        context 'when one entry exists' do
+          it 'returns a total duration equal to single entry' do
+            subject.for(timer_name) { sleep 0.5 }
+
+            expect(subject.total_time.round(3)).to eq(0.008)
+          end
+        end
+
+        context 'when multiple entries exists' do
+          it 'returns a total duration equal to the sum of entries' do
+            subject.for(timer_name) { sleep 0.25 }
+            subject.for(timer_name) { sleep 0.5 }
+
+            expect(subject.total_time.round(3)).to eq(0.013)
+          end
+        end
+      end
+
       describe 'to_ methods' do
         before(:each) do
           @timer = Timer.new

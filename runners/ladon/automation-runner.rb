@@ -73,8 +73,8 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     @target_automation = wrapper.spawn(
       flags: self.get_flag_value(TARGET_AUTOMATION_FLAGS),
       log_level: self.get_flag_value(LOG_LEVEL),
-      test_file_path: File.expand_path(self.get_flag_value(TARGET_AUTOMATION_PATH)),
-      test_class_name: @target_automation_class
+      class_name: @target_automation_class,
+      path: @flags[:target_path]
     )
   end
 

@@ -1,5 +1,7 @@
 require 'spec_helper'
 require 'ladon'
+require 'json'
+require 'nokogiri'
 
 module Ladon
   RSpec.describe Result do
@@ -81,9 +83,17 @@ module Ladon
     end
 
     describe 'to_ methods' do
-      let(:result) { Ladon::Result.new(config: Ladon::Config.new(id: '123456', test_class_name: 'Any Name', test_file_path: 'lib/automations/test_file_path.rb'),
-                                       logger: Ladon::Logging::Logger.new(level: Logging::Level::ERROR),
-                                       timer: Ladon::Timing::Timer.new) }
+      let(:result) do
+        Ladon::Result.new(
+          config: Ladon::Config.new(
+            id: '123456',
+            class_name: 'FooBar',
+            path: './lib/automations/foo/bar.rb'
+          ),
+          logger: Ladon::Logging::Logger.new(level: Logging::Level::ERROR),
+          timer: Ladon::Timing::Timer.new
+        )
+      end
 
       describe '#to_h' do
         subject { -> { result.to_h } }
@@ -91,7 +101,13 @@ module Ladon
         let(:expected_hash) do
           {
             status: :SUCCESS,
-            config: { id: '123456', test_class_name: 'Any Name', test_file_path: 'lib/automations/test_file_path.rb', log_level: 'ERROR', flags: {} },
+            config: {
+              id: '123456',
+              log_level: 'ERROR',
+              flags: {},
+              class_name: 'FooBar',
+               path: './lib/automations/foo/bar.rb'
+            },
             timings: {},
             log: { level: :ERROR, entries: [] },
             data_log: {}
@@ -114,7 +130,11 @@ module Ladon
           [
             "STATUS: SUCCESS\n",
             'CONFIGURATIONS:',
-            "Id: 123456\nTest Class Name: Any Name\nTest File Path: lib/automations/test_file_path.rb\nLog Level: ERROR\nFlags:\n\n",
+            'Id: 123456',
+            'Class Name: FooBar',
+            'Log Level: ERROR',
+            'Path: ./lib/automations/foo/bar.rb',
+            "Flags:\n\n",
             "TIMINGS:\n\n",
             'LOG MESSAGES:',
             "Level: ERROR\nEntries:\n\n",
@@ -136,7 +156,17 @@ module Ladon
         it { is_expected.not_to raise_error }
 
         it 'produces valid JSON' do
-          expect{JSON.parse(subject.call)}.not_to raise_error
+          expect { JSON.parse(subject.call) } .not_to raise_error
+        end
+      end
+
+      describe '#to_junit' do
+        subject { -> { result.to_junit } }
+
+        it { is_expected.not_to raise_error }
+
+        it 'produces valid XML' do
+          expect { Nokogiri::XML(subject.call) } .not_to raise_error
         end
       end
     end
