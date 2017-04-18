@@ -14,10 +14,7 @@ module Ladon
     # @return [String] The stringified XML.
     def self.generate(status:, config:, time:, log:)
       time *= 60 # JUnit expects in seconds but Ladon records in minutes
-      job_name = convert_path_to_job_name(config.path)
-      fragments = job_name.rpartition('.')
-      suite_name = fragments.first
-      case_name = fragments.last
+      suite_name, case_name = convert_path_to_suite_and_case(config.path)
 
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.testsuite(
@@ -41,13 +38,17 @@ module Ladon
     end
 
     # Removes automations prefix and rb extension. Converts '/' into '.' for
-    # Jenkins hierachy mapping.
+    # Jenkins hierachy mapping and splits the name into suite and case.
     #
     # @param [String] path The path to the automation.
     #
-    # @return [String] The converted path.
-    private_class_method def self.convert_path_to_job_name(path)
-      path.match(%r{automations/(.+)\.rb})[1].tr('/', '.')
+    # @return [Array<String>] The suite name and the case name.
+    private_class_method def self.convert_path_to_suite_and_case(path)
+      fragments = path.match(%r{automations/(.+)\.rb})[1]
+                  .tr('/', '.')
+                  .rpartition('.')
+
+      return fragments.first, fragments.last
     end
   end
 end
