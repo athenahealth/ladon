@@ -103,10 +103,10 @@ module Ladon
             status: :SUCCESS,
             config: {
               id: '123456',
+              test_class_name: 'FooBar',
+              test_file_path: './lib/automations/foo/bar.rb',
               log_level: 'ERROR',
-              flags: {},
-              class_name: 'FooBar',
-               path: './lib/automations/foo/bar.rb'
+              flags: {}
             },
             timings: {},
             log: { level: :ERROR, entries: [] },
@@ -131,9 +131,9 @@ module Ladon
             "STATUS: SUCCESS\n",
             'CONFIGURATIONS:',
             'Id: 123456',
-            'Class Name: FooBar',
+            'Test Class Name: FooBar',
+            'Test File Path: ./lib/automations/foo/bar.rb',
             'Log Level: ERROR',
-            'Path: ./lib/automations/foo/bar.rb',
             "Flags:\n\n",
             "TIMINGS:\n\n",
             'LOG MESSAGES:',

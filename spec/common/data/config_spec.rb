@@ -25,10 +25,10 @@ module Ladon
         let(:expected_hash) do
           {
             id: config_id,
+            test_class_name: class_name,
+            test_file_path: path,
             log_level: 'ERROR',
-            flags: config_flags,
-            class_name: class_name,
-            path: path
+            flags: config_flags
           }
         end
 
@@ -45,9 +45,9 @@ module Ladon
         let(:expected_string) do
           [
             "Id: #{config_id}",
-            "Class Name: #{class_name}",
+            "Test Class Name: #{class_name}",
+            "Test File Path: #{path}",
             'Log Level: ERROR',
-            "Path: #{path}",
             'Flags:',
             "a  => 1\nb  => 2"
           ].join("\n")
