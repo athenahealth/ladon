@@ -34,7 +34,7 @@ deploy:
     name: production
     url: http://rubygems.athenahealth.com
   script:
-    - bundle exec gem inabox -g http://rubygems.athenahealth.com
+    - bundle exec gem inabox -g http://rubygems.athenahealth.com -o
   dependencies:
     - build
   only:
