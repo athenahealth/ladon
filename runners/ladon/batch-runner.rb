@@ -80,6 +80,8 @@ class LadonBatchRunner < Ladon::Automator::Automation
       # process this config's flag_sets
       my_flags = automation_config.fetch(:flags, {})
       target_flag_sets = automation_config.fetch(FLAG_SETS_KEY, [])
+      # process the log level
+      log_level = automation_config.fetch(:log_level, '')
       if target_flag_sets.is_a?(Array) && !target_flag_sets.empty?
         # create hash of set_name => merge of that set INTO the explicit flags for this automation
         target_flag_sets.map! { |set_name| [ set_name, my_flags.merge(@config[FLAG_SETS_KEY][set_name.to_sym]) ] }.to_h
@@ -101,6 +103,7 @@ class LadonBatchRunner < Ladon::Automator::Automation
 
           spawn_flags = runner_flags.dup
           spawn_flags[LadonAutomationRunner::TARGET_AUTOMATION_FLAGS.name] = instance_flags
+          spawn_flags[LadonAutomationRunner::LOG_LEVEL.name]= log_level.strip.upcase.to_sym
           @runners << LadonAutomationRunner.spawn(flags: spawn_flags)
         end
       end
