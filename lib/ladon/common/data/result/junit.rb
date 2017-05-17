@@ -15,15 +15,16 @@ module Ladon
     def self.generate(status:, config:, time:, log:)
       time *= 60 # JUnit expects in seconds but Ladon records in minutes
       suite_name, case_name = convert_path_to_suite_and_case(config.flags[:target_path])
+      suite_name = suite_name == '' ? 'base' : suite_name
 
       builder = Nokogiri::XML::Builder.new do |xml|
         xml.testsuite(
-          name: suite_name == "" ? 'base' : suite_name,
+          name: suite_name,
           time: time,
           tests: 1 # Only one test per result
         ) do
           xml.testcase(
-            classname: suite_name == "" ? 'base' : suite_name,
+            classname: suite_name,
             name: case_name,
             time: time
           ) do
