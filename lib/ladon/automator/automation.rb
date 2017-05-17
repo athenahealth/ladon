@@ -152,6 +152,8 @@ module Ladon
         @formatter = case File.extname(file_path)
                      when '.json'
                        :to_json
+                     when '.xml'
+                       :to_junit
                      else
                        :to_s
                      end
