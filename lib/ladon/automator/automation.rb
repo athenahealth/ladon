@@ -151,13 +151,13 @@ module Ladon
       # @param [String] file_path The path to which the formatted Result will be written.
       def detect_output_format(file_path)
         @formatter ||= case File.extname(file_path)
-                     when '.json'
-                       :to_json
-                     when '.xml'
-                       :to_junit
-                     else
-                       :to_s
-                     end
+                       when '.json'
+                         :to_json
+                       when '.xml'
+                         :to_junit
+                       else
+                         :to_s
+                       end
       end
     end
   end
