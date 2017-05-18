@@ -96,7 +96,7 @@ class LadonBatchRunner < Ladon::Automator::Automation
           file_pattern = @config[:output_file]
           unless file_pattern.nil? || file_pattern.empty?
             file_path = @config[:output_file] % {batch_name: @batch_name, set_name: set_name, instance: instance + 1}
-            instance_flags[Ladon::Automator::Automation::OUTPUT_FILE.name] = File.expand_path(file_path)
+            instance_flags[Ladon::Automator::Automation::OUTPUT_FILES.name] = [File.expand_path(file_path)]
           end
 
           spawn_flags = runner_flags.dup

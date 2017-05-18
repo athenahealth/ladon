@@ -44,8 +44,12 @@ def _parse_options(argv)
 
     opts.on('-p PATH',
             '--result_file_path PATH',
-            "File to store target's formatted Result data") do |val|
-      flags[Ladon::Automator::Automation::OUTPUT_FILE.name] = val
+            Array,
+            "Files to store target's formatted Result data. File extensions used to determine format.") do |val|
+      flags[Ladon::Automator::Automation::OUTPUT_FILES.name] ||= []
+      val.each do |fp|
+        flags[Ladon::Automator::Automation::OUTPUT_FILES.name] << fp
+      end
     end
 
     opts.on('--formatter FMT',
