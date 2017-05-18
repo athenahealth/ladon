@@ -150,14 +150,13 @@ module Ladon
       # based on file extension. Defaults to +to_s+.
       # @param [String] file_path The path to which the formatted Result will be written.
       def detect_output_format(file_path)
-        # return unless @formatter.nil?
-        @formatter = case File.extname(file_path)
+        @formatter ||= case File.extname(file_path)
                      when '.json'
                        :to_json
                      when '.xml'
                        :to_junit
                      else
-                       @formatter.nil? ? :to_s : @formatter
+                       :to_s
                      end
       end
     end
