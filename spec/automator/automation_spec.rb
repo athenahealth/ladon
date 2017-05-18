@@ -164,7 +164,7 @@ module Ladon
 
         context 'when output file path(s) is given' do
           context 'when output format flag is specified' do
-            let(:flags) { { output_format: formatter, output_files: ['/some/file/path.json'] } }
+            let(:flags) { { output_format: formatter, output_files: file_paths } }
             it 'writes the selected format representation to the files at the given paths' do
               expect(File).to receive(:write).with(file_paths[0], automation.result.to_s)
               subject.call
