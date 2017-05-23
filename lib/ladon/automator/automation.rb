@@ -54,7 +54,7 @@ module Ladon
 
       # Method that stores the subclass when loaded to find the leaf automation class
       def self.inherited(subclass)
-        @@leaf_automation_class = subclass
+        @@leaf_automation_class = subclass # rubocop:disable ClassVars
       end
 
       # Identifies the phases involved in this automation.
