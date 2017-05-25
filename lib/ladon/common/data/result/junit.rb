@@ -48,7 +48,7 @@ module Ladon
       return '', '' if path.nil?
 
       fragments = path.match(%r{automations/(.+)\.rb})[1]
-                      .tr('/', '.')
+                  .tr('/', '.')
                       .rpartition('.')
 
       return fragments.first, fragments.last
