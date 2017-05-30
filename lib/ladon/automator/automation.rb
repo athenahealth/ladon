@@ -28,6 +28,7 @@ module Ladon
           puts result.send(@formatter)
           _print_separator_line('-')
         else
+          file_path_list = file_path_list.split(' ') unless file_path_list.is_a?(Array)
           file_path_list.each do |file_path|
             # if no format is available, try to infer from file extension, defaulting to :to_s
             self.send(:detect_output_format, file_path)
@@ -51,6 +52,11 @@ module Ladon
 
       # If given a truthy value, "Ladon puts" (+lputs+)
       SUPPRESS_STDOUT = make_flag(:suppress_stdout, default: false) { |suppress| @suppress = suppress }
+
+      # Method that stores the subclass when loaded to find the leaf automation class
+      def self.inherited(subclass)
+        @@leaf_automation_class = subclass # rubocop:disable ClassVars
+      end
 
       # Identifies the phases involved in this automation.
       # @return [Array<Phase>] Ordered array defining the Phases of this class of automation.
