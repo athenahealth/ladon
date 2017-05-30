@@ -187,10 +187,7 @@ module Ladon
       # Given a transition, validate it against a given block.
       # @return True if no block given or the block returns true when called with the given transition, false otherwise.
       def transition_match?(transition, &_block)
-        # Skip this cop, as it causes rubocop autocorrect to recur infinitely and blow up the universe
-        # rubocop:disable Style/YodaCondition
         !block_given? || yield(transition) == true
-        # rubocop:enable Style/YodaCondition
       end
     end
 
