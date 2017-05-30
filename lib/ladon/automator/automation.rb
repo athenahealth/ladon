@@ -17,7 +17,7 @@ module Ladon
 
       # Flag specifying where to write the formatted result (from OUTPUT_FORMAT flag.)
       # NOTE: if not specified and OUTPUT_FORMAT is given, will print to terminal.
-      OUTPUT_FILES = make_flag(:output_files, default: nil) do |file_path_list|
+      OUTPUT_FILES = make_flag(:output_file, default: nil) do |file_path_list|
         self.handle_flag(OUTPUT_FORMAT)
 
         if file_path_list.nil?
