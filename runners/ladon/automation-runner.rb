@@ -77,7 +77,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
       flags: self.get_flag_value(TARGET_AUTOMATION_FLAGS),
       log_level: self.get_flag_value(LOG_LEVEL),
       class_name: @target_automation_class,
-      path: @flags[:target_path]
+      path: File.expand_path(@flags[:target_path])
     )
   end
 
