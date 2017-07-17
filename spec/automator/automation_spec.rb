@@ -153,25 +153,54 @@ module Ladon
         end
       end
 
+
       describe '#handle_output' do
-        let(:file_path) { '/some/file/path' }
+        let(:file_paths) { ['/some/file/path'] }
+        let(:formatter) { :to_s }
         let(:automation) { ConcreteAutomation.spawn(flags: flags) }
         subject { -> { automation.handle_output } }
 
         before { allow(FileUtils).to receive(:mkdir_p) } # mock out making the obviously fake directories
 
-        context 'when output format flag is specified' do
-          context 'when output file path is given' do
-            let(:flags) { {output_format: :to_s, output_file: file_path } }
-
-            it 'writes the string representation to the file at the given path' do
-              expect(File).to receive(:write).with(file_path, automation.result.to_s)
+        context 'when output file path(s) is given' do
+          context 'when output format flag is specified' do
+            let(:flags) { { output_format: formatter, output_file: file_paths } }
+            it 'writes the selected format representation to the files at the given paths' do
+              expect(File).to receive(:write).with(file_paths[0], automation.result.to_s)
               subject.call
             end
           end
 
-          context 'when output file path is not given' do
-            let(:flags) { { output_format: :to_s } }
+          context 'when output format flag is not specified' do
+            let(:flags) { { output_file: file_paths } }
+            context 'when file path has JSON extension' do
+              let(:file_paths) { ['/some/file/path.json'] }
+              it 'writes the JSON representation to the file at the given path' do
+                expect(File).to receive(:write).with(file_paths[0], automation.result.to_json)
+                subject.call
+              end
+            end
+
+            context 'when file path has xml extension' do
+              let(:file_paths) { ['/some/file/path.xml'] }
+              it 'writes the JUnit representation to the file at the given path' do
+                expect(File).to receive(:write).with(file_paths[0], automation.result.to_junit)
+                subject.call
+              end
+            end
+
+            context 'when format cannot be determined from extension' do
+              it 'writes the string representation to the files at the given paths' do
+                expect(File).to receive(:write).with(file_paths[0], automation.result.to_s)
+                subject.call
+              end
+            end
+          end
+        end
+
+        context 'when output file path is not given' do
+          context 'when output format flag is specified' do
+            let(:flags) { { output_format: formatter } }
 
             it 'prints the formatted result data to STDOUT' do
               expect(STDOUT).to receive(:puts).with("\n")
@@ -182,29 +211,8 @@ module Ladon
               subject.call
             end
           end
-        end
 
-        context 'when output format flag is not specified' do
-          context 'when output file path is given' do
-            let(:flags) { { output_file: file_path } }
-
-            context 'when file path has JSON extension' do
-              let(:file_path) { '/some/file/path.json' }
-              it 'writes the string representation to the file at the given path' do
-                expect(File).to receive(:write).with(file_path, automation.result.to_json)
-                subject.call
-              end
-            end
-
-            context 'when file path does not have JSON extension' do
-              it 'writes the string representation to the file at the given path' do
-                expect(File).to receive(:write).with(file_path, automation.result.to_s)
-                subject.call
-              end
-            end
-          end
-
-          context 'when output file path is not given' do
+          context 'when output format flag is not specified' do
             let(:flags) { {} }
 
             it 'does not print result to terminal' do

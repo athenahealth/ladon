@@ -17,10 +17,10 @@ module Ladon
 
       # Flag specifying where to write the formatted result (from OUTPUT_FORMAT flag.)
       # NOTE: if not specified and OUTPUT_FORMAT is given, will print to terminal.
-      OUTPUT_FILE = make_flag(:output_file, default: nil) do |file_path|
+      OUTPUT_FILES = make_flag(:output_file, default: nil) do |file_path_list|
         self.handle_flag(OUTPUT_FORMAT)
 
-        if file_path.nil?
+        if file_path_list.nil?
           next if @formatter.nil?
 
           puts "\n"
@@ -28,27 +28,35 @@ module Ladon
           puts result.send(@formatter)
           _print_separator_line('-')
         else
-          # if no format is available, try to infer from file extension, defaulting to :to_s
-          self.send(:detect_output_format, file_path)
+          file_path_list = file_path_list.split(' ') unless file_path_list.is_a?(Array)
+          file_path_list.each do |file_path|
+            # if no format is available, try to infer from file extension, defaulting to :to_s
+            self.send(:detect_output_format, file_path)
 
-          results_written = assert('Must be able to open and write formatted result info to file path given') do
-            output_file = File.expand_path(file_path)
-            # If the directory the file is going to doesn't exist (likely common), create it now
-            dirname = File.dirname(output_file)
-            FileUtils.mkdir_p(dirname) unless File.directory?(dirname)
+            results_written = assert('Must be able to open and write formatted result info to file path given') do
+              output_file = File.expand_path(file_path)
+              # If the directory the file is going to doesn't exist (likely common), create it now
+              dirname = File.dirname(output_file)
+              FileUtils.mkdir_p(dirname) unless File.directory?(dirname)
 
-            formatted_info = result.send(@formatter)
-            File.write(output_file, formatted_info) == formatted_info.length
+              formatted_info = result.send(@formatter)
+              File.write(output_file, formatted_info) == formatted_info.length
+            end
+
+            # Use the class' name, defaulting to the superclass' name
+            class_name = self.class.name || self.class.superclass.name
+            puts "\t#{class_name} results written to #{File.expand_path(file_path)}" if results_written
           end
-
-          # Use the class' name, defaulting to the superclass' name
-          class_name = self.class.name || self.class.superclass.name
-          puts "\t#{class_name} results written to #{File.expand_path(file_path)}" if results_written
         end
       end
 
       # If given a truthy value, "Ladon puts" (+lputs+)
       SUPPRESS_STDOUT = make_flag(:suppress_stdout, default: false) { |suppress| @suppress = suppress }
+
+      # Method that stores the subclass when loaded to find the leaf automation class
+      def self.inherited(subclass)
+        @@leaf_automation_class = subclass # rubocop:disable ClassVars
+      end
 
       # Identifies the phases involved in this automation.
       # @return [Array<Phase>] Ordered array defining the Phases of this class of automation.
@@ -91,7 +99,7 @@ module Ladon
 
       # Handle outputting the Result information.
       def handle_output
-        self.handle_flag(Automation::OUTPUT_FILE)
+        self.handle_flag(Automation::OUTPUT_FILES)
       end
 
       # Simple wrapper around +Kernel::puts+ that will be supressed if the SURPRESS_STDOUT flag is truthy.
@@ -148,13 +156,14 @@ module Ladon
       # based on file extension. Defaults to +to_s+.
       # @param [String] file_path The path to which the formatted Result will be written.
       def detect_output_format(file_path)
-        return unless @formatter.nil?
-        @formatter = case File.extname(file_path)
-                     when '.json'
-                       :to_json
-                     else
-                       :to_s
-                     end
+        @formatter ||= case File.extname(file_path)
+                       when '.json'
+                         :to_json
+                       when '.xml'
+                         :to_junit
+                       else
+                         :to_s
+                       end
       end
     end
   end

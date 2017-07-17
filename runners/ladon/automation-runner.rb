@@ -35,6 +35,9 @@ class LadonAutomationRunner < Ladon::Automator::Automation
       executable_automations = detected_automations.reject do |cls|
         cls.abstract? || cls <= LadonAutomationRunner
       end
+      halting_assert('Should not run an abstract automation!!!') do
+        !@@leaf_automation_class.abstract?
+      end
       halting_assert('Must detect a single non-abstract automation') { executable_automations.size == 1 }
       @target_automation_class = executable_automations[0]
     else
@@ -74,7 +77,7 @@ class LadonAutomationRunner < Ladon::Automator::Automation
       flags: self.get_flag_value(TARGET_AUTOMATION_FLAGS),
       log_level: self.get_flag_value(LOG_LEVEL),
       class_name: @target_automation_class,
-      path: @flags[:target_path]
+      path: File.expand_path(@flags[:target_path])
     )
   end
 
