@@ -2,7 +2,32 @@
 require 'optparse'
 require 'ladon/automation-runner'
 
+# This is incredibly hokey, but most unix terminals split
+# ARGV on whitespace, while Powershell will split on whitespace
+# or ','. This means comma-separated values are going to be
+# incorrectly broken up. This should correct that.
+def _correct_flags(argv, flags)
+  new_argv = []
+  on_flag = 0
+  created = false
+  argv.each do |a|
+    if a.start_with?('-')
+      on_flag = flags.include? a
+      created = false
+    elsif on_flag
+      if created
+        new_argv[-1] = "#{new_argv[-1]},#{a}"
+        next
+      end
+      created = true
+    end
+    new_argv << a
+  end
+  new_argv
+end
+
 def _parse_options(argv)
+  argv = _correct_flags(argv, ['-i', '--interactive', '-f', '--flags']) # any flags that accept comma-separated values must be corrected
   flags = { LadonAutomationRunner::TARGET_AUTOMATION_FLAGS.name => {} }
   OptionParser.new do |opts|
     opts.banner = 'Usage: ladon-run [options]'
@@ -29,8 +54,8 @@ def _parse_options(argv)
     end
 
     # This flag is HACKY: won't work with flag values that have commas in them.
-    opts.on('-f FLAGS',
-            '--flags FLAGS',
+    opts.on('-f FLAG',
+            '--flags FLAG',
             Array,
             'Flags to give the target automation. Comma-separated list of name:value pairs; may be repeated.') do |val|
       val.map { |el| el.split(':', 2) }.each do |flag_name, flag_value|
@@ -44,12 +69,8 @@ def _parse_options(argv)
 
     opts.on('-p PATH',
             '--result_file_path PATH',
-            Array,
-            "Files to store target's formatted Result data. File extensions used to determine format.") do |val|
-      flags[Ladon::Automator::Automation::OUTPUT_FILES.name] ||= []
-      val.each do |fp|
-        flags[Ladon::Automator::Automation::OUTPUT_FILES.name] << fp
-      end
+            "File to store target's formatted Result data. File extensions used to determine format.") do |val|
+      flags[Ladon::Automator::Automation::OUTPUT_FILE.name] = val
     end
 
     opts.on('--formatter FMT',
