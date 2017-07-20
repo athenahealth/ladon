@@ -13,7 +13,7 @@ Gem::Specification.new do |gem|
   gem.email       = 'ssnow@athenahealth.com'
 
   # add the runners/ directory to the load path and packaged files
-  gem.require_paths = %w(lib runners)
+  gem.require_paths = %w[lib runners]
   gem.files       = Dir['lib/**/*.rb', 'runners/**/*.rb']
 
   gem.homepage    = 'http://rubygems.org/gems/ladon'

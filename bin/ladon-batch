@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
 require 'optparse'
-require 'ladon/batch-runner'
+require 'ladon/batch_runner'
 
+# rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/BlockLength
 def _parse_options(argv)
-  flags = { }
+  flags = {}
+
   OptionParser.new do |opts|
     opts.banner = 'Usage: ladon-run [options]'
 
@@ -40,12 +42,14 @@ def _parse_options(argv)
     end
 
     opts.on('-h', '--help', 'Prints this help message') do
-      puts opts; exit
+      puts opts
+      exit
     end
   end.parse!(argv)
 
   flags
 end
+# rubocop:enable Metrics/AbcSize, Metrics/MethodLength, Metrics/BlockLength
 
 options = _parse_options(ARGV)
 runner_result = LadonBatchRunner.spawn(flags: options).run

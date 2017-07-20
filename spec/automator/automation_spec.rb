@@ -16,6 +16,7 @@ end
 
 module Ladon
   module Automator
+    is_windows = (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM)
     RSpec.describe Automation do
       describe '#new' do
         subject(:automation) { Automation.new(config: config) }
@@ -69,7 +70,6 @@ module Ladon
 
           it { is_expected.to be false }
         end
-
       end
 
       describe '#sandbox' do
@@ -97,7 +97,9 @@ module Ladon
             end
 
             it 'marks the Automation result as errored' do
-              expect { automation.sandbox('name') { raise } }.to change { automation.result.error? }.from(false).to(true)
+              expect { automation.sandbox('name') { raise } }.to(
+                change { automation.result.error? }.from(false).to(true)
+              )
             end
           end
         end
@@ -135,7 +137,7 @@ module Ladon
         end
 
         context 'when processing a valid phase' do
-          let(:target_phase) { Phase.new(:example, validator: -> automation { !automation.nil? } ) }
+          let(:target_phase) { Phase.new(:example, validator: ->(automation) { !automation.nil? }) }
 
           it 'executes the phase' do
             expect(automation).to receive(:execute_phase).with(target_phase)
@@ -144,7 +146,7 @@ module Ladon
         end
 
         context 'when processing an invalid phase' do
-          let(:target_phase) { Phase.new(:example, validator: -> automation { automation.nil? } ) }
+          let(:target_phase) { Phase.new(:example, validator: ->(automation) { automation.nil? }) }
 
           it 'does not execute the phase' do
             expect(automation).not_to receive(:execute_phase)
@@ -153,9 +155,8 @@ module Ladon
         end
       end
 
-
       describe '#handle_output' do
-        let(:file_path) { '/some/file/path' }
+        let(:file_path) { !is_windows.nil? ? 'C:/some/file/path' : '/some/file/path' }
         let(:formatter) { :to_s }
         let(:automation) { ConcreteAutomation.spawn(flags: flags) }
         subject { -> { automation.handle_output } }
@@ -174,7 +175,7 @@ module Ladon
           context 'when output format flag is not specified' do
             let(:flags) { { output_file: file_path } }
             context 'when file path has JSON extension' do
-              let(:file_paths) { ['/some/file/path.json'] }
+              let(:file_path) { !is_windows.nil? ? 'C:/some/file/path.json' : '/some/file/path.json' }
               it 'writes the JSON representation to the file at the given path' do
                 expect(File).to receive(:write).with(file_path, automation.result.to_json)
                 subject.call
@@ -182,7 +183,7 @@ module Ladon
             end
 
             context 'when file path has xml extension' do
-              let(:file_path) { '/some/file/path.xml' }
+              let(:file_path) { !is_windows.nil? ? 'C:/some/file/path.xml' : '/some/file/path.xml' }
               it 'writes the JUnit representation to the file at the given path' do
                 expect(File).to receive(:write).with(file_path, automation.result.to_junit)
                 subject.call

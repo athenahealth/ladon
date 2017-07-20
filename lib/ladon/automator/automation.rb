@@ -10,8 +10,8 @@ module Ladon
       # Flag specifying how to format the Automation's +Result+ object.
       OUTPUT_FORMAT = make_flag(:output_format, default: nil) do |format_method|
         unless format_method.nil?
-          method_ok = assert('Automation result must respond to the formatting method') { result.respond_to?(format_method) }
-          format_method = 'to_s' unless method_ok
+          m_ok = assert('Automation result must respond to the formatting method') { result.respond_to?(format_method) }
+          format_method = 'to_s' unless m_ok
         end
         @formatter = format_method
       end

@@ -1,34 +1,13 @@
 #!/usr/bin/env ruby
 require 'optparse'
-require 'ladon/automation-runner'
+require 'ladon/automation_runner'
 
-# This is incredibly hokey, but most unix terminals split
-# ARGV on whitespace, while Powershell will split on whitespace
-# or ','. This means comma-separated values are going to be
-# incorrectly broken up. This should correct that.
-def _correct_flags(argv, flags)
-  new_argv = []
-  on_flag = 0
-  created = false
-  argv.each do |a|
-    if a.start_with?('-')
-      on_flag = flags.include? a
-      created = false
-    elsif on_flag
-      if created
-        new_argv[-1] = "#{new_argv[-1]},#{a}"
-        next
-      end
-      created = true
-    end
-    new_argv << a
-  end
-  new_argv
-end
-
+# rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/BlockLength
 def _parse_options(argv)
-  argv = _correct_flags(argv, ['-i', '--interactive', '-f', '--flags']) # any flags that accept comma-separated values must be corrected
+  # any flags that accept comma-separated values must be corrected
+  argv = _correct_flags(argv, ['-i', '--interactive', '-f', '--flags'])
   flags = { LadonAutomationRunner::TARGET_AUTOMATION_FLAGS.name => {} }
+
   OptionParser.new do |opts|
     opts.banner = 'Usage: ladon-run [options]'
 
@@ -92,6 +71,31 @@ def _parse_options(argv)
   end.parse!(argv)
 
   flags
+end
+# rubocop:enable Metrics/AbcSize, Metrics/MethodLength, Metrics/BlockLength
+
+# Utility function to recreate +argv+ to match
+# 'whitespace-only-split' behavior. Powershell will split
+# on whitespace or ',' and cause incorrect argument parsing
+# of +flags+ that can take multiple comma-split values
+def _correct_flags(argv, flags)
+  new_argv = []
+  on_flag = 0
+  created = false
+  argv.each do |a|
+    if a.start_with?('-')
+      on_flag = flags.include? a
+      created = false
+    elsif on_flag
+      if created
+        new_argv[-1] = "#{new_argv[-1]},#{a}"
+        next
+      end
+      created = true
+    end
+    new_argv << a
+  end
+  new_argv
 end
 
 options = _parse_options(ARGV)
