@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Ladon
   # Namespace for all of the software modeling components of the Ladon framework.
   module Modeler

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Ladon
   module Modeler
     # Error raised when trying to call +Graph#merge+ with an incompatible source Graph.

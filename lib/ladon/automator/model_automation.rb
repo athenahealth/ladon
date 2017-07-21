@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'ladon/automator/automation'
 
 module Ladon

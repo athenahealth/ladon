@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'set'
 require 'ladon/modeler/components/load_strategy'
 require 'ladon/modeler/components/state'

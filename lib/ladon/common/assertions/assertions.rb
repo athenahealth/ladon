@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Ladon
   # Defines the API for making assertions about the execution behavior of the +Automation+.
   module Assertions

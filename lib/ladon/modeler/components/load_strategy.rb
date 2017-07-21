@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Ladon
   module Modeler
     # Defines approach to loading states/transitions in +Ladon::Modeler::Graph+ instances.

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Ladon
   # Error raised as default implementation of "abstract" methods, to signal missing method definitions.
   class MissingImplementationError < StandardError

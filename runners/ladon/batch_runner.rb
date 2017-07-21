@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'pathname'
 require 'pp'
 require 'pry'
@@ -32,7 +34,7 @@ class LadonBatchRunner < Ladon::Automator::Automation
   end
 
   # Delay period between triggering the run of individual Automation runs in this batch.
-  RUN_DELAY = make_flag(:run_delay, default: 0.5) { |delay| sleep(delay) if delay.is_a?(Numeric) && delay > 0 }
+  RUN_DELAY = make_flag(:run_delay, default: 0.5) { |delay| sleep(delay) if delay.is_a?(Numeric) && delay.positive? }
 
   # Ladon-batch uses a setup-execute-teardown cycle.
   # If setup results in a non-success status, execute is skipped but teardown will still occur.
@@ -132,7 +134,7 @@ class LadonBatchRunner < Ladon::Automator::Automation
 
   # Interpret +value+ as a non-negative int
   def _nonnegative_int(value)
-    return 1 if value.nil? || !value.is_a?(Integer) || value < 0
+    return 1 if value.nil? || !value.is_a?(Integer) || value.negative?
     value
   end
 

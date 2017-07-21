@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Ladon
   module Automator
     # Base class for Ladon automation. This class is exposed to encapsulate the

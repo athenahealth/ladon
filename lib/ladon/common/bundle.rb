@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Ladon
   # A "Bundle" is any object which is spawned from a Ladon config,
   # has a Logger and a Timer, and maintains a Result.
