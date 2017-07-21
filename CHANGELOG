@@ -1,0 +1,19 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+	
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## [1.0.1] - 2017-07-21
+### Added
+- JUnit Results parsing with to_junit
+
+### Changed
+- Fixed ARGV parsing from Powershell
+- Rubocop style modified to Ruby 2.3
+- Output file paths can be relative or fully-qualified
+
+## [1.0.0] - 2016-11-14
+### Added
+- Everything
