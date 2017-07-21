@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require 'pathname'
 require 'pp'
 require 'pry'
@@ -9,7 +7,7 @@ require 'ladon/automator'
 class LadonAutomationRunner < Ladon::Automator::Automation
   # Conventional name for a directory containing Ladon automations;
   # If found as an ancestor in the TARGET_AUTOMATION_PATH, this directory will be added to the load path.
-  AUTOMATION_DIR_BASENAME = 'automations'
+  AUTOMATION_DIR_BASENAME = 'automations'.freeze
 
   # Flag that handles loading the target automation Ruby script.
   TARGET_AUTOMATION_PATH = make_flag(:target_path, default: nil) do |auto_path|

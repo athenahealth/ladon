@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module Ladon
   module Timing
     # Represents a single timing performed by a +Timer+ instance.

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module Ladon
   module Logging
     # Can log messages at specified levels to create a text record of activity.

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module Ladon
   # Defines the Logging interface for Automation instances.
   module Logging

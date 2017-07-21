@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module Ladon
   module Modeler
     # The base type for representing Nodes/States in Ladon graph models.

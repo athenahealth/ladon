@@ -1,6 +1,4 @@
 #!/usr/bin/env ruby
-# frozen_string_literal: true
-
 require 'optparse'
 require 'pathname'
 require 'pp'
@@ -10,7 +8,7 @@ require 'ladon'
 # This class handles the flag parsing and creation
 # for an automation to customize how it is run
 class LadonFlagsIdentifier < Ladon::Automator::Automation
-  AUTOMATION_DIR_BASENAME = 'automations'
+  AUTOMATION_DIR_BASENAME = 'automations'.freeze
 
   TARGET_AUTOMATION_PATH = make_flag(:target_path, default: nil) do |auto_path|
     halting_assert('Automation path must point to an existing file') do
@@ -95,7 +93,7 @@ class LadonFlagsIdentifier < Ladon::Automator::Automation
     class_options.each_with_index { |cls, idx| puts "\t#{idx + 1}. #{cls.name}" }
     begin
       idx = gets.to_i
-      raise StandardError unless idx.positive? && idx <= class_options.size
+      raise StandardError unless idx > 0 && idx <= class_options.size
       return class_options[idx - 1]
     rescue
       puts 'Nope. Try again.'

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require 'rubocop/rake_task'
 require 'rubygems/tasks'
 require 'rspec/core/rake_task'

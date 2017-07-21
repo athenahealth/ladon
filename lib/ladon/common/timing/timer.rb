@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module Ladon
   # Defines the execution Timing interface for Automation instances.
   module Timing

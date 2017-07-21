@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module Ladon
   module Logging
     # Represents a single item in a Logger's record.

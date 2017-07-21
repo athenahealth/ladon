@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module Ladon
   module Automator
     # Represents metadata about Automation phases.

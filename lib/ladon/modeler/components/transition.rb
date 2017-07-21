@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module Ladon
   module Modeler
     # Used to model when and how modeled software can execute a change of State.

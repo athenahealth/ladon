@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # Top level namespace for all Ladon framework internals.
 module Ladon
 end
