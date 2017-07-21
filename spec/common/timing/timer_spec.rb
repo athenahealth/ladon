@@ -66,7 +66,7 @@ module Ladon
             subject.for(timer_name) { sleep 0.25 }
             subject.for(timer_name) { sleep 0.5 }
 
-            expect(subject.total_time.round(3)).to eq(0.013)
+            expect(subject.total_time.round(3)).to eq(0.013).or eq(0.012)
           end
         end
       end
