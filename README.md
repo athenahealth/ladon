@@ -1,4 +1,4 @@
-# Ladon - A Software Modeling and Automation Framework Patni
+# Ladon - A Software Modeling and Automation Framework
 
 [![build status](https://gitlab.athenahealth.com/ladon/ladon/badges/master/build.svg)](https://gitlab.athenahealth.com/ladon/ladon/commits/master) [![coverage report](https://gitlab.athenahealth.com/ladon/ladon/badges/master/coverage.svg)](https://gitlab.athenahealth.com/ladon/ladon/commits/master)
 
