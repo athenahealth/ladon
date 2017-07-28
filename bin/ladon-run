@@ -2,10 +2,20 @@
 require 'optparse'
 require 'ladon/automation_runner'
 
+# These are the formatters that can currently be applied
+# to the automation results object
+FORMATTER_OPTIONS = %w[to_s to_json to_h to_junit].freeze
+
+# These are the flags that accept comma-separated values
+#   categorized as 'Array' flags
+# NOTE: if adding a new Array flag, specify it here!
+# See _correct_flags for more information
+COMMA_FLAGS = ['-i', '--interactive', '-f', '--flags'].freeze
+
 # rubocop:disable Metrics/AbcSize, Metrics/MethodLength, Metrics/BlockLength
 def _parse_options(argv)
-  # any flags that accept comma-separated values must be corrected
-  argv = _correct_flags(argv, ['-i', '--interactive', '-f', '--flags'])
+  # any 'Array' flags that accept comma-separated values must be corrected
+  argv = _correct_flags(argv)
   flags = { LadonAutomationRunner::TARGET_AUTOMATION_FLAGS.name => {} }
 
   OptionParser.new do |opts|
@@ -54,6 +64,9 @@ def _parse_options(argv)
 
     opts.on('--formatter FMT',
             "Formatting method to call on target's Result for output (ex: to_s)") do |val|
+      unless FORMATTER_OPTIONS.include? val
+        raise OptionParser::InvalidOption, "#{val} is not a valid formatter. Select from: #{FORMATTER_OPTIONS}"
+      end
       flags[Ladon::Automator::Automation::OUTPUT_FORMAT.name] = val.strip
     end
 
@@ -74,26 +87,29 @@ def _parse_options(argv)
 end
 # rubocop:enable Metrics/AbcSize, Metrics/MethodLength, Metrics/BlockLength
 
-# Utility function to recreate +argv+ to match
-# 'whitespace-only-split' behavior. Powershell will split
-# on whitespace or ',' and cause incorrect argument parsing
-# of +flags+ that can take multiple comma-split values
-def _correct_flags(argv, flags)
+# Utility function (hack) to recreate +argv+ so it's parsed
+# identically in Unix and Windows. Windows Powershell/CmdPrompt
+# will split on whitespace or ','; this causes incorrect argument
+# parsing of +COMMA_FLAGS+ that can take multiple comma-split values
+def _correct_flags(argv)
   new_argv = []
   on_flag = 0
   created = false
-  argv.each do |a|
-    if a.start_with?('-')
-      on_flag = flags.include? a
+  argv.each do |arg|
+    if arg.start_with?('-')
+      # We have an Array flag
+      on_flag = COMMA_FLAGS.include? arg
       created = false
     elsif on_flag
+      # All elements following an Array flag that aren't flags
+      # should be concatenated with commas
       if created
-        new_argv[-1] = "#{new_argv[-1]},#{a}"
+        new_argv[-1] = "#{new_argv[-1]},#{arg}"
         next
       end
       created = true
     end
-    new_argv << a
+    new_argv << arg
   end
   new_argv
 end

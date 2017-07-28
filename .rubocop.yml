@@ -23,11 +23,5 @@ Metrics/MethodLength:
   CountComments: false
   Max: 20
 
-# Disable length limits for specs
-Metrics/BlockLength:
-  Exclude:
-    - spec/**/*
-
-Metrics/ModuleLength:
-  Exclude:
-    - spec/**/*
+Layout/EndOfLine:
+  EnforcedStyle: lf
