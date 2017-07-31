@@ -14,8 +14,11 @@ module Ladon
     #
     # @param [String] msg The message to use in the log/error if the assertion fails.
     # @param [Boolean] halting If true, halt the Automation's execution of its current phase on assertion failure.
+    # @param [Integer/String/Array/Hash] expected, represents the value we are expecting as a part of assertion
+    # @param [Integer/String/Array/Hash] actual, represents the actual value identified in test execution
+    #
     # @return [Boolean] True if the assertion succeeds, false otherwise.
-    def assert(msg, halting: false)
+    def assert(msg, halting: false, expected: nil, actual: nil)
       raise BlockRequiredError, 'No assertion block given!' unless block_given?
 
       begin
@@ -30,7 +33,7 @@ module Ladon
         return true
       end
 
-      on_failed_assertion(msg, halting)
+      on_failed_assertion(msg, halting, expected, actual)
       false
     end
 
@@ -48,10 +51,16 @@ module Ladon
     #
     # @param [String] assert_msg The message to use in the log/error if the assertion fails.
     # @param [Boolean] halting If true, raise the AssertionFailedError; otherwise, log message at the error level.
-    def on_failed_assertion(assert_msg, halting)
+    # @param [Integer/String/Array/Hash] expected, represents the value we are expecting as a part of assertion to be
+    # logged to output file
+    # @param [Integer/String/Array/Hash] actual, represents the actual value identified in test execution to be logged
+    def on_failed_assertion(assert_msg, halting, expected, actual)
       @result.failure # mark Automation as failed
       raise AssertionFailedError, assert_msg if halting
-      @logger.error("Assertion failed: #{assert_msg}")
+      log = "Assertion failed: #{assert_msg}"
+      # If we have expected or actual values specified, log them as a part of failure
+      log << " - Expected values: #{expected}, Actual values: #{actual}" if actual || expected
+      @logger.error(log)
     end
   end
 end
