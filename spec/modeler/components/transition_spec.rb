@@ -37,7 +37,7 @@ module Ladon
             it { is_expected.not_to raise_error }
 
             it 'the argument to the block is the transition itself' do
-              expect(subject.call).to satisfy { |trans| trans.instance_variable_get('@block_arg') == trans }
+              expect(subject.call).to(satisfy { |trans| trans.instance_variable_get('@block_arg') == trans })
             end
           end
         end

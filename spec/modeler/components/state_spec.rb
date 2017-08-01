@@ -36,7 +36,7 @@ module Ladon
           subject { ExampleState.transitions }
 
           it { is_expected.to be_an(Enumerable) }
-          it { is_expected.to satisfy { |ts| ts.length == 2 } }
+          it { is_expected.to(satisfy { |ts| ts.length == 2 }) }
           it { is_expected.to include(a_kind_of(Ladon::Modeler::Transition)) }
         end
 
@@ -44,7 +44,7 @@ module Ladon
           subject { ExampleStateSubclass.transitions }
 
           it { is_expected.to be_an(Enumerable) }
-          it { is_expected.to satisfy { |ts| ts.length == 4 } }
+          it { is_expected.to(satisfy { |ts| ts.length == 4 }) }
           it { is_expected.to include(a_kind_of(Ladon::Modeler::Transition)) }
         end
       end
