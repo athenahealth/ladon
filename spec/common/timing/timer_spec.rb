@@ -58,7 +58,7 @@ module Ladon
             # sleep in seconds
             subject.for(timer_name) { sleep 0.5 }
             # duration should be identical, but in minutes
-            expect(subject.total_time.round(4)).to eq((0.5 / 60).round(4))
+            expect(subject.total_time.round(3)).to eq((0.5 / 60).round(3))
           end
         end
 
@@ -68,7 +68,7 @@ module Ladon
             subject.for(timer_name) { sleep 0.25 }
             subject.for(timer_name) { sleep 0.5 }
             # duration should be identical to sum, but in minutes
-            expect(subject.total_time.round(4)).to eq(((0.25 + 0.5) / 60).round(4))
+            expect(subject.total_time.round(3)).to eq(((0.25 + 0.5) / 60).round(3))
           end
         end
       end
