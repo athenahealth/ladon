@@ -4,7 +4,7 @@ require 'pry'
 require 'json'
 require 'fileutils'
 require 'ladon/automator'
-require 'ladon/automation-runner'
+require 'ladon/automation_runner'
 
 # Simple Automation that triggers a batch of ladon-runs as spec-ed by a simple JSON config.
 class LadonBatchRunner < Ladon::Automator::Automation
@@ -38,10 +38,10 @@ class LadonBatchRunner < Ladon::Automator::Automation
   # If setup results in a non-success status, execute is skipped but teardown will still occur.
   def self.phases
     [
-        Ladon::Automator::Phase.new(:setup, required: true),
-        Ladon::Automator::Phase.new(:build, required: true, validator: -> automation { automation.result.success? }),
-        Ladon::Automator::Phase.new(:execute, required: true, validator: -> automation { automation.result.success? }),
-        Ladon::Automator::Phase.new(:teardown, required: true)
+      Ladon::Automator::Phase.new(:setup, required: true),
+      Ladon::Automator::Phase.new(:build, required: true, validator: ->(automation) { automation.result.success? }),
+      Ladon::Automator::Phase.new(:execute, required: true, validator: ->(automation) { automation.result.success? }),
+      Ladon::Automator::Phase.new(:teardown, required: true)
     ]
   end
 
@@ -70,42 +70,13 @@ class LadonBatchRunner < Ladon::Automator::Automation
     # Not sure yet. We'll get to this later.
 
     @config[AUTOMATION_CONFIG_KEY].each do |automation_config|
-      # build basic flags for LadonAutomationRunner
-      runner_flags = {
-          LadonAutomationRunner::TARGET_AUTOMATION_PATH.name => File.expand_path(automation_config[:automation_path]),
-          LadonAutomationRunner::TARGET_AUTOMATION_CLASS_NAME.name => automation_config[:automation_name],
-          Ladon::Automator::Automation::SUPPRESS_STDOUT.name => true # suppress STDOUT in auto runners
-      }
+      # build and process this config's flag_sets
+      target_flag_sets = _flag_sets_of_automation(automation_config)
+      # calculate the number of runners to create for the automation
+      repeats = _nonnegative_int(automation_config[:instances])
 
-      # process this config's flag_sets
-      my_flags = automation_config.fetch(:flags, {})
-      target_flag_sets = automation_config.fetch(FLAG_SETS_KEY, [])
-      # process the log level
-      log_level = automation_config.fetch(:log_level, '')
-      if target_flag_sets.is_a?(Array) && !target_flag_sets.empty?
-        # create hash of set_name => merge of that set INTO the explicit flags for this automation
-        target_flag_sets.map! { |set_name| [ set_name, my_flags.merge(@config[FLAG_SETS_KEY][set_name.to_sym]) ] }.to_h
-      else
-        # no flag sets, so we just have one set of flags -- the explicit flags configured for this automation
-        target_flag_sets = { flags: my_flags }
-      end
-
-      repeats = automation_config[:instances]
-      repeats = 1 if repeats.nil? || !repeats.is_a?(Fixnum) || repeats < 0
       target_flag_sets.each do |set_name, flag_set|
-        repeats.times.each do |instance|
-          instance_flags = flag_set.dup
-          file_pattern = @config[:output_file]
-          unless file_pattern.nil? || file_pattern.empty?
-            file_path = @config[:output_file] % {batch_name: @batch_name, set_name: set_name, instance: instance + 1}
-            instance_flags[Ladon::Automator::Automation::OUTPUT_FILES.name] = [File.expand_path(file_path)]
-          end
-
-          spawn_flags = runner_flags.dup
-          spawn_flags[LadonAutomationRunner::TARGET_AUTOMATION_FLAGS.name] = instance_flags
-          spawn_flags[LadonAutomationRunner::LOG_LEVEL.name]= log_level.strip.upcase.to_sym
-          @runners << LadonAutomationRunner.spawn(flags: spawn_flags)
-        end
+        _spawn_runners(automation_config, set_name, flag_set.dup, repeats)
       end
     end
   end
@@ -127,5 +98,54 @@ class LadonBatchRunner < Ladon::Automator::Automation
     assert('All Automations in the batch should succeed') do
       @runners.all? { |r| r.result.success? }
     end
+  end
+
+  private
+
+  # The heavy lifting of spawning new runners for an
+  # +automation_config+
+  def _spawn_runners(automation_config, set_name, instance_flags, repeats)
+    file_pattern = @config[:output_file]
+    repeats.times.each do |instance|
+      unless file_pattern.nil? || file_pattern.empty?
+        f_path = format(file_pattern, batch_name: @batch_name, set_name: set_name, instance: instance + 1)
+        instance_flags[Ladon::Automator::Automation::OUTPUT_FILE.name] = File.expand_path(f_path)
+      end
+
+      @runners << LadonAutomationRunner.spawn(flags: _runner_flags(automation_config, instance_flags))
+    end
+  end
+
+  # Build flag sets for the given +automation_config+
+  def _flag_sets_of_automation(automation_config)
+    my_flags = automation_config.fetch(:flags, {})
+    target_sets = automation_config.fetch(FLAG_SETS_KEY, [])
+    if target_sets.is_a?(Array) && !target_sets.empty?
+      # create hash of set_name => merge of that set INTO the explicit flags for this automation
+      target_sets.map! { |set_name| [set_name, my_flags.merge(@config[FLAG_SETS_KEY][set_name.to_sym])] }.to_h
+    else
+      # no flag sets, so we just have one set of flags -- the explicit flags configured for this automation
+      target_sets = { flags: my_flags }
+    end
+    target_sets
+  end
+
+  # Interpret +value+ as a non-negative int
+  def _nonnegative_int(value)
+    return 1 if value.nil? || !value.is_a?(Integer) || value < 0
+    value
+  end
+
+  # Create a new flag set for LadonAutomationRunner
+  def _runner_flags(automation_config, instance_flags)
+    # process the log level
+    log_level = automation_config.fetch(:log_level, '')
+    {
+      LadonAutomationRunner::TARGET_AUTOMATION_PATH.name => File.expand_path(automation_config[:automation_path]),
+      LadonAutomationRunner::TARGET_AUTOMATION_CLASS_NAME.name => automation_config[:automation_name],
+      Ladon::Automator::Automation::SUPPRESS_STDOUT.name => true, # suppress STDOUT in auto runners
+      LadonAutomationRunner::TARGET_AUTOMATION_FLAGS.name => instance_flags,
+      LadonAutomationRunner::LOG_LEVEL.name => log_level.strip.upcase.to_sym
+    }
   end
 end

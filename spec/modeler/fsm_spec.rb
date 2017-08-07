@@ -61,19 +61,21 @@ module Ladon
 
           context 'when transitions are not loaded for the current state' do
             context 'when selection_strategy is not defined' do
-              it 'makes the FSM load transitions defined for the current state type, and later raises when calling the missing selection_strategy' do
+              it 'makes the FSM load transitions defined for the current state type,'\
+                ' and later raises when calling the missing selection_strategy' do
                 expect(fsm).to receive(:load_transitions).with(start_state.class, strategy: LoadStrategy::LAZY)
-                expect{subject.call}.to raise_error(Ladon::MissingImplementationError, '#selection_strategy')
+                expect { subject.call }.to raise_error(Ladon::MissingImplementationError, '#selection_strategy')
               end
             end
 
             context 'when selection_strategy is defined' do
-              it 'tells the FSM load the transitions defined for the current state type, succeeds in running the selection_strategy, and calls #execute_transition' do
+              it 'tells the FSM load the transitions defined for the current state type,'\
+                ' succeeds in running the selection_strategy, and calls #execute_transition' do
                 allow(fsm).to receive(:selection_strategy).and_return(Ladon::Modeler::Transition.new)
                 expect(fsm).to receive(:load_transitions).with(start_state.class, strategy: LoadStrategy::LAZY)
                 expect(fsm).to receive(:execute_transition)
 
-                expect{subject.call}.not_to raise_error
+                expect { subject.call }.not_to raise_error
               end
             end
           end
@@ -82,20 +84,22 @@ module Ladon
             before { fsm.add_transitions(start_state, []) }
 
             context 'when selection_strategy is not defined' do
-              it 'does not tell the FSM to perform any transition load operation, and later raises when calling the missing selection_strategy' do
+              it 'does not tell the FSM to perform any transition load operation,'\
+                ' and later raises when calling the missing selection_strategy' do
                 expect(fsm).to receive(:make_transition).and_call_original.ordered
                 expect(fsm).not_to receive(:load_transitions).ordered
-                expect{subject.call}.to raise_error(Ladon::MissingImplementationError, '#selection_strategy')
+                expect { subject.call }.to raise_error(Ladon::MissingImplementationError, '#selection_strategy')
               end
             end
 
             context 'when selection_strategy is defined' do
-              it 'does not tell the FSM to perform any transition load operation, and later raises when calling the missing selection_strategy' do
+              it 'does not tell the FSM to perform any transition load operation,'\
+                ' and later raises when calling the missing selection_strategy' do
                 allow(fsm).to receive(:selection_strategy).and_return(Ladon::Modeler::Transition.new)
                 expect(fsm).not_to receive(:load_transitions).ordered
                 expect(fsm).to receive(:execute_transition)
 
-                expect{subject.call}.not_to raise_error
+                expect { subject.call }.not_to raise_error
               end
             end
           end
@@ -160,9 +164,9 @@ module Ladon
           let(:target_state) { Class.new(State) }
           let(:transition) do
             Transition.new do |t|
-              t.target_loader { }
+              t.target_loader {}
               t.target_identifier { target_state }
-              t.by { |current_state|  }
+              t.by { |current_state| }
             end
           end
 
@@ -174,7 +178,7 @@ module Ladon
           end
 
           it "updates the FSM's current_state to an instance of the target's type" do
-            expect{subject.call}.to change(fsm, :current_state).to instance_of(target_state)
+            expect { subject.call }.to change(fsm, :current_state).to instance_of(target_state)
           end
 
           context 'when target is able to verify current state' do
@@ -245,8 +249,14 @@ module Ladon
         end
 
         context 'when the fsm has a current state' do
-          let(:valid_transition) { Transition.new { |t| t.when { |current| current.instance_variable_get('@example') == 5 } } }
-          let(:invalid_transition) { Transition.new { |t| t.when { |current| current.instance_variable_get('@example') == 6 } } }
+          let(:valid_transition) do
+            Transition.new do |t|
+              t.when { |current| current.instance_variable_get('@example') == 5 }
+            end end
+          let(:invalid_transition) do
+            Transition.new do |t|
+              t.when { |current| current.instance_variable_get('@example') == 6 }
+            end end
           let(:transition_options) { [valid_transition, invalid_transition] }
           let(:current_state) do
             state = Class.new(State).new
