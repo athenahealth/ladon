@@ -23,7 +23,7 @@ module Ladon
     def assert(msg, halting: false, expected: nil, actual: nil)
       # Verify the input arguments and raise exeptions if needed. Actual values might be nil based on scenario
       # executed but expected values have to be specified for comparison.
-      raise ArgumentError, 'No assertion block or actual/expected values passed!' unless block_given? && !expected.nil?
+      raise ArgumentError, 'No assertion block or actual/expected values passed!' unless block_given? || !expected.nil?
       # Evaluate the assert, if input assert block is available execute the same.
       # When block is not specified compare the actual/expected values
       begin
