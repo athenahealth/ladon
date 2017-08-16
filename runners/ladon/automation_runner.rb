@@ -2,6 +2,7 @@ require 'pathname'
 require 'pp'
 require 'pry'
 require 'ladon/automator'
+require 'ladon/data_provider/csv_data_provider.rb'
 
 # Automation that facilitates running Ladon Automation scripts.
 class LadonAutomationRunner < Ladon::Automator::Automation
@@ -20,6 +21,29 @@ class LadonAutomationRunner < Ladon::Automator::Automation
       _include_load_path(auto_path)
       require_relative auto_path
       true
+    end
+  end
+
+  DATA_INDEX = make_flag(:data_index, default: nil)
+
+  DATA_PATH = make_flag(:input_data_path, default: nil)
+
+  DATA = make_flag(:input_data, default: nil) do |val|
+    data_path = self.get_flag_value(DATA_PATH)
+    val = self.get_flag_value(DATA_INDEX)
+    if data_path && val
+      index_array = []
+      if val =~ /\-/
+        temp_index = val.gsub(/\-/, '..').chars.map(&:to_i)
+        index_array = (temp_index[0]..temp_index[3]).to_a
+      elsif val =~ /\,/
+        index_array = val.split(',').map(&:to_i)
+      elsif val.eql? 'all'
+        index_array << val
+      else
+        index_array << val.to_i
+      end
+      @flags[:input_data] = CSVDataProvider.new.get_data(input_file_name: data_path, row_num: index_array)
     end
   end
 
@@ -73,12 +97,34 @@ class LadonAutomationRunner < Ladon::Automator::Automation
     end
 
     wrapper.make_phases_interactive(phase_names)
-    @target_automation = wrapper.spawn(
-      flags: self.get_flag_value(TARGET_AUTOMATION_FLAGS),
-      log_level: self.get_flag_value(LOG_LEVEL),
-      class_name: @target_automation_class,
-      path: File.expand_path(@flags[:target_path])
-    )
+    self.handle_flag(DATA)
+    @data = self.get_flag_value(DATA)
+    flags = self.get_flag_value(TARGET_AUTOMATION_FLAGS)
+    @runners = []
+    if @data.nil?
+      @runners << wrapper.spawn(
+        flags: flags,
+        log_level: self.get_flag_value(LOG_LEVEL),
+        class_name: @target_automation_class,
+        path: File.expand_path(@flags[:target_path])
+      )
+    else
+      count = 1
+      while count <= @data.count
+        temp_flags = Marshal.load(Marshal.dump(flags)) # Make a deep copy of flags object.
+        if temp_flags[:output_file] && @data.count != 1
+          temp_flags[:output_file].gsub!(/\./, "_#{count}.")
+        end
+        @runners << wrapper.spawn(
+          flags: temp_flags,
+          log_level: self.get_flag_value(LOG_LEVEL),
+          class_name: @target_automation_class,
+          path: File.expand_path(@flags[:target_path]),
+          data: @data[count - 1]
+        )
+        count += 1
+      end
+    end
   end
 
   # Flag containing the Flags to pass to the target Automation.
@@ -119,11 +165,11 @@ class LadonAutomationRunner < Ladon::Automator::Automation
   def execute
     puts "\nExecuting ladon-run of: #{@target_automation_class.name}"
     _print_separator_line
-
-    halting_assert('Target automation must run successfully') do
-      @target_automation.run
-      @target_automation.result.success?
+    threads = []
+    @runners.each_with_index do |runner, idx|
+      threads << Thread.new { sandbox("Execute runner ##{idx}") { runner.run } }
     end
+    threads.each(&:join)
   end
 
   # Teardown occurs once the target Automation instance stops running.
@@ -134,7 +180,10 @@ class LadonAutomationRunner < Ladon::Automator::Automation
   def teardown
     puts "\nWrapping up ladon-run..."
     _print_separator_line
-
+    @runners.group_by { |r| r.result.status }.each { |status, results| result.record_data(status, results.size) }
+    assert('All Automations in the batch should succeed') do
+      @runners.all? { |r| r.result.success? }
+    end
     self.handle_flag(PRY)
   end
 

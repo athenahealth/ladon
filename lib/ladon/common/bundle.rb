@@ -43,7 +43,8 @@ module Ladon
       log_level: nil,
       flags: nil,
       class_name: nil,
-      path: nil
+      path: nil,
+      data: nil
     )
       self.new(
         config: Ladon::Config.new(
@@ -51,7 +52,8 @@ module Ladon
           id: id,
           log_level: log_level,
           class_name: class_name,
-          path: path
+          path: path,
+          data: data
         )
       )
     end

@@ -40,7 +40,7 @@ module Ladon
 
           # Use the class' name, defaulting to the superclass' name
           class_name = self.class.name || self.class.superclass.name
-          puts "\t#{class_name} results written to #{File.expand_path(file_path)}" if results_written
+          puts "\t#{class_name} results written to #{File.expand_path(file_path)} - #{result.status}" if results_written
         end
       end
 
