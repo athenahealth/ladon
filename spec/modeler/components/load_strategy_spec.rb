@@ -13,7 +13,7 @@ module Ladon
           it { is_expected.not_to raise_error }
 
           it 'returns a valid LoadStrategy' do
-            expect(LoadStrategy::ALL).to include{ subject }
+            expect(LoadStrategy::ALL).to(include { subject })
           end
 
           it 'returns the correct nested strategy' do

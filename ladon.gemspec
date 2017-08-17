@@ -13,7 +13,7 @@ Gem::Specification.new do |gem|
   gem.email       = 'ssnow@athenahealth.com'
 
   # add the runners/ directory to the load path and packaged files
-  gem.require_paths = %w(lib runners)
+  gem.require_paths = %w[lib runners]
   gem.files       = Dir['lib/**/*.rb', 'runners/**/*.rb']
 
   gem.homepage    = 'http://rubygems.org/gems/ladon'
@@ -34,6 +34,6 @@ Gem::Specification.new do |gem|
   # s.add_runtime_dependency 'pry-stack_explorer' # for interactive mode support in ladon-run
 
   gem.add_dependency 'rake', '~> 11.3'
-  gem.add_development_dependency 'rspec', '~> 3.5' # for specs
-  gem.add_development_dependency 'rubocop', '~> 0.45' # for linting
+  gem.add_development_dependency 'rspec', '~> 3.6' # for specs
+  gem.add_development_dependency 'rubocop', '~> 0.49' # for linting
 end

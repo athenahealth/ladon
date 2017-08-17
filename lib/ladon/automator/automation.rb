@@ -9,18 +9,15 @@ module Ladon
 
       # Flag specifying how to format the Automation's +Result+ object.
       OUTPUT_FORMAT = make_flag(:output_format, default: nil) do |format_method|
-        unless format_method.nil?
-          assert('Automation result must respond to the formatting method') { result.respond_to?(format_method) }
-        end
         @formatter = format_method
       end
 
       # Flag specifying where to write the formatted result (from OUTPUT_FORMAT flag.)
       # NOTE: if not specified and OUTPUT_FORMAT is given, will print to terminal.
-      OUTPUT_FILES = make_flag(:output_file, default: nil) do |file_path_list|
+      OUTPUT_FILE = make_flag(:output_file, default: nil) do |file_path|
         self.handle_flag(OUTPUT_FORMAT)
 
-        if file_path_list.nil?
+        if file_path.nil?
           next if @formatter.nil?
 
           puts "\n"
@@ -28,25 +25,22 @@ module Ladon
           puts result.send(@formatter)
           _print_separator_line('-')
         else
-          file_path_list = file_path_list.split(' ') unless file_path_list.is_a?(Array)
-          file_path_list.each do |file_path|
-            # if no format is available, try to infer from file extension, defaulting to :to_s
-            self.send(:detect_output_format, file_path)
+          # if no format is available, try to infer from file extension, defaulting to :to_s
+          self.send(:detect_output_format, file_path)
 
-            results_written = assert('Must be able to open and write formatted result info to file path given') do
-              output_file = File.expand_path(file_path)
-              # If the directory the file is going to doesn't exist (likely common), create it now
-              dirname = File.dirname(output_file)
-              FileUtils.mkdir_p(dirname) unless File.directory?(dirname)
+          results_written = assert('Must be able to open and write formatted result info to file path given') do
+            output_file = File.expand_path(file_path)
+            # If the directory the file is going to doesn't exist (likely common), create it now
+            dirname = File.dirname(output_file)
+            FileUtils.mkdir_p(dirname) unless File.directory?(dirname)
 
-              formatted_info = result.send(@formatter)
-              File.write(output_file, formatted_info) == formatted_info.length
-            end
-
-            # Use the class' name, defaulting to the superclass' name
-            class_name = self.class.name || self.class.superclass.name
-            puts "\t#{class_name} results written to #{File.expand_path(file_path)}" if results_written
+            formatted_info = result.send(@formatter)
+            File.write(output_file, formatted_info) == formatted_info.length
           end
+
+          # Use the class' name, defaulting to the superclass' name
+          class_name = self.class.name || self.class.superclass.name
+          puts "\t#{class_name} results written to #{File.expand_path(file_path)}" if results_written
         end
       end
 
@@ -99,7 +93,7 @@ module Ladon
 
       # Handle outputting the Result information.
       def handle_output
-        self.handle_flag(Automation::OUTPUT_FILES)
+        self.handle_flag(Automation::OUTPUT_FILE)
       end
 
       # Simple wrapper around +Kernel::puts+ that will be supressed if the SURPRESS_STDOUT flag is truthy.

@@ -74,7 +74,7 @@ module Ladon
       it { is_expected.to be_an_instance_of(String) }
 
       it 'is valid JSON' do
-        expect{JSON.parse(subject.to_json)}.not_to raise_error
+        expect { JSON.parse(subject.to_json) }.not_to raise_error
       end
     end
   end
@@ -86,7 +86,9 @@ module Ladon
 
     B_FLAG = make_flag(:b_flag)
 
-    def flags; {}; end
+    def flags
+      {}
+    end
   end
 
   class ExampleThree < ExampleTwo; D_FLAG = make_flag(:d_flag) {}; end
