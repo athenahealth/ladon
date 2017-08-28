@@ -27,6 +27,13 @@ class CSVDataProvider
     hashify_rows(row_num: row_num, excel_raw_data: excel_raw_data, header: header)
   end
 
+  # Forms the Array of hashes with the data in the CSV.
+  #
+  # @param row_num [Array<Integer>] The indexes of the row.
+  # @param excel_raw_data [Array<Hash>] The data in the CSV.
+  # @param header [Array] The first header row of the CSV data.
+  #
+  # @return excel_data [Array<Hash>] The array of hashes of rows of CSV.
   def hashify_rows(
     row_num:,
     excel_raw_data:,
