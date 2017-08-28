@@ -10,7 +10,7 @@ class CSVDataProvider
     abort('File Extension is incorrect')
   end
 
-  # Method to get All data from different formats "('.xlsx','.csv','.tsv')"
+  # Method to get All data from csv file.
   # in Array of Hash.
   # @parame input_file_name [String] The path of the csv file.
   # @param row_num [Array<Integer>] The indexes of the row.
@@ -23,8 +23,16 @@ class CSVDataProvider
     excel_raw_data = get_file_input_stream(input_file_name)
     header = excel_raw_data[0]
     header.map!(&:to_sym)
+    row_num = (1..excel_raw_data.length - 1).to_a if row_num[0].eql? 'all'
+    hashify_rows(row_num: row_num, excel_raw_data: excel_raw_data, header: header)
+  end
+
+  def hashify_rows(
+    row_num:,
+    excel_raw_data:,
+    header:
+  )
     excel_data = []
-    row_num = (1..excel_raw_data.length - 1).to_a if row_num.nil? || (row_num[0].eql? 'all')
     row_num.each do |i|
       row = Hash[header.zip(excel_raw_data[i])]
       row.each_key do |r|
