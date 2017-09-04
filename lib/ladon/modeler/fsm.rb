@@ -121,7 +121,7 @@ module Ladon
         raise ArgumentError, 'Must be called with a Transition instance!' unless transition.is_a?(Transition)
         transition.execute(current_state, **kwargs)
         new_state = use_state_type(transition.target_type)
-
+	@browser.wait(12000) # After a transition wait for the browser load to complete
         return new_state if new_state.verify_as_current_state?
         raise TransitionFailedError, "Failed to verify '#{new_state.class}' as current state"
       end
