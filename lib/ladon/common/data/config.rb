@@ -20,7 +20,9 @@ module Ladon
     # @param [Ladon::Logging::Level] log_level The log level to use for the
     #   object's Logger instance.
     # @param [Hash] flags The Hash containing flag values.
+    # @param [Hash] data The Hash containing the data.
     # @param [String] path File path to the automation.
+    # rubocop:disable Metrics/ParameterLists
     def initialize(
       class_name: nil,
       flags: nil,

@@ -38,6 +38,8 @@ module Ladon
     # @param [Ladon::Flags|Hash] flags The flags to pass to the spawned Bundle.
     # @param [String] class_name Name of the automation.
     # @param [String] path File path to the automation.
+    # @param [Hash] data The Hash containing the data.
+    # rubocop:disable Metrics/ParameterLists
     def self.spawn(
       id: SecureRandom.uuid,
       log_level: nil,
