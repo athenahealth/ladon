@@ -10,7 +10,8 @@ module Ladon
           log_level: config_level,
           flags: config_flags,
           class_name: class_name,
-          path: path
+          path: path,
+          data: data
         )
       end
       let(:config_id) { '123456' }
@@ -18,6 +19,7 @@ module Ladon
       let(:config_flags) { { a: 1, b: 2 } }
       let(:class_name) { 'FooBar' }
       let(:path) { './lib/automations/foo/bar.rb' }
+      let(:data) { { a: 1, b: 2 } }
 
       describe '#to_h' do
         subject { -> { config.to_h } }
@@ -28,7 +30,8 @@ module Ladon
             test_class_name: class_name,
             test_file_path: path,
             log_level: 'ERROR',
-            flags: config_flags
+            flags: config_flags,
+            data: data
           }
         end
 
@@ -48,6 +51,7 @@ module Ladon
             "Test Class Name: #{class_name}",
             "Test File Path: #{path}",
             'Log Level: ERROR',
+            "Data: #{data}",
             'Flags:',
             "a  => 1\nb  => 2"
           ].join("\n")
