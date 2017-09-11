@@ -14,7 +14,7 @@ module Ladon
     # @return [String] The stringified XML.
     def self.generate(status:, config:, time:, log:)
       time *= 60 # JUnit expects in seconds but Ladon records in minutes
-      suite_name, case_name = convert_path_to_suite_and_case(config.flags[:target_path])
+      suite_name, case_name = convert_path_to_suite_and_case(config.path)
       suite_name = suite_name == '' ? 'base' : suite_name
 
       builder = Nokogiri::XML::Builder.new do |xml|
