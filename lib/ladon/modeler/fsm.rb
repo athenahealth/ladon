@@ -121,8 +121,8 @@ module Ladon
         raise ArgumentError, 'Must be called with a Transition instance!' unless transition.is_a?(Transition)
         transition.execute(current_state, **kwargs)
         new_state = use_state_type(transition.target_type)
-        # The IE webdriver does not wait for the browser ready state after browser action. Since most of the page
-        # load action happens during the transition, adding an wait to halt the execution till the browser returns ready state
+        # The IE webdriver does not wait for the browser ready state after browser action. Since most of the page load
+        # action happens during transition, adding a wait to halt the execution till the browser returns ready state
         @browser.wait(12_000)
         return new_state if new_state.verify_as_current_state?
         raise TransitionFailedError, "Failed to verify '#{new_state.class}' as current state"
