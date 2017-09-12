@@ -92,7 +92,7 @@ module Ladon
               end
 
               it 'does not cause changes to the graph registry' do
-                expect{subject.call}.not_to change{graph.transitions}
+                expect { subject.call }.not_to(change { graph.transitions })
               end
             end
 
@@ -104,7 +104,7 @@ module Ladon
               end
 
               it 'does not cause changes to the graph registry' do
-                expect{subject.call}.not_to change{graph.transitions}
+                expect { subject.call }.not_to(change { graph.transitions })
               end
             end
 
@@ -147,7 +147,7 @@ module Ladon
             end
 
             it "does not cause duplicates in the graph's transition registry" do
-              expect{subject.call}.to change{graph.transitions[start_state]}.from(Set.new).to(transitions)
+              expect { subject.call }.to change { graph.transitions[start_state] }.from(Set.new).to(transitions)
             end
 
             it 'makes the graph report invalid transitions' do

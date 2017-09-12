@@ -1,0 +1,25 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+	
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## [1.1.0] - 2017-08-22
+### Updated
+- Enabling detailed logging on assertion failure with actual and expected values
+- Allowing actual and expected values to be compared in assert instead of code block
+
+## [1.0.1] - 2017-07-21
+### Added
+- JUnit Results parsing with to_junit
+
+### Changed
+- Fixed ARGV parsing from Powershell
+- Output file paths can be relative or fully-qualified
+- Rspec dependency version: 3.6
+- Rubocop dependency version: 0.49
+
+## [1.0.0] - 2016-11-14
+### Added
+- Everything

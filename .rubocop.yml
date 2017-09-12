@@ -22,3 +22,6 @@ Style/RedundantSelf:
 Metrics/MethodLength:
   CountComments: false
   Max: 20
+
+Layout/EndOfLine:
+  EnforcedStyle: lf

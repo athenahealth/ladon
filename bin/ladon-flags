@@ -5,6 +5,8 @@ require 'pp'
 require 'pry'
 require 'ladon'
 
+# This class handles the flag parsing and creation
+# for an automation to customize how it is run
 class LadonFlagsIdentifier < Ladon::Automator::Automation
   AUTOMATION_DIR_BASENAME = 'automations'.freeze
 
@@ -28,13 +30,13 @@ class LadonFlagsIdentifier < Ladon::Automator::Automation
       detected_automations = ObjectSpace.each_object(Ladon::Automator::Automation.singleton_class)
 
       # Filter to only those Automation subclasses that are marked executable
-      executable_automations = detected_automations.reject { |cls| cls.abstract? || cls <= LadonFlagsIdentifier}
+      executable_automations = detected_automations.reject { |cls| cls.abstract? || cls <= LadonFlagsIdentifier }
 
-      if executable_automations.size == 1
-        @target_automation_class = executable_automations[0]
-      else
-        @target_automation_class = _interactive_class_select(executable_automations)
-      end
+      @target_automation_class = if executable_automations.size == 1
+                                   executable_automations[0]
+                                 else
+                                   _interactive_class_select(executable_automations)
+                                 end
     else
       @target_automation_class = Object.const_get(name)
     end
@@ -45,14 +47,12 @@ class LadonFlagsIdentifier < Ladon::Automator::Automation
   end
 
   def self.phases
-    [ Ladon::Automator::Phase.new(:execute, required: true) ]
+    [Ladon::Automator::Phase.new(:execute, required: true)]
   end
 
   # During setup, ladon-run parses and validates the invocation options it was given.
   # It then uses that information to load the target Automation class it will run.
-  def setup
-
-  end
+  def setup; end
 
   # During execute, ladon-run prepares the functionality of the -i flag, spawns the
   # target Automation instance, and runs it.
@@ -61,7 +61,7 @@ class LadonFlagsIdentifier < Ladon::Automator::Automation
     self.handle_flag(TARGET_AUTOMATION_CLASS_NAME)
 
     @target_automation_class.all_flags.each do |flag|
-      puts "#{flag.to_s}\n\n"
+      puts "#{flag}\n\n"
     end
   end
 
@@ -102,7 +102,7 @@ class LadonFlagsIdentifier < Ladon::Automator::Automation
   end
 end
 
-
+# rubocop:disable Metrics/MethodLength
 def _parse_options(argv)
   flags = {}
   OptionParser.new do |opts|
@@ -130,6 +130,7 @@ def _parse_options(argv)
 
   flags
 end
+# rubocop:enable Metrics/MethodLength
 
 runner = LadonFlagsIdentifier.spawn(flags: _parse_options(ARGV))
 runner.run

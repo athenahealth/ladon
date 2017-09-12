@@ -36,7 +36,7 @@ module Ladon
 
       describe 'to_ methods' do
         before do
-          @message = [:msg1, :msg2]
+          @message = %i[msg1 msg2]
           @level = Level::ERROR
           @time = Time.now
           allow(Time).to receive(:now).and_return(@time)
