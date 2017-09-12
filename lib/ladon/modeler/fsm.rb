@@ -126,7 +126,7 @@ module Ladon
 	@browser.wait(12000)
         return new_state if new_state.verify_as_current_state?
         raise TransitionFailedError, "Failed to verify '#{new_state.class}' as current state"
-      endOA
+      end
 
       # Filter the given list of transitions based on the model prefilter and current state.
       #
