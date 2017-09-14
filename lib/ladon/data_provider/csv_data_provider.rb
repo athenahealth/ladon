@@ -34,7 +34,7 @@ class CSVDataProvider
   # @param header [Array] The first header row of the CSV data.
   #
   # @return data [Array<Hash>] The array of hashes of rows of CSV.
-  def _hashify_rows(
+  def hashify_rows(
     row_num:,
     raw_data:,
     header:
