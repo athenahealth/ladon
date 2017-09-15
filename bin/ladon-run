@@ -56,6 +56,19 @@ def _parse_options(argv)
       flags[LadonAutomationRunner::PRY.name] = true
     end
 
+    opts.on('-z DATA',
+            '--data_index DATA',
+            String,
+            "The index of the rows to be executed, 'all' if all the rows") do |val|
+      config_path = File.expand_path(flags[LadonAutomationRunner::TARGET_AUTOMATION_PATH.name])
+      data_path = File.dirname(config_path) + '/data/' + (File.basename config_path, '.rb') + '.csv'
+      if File.file?(data_path)
+        val.gsub!(/\s+/, '')
+        flags[LadonAutomationRunner::DATA_PATH.name] = data_path
+        flags[LadonAutomationRunner::DATA_INDEX.name] = val
+      end
+    end
+
     opts.on('-p PATH',
             '--result_file_path PATH',
             "File to store target's formatted Result data. File extensions used to determine format.") do |val|
