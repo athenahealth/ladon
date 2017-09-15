@@ -59,7 +59,7 @@ def _parse_options(argv)
     opts.on('-z DATA',
             '--data_index DATA',
             String,
-            'The index of the rows to be executed') do |val|
+            "The index of the rows to be executed, 'all' if all the rows") do |val|
       config_path = File.expand_path(flags[LadonAutomationRunner::TARGET_AUTOMATION_PATH.name])
       data_path = File.dirname(config_path) + '/data/' + (File.basename config_path, '.rb') + '.csv'
       if File.file?(data_path)
