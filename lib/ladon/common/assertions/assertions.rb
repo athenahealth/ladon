@@ -28,7 +28,7 @@ module Ladon
       # When block is not specified compare the actual/expected values
       begin
         passed = block_given? ? yield : (actual == expected)
-      rescue => ex
+      rescue StandardError => ex
         passed = false
         @logger.error(error_to_array(ex, description: "Error during attempt to evaluate assertion block: #{ex}"))
       end

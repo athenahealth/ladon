@@ -71,7 +71,7 @@ module Ladon
 
       begin
         yield
-      rescue => ex
+      rescue StandardError => ex
         on_error(ex, activity_name)
       end
     end
