@@ -20,19 +20,23 @@ module Ladon
     # @param [Ladon::Logging::Level] log_level The log level to use for the
     #   object's Logger instance.
     # @param [Hash] flags The Hash containing flag values.
+    # @param [Hash] data The Hash containing the data.
     # @param [String] path File path to the automation.
+    # rubocop:disable Metrics/ParameterLists
     def initialize(
       class_name: nil,
       flags: nil,
       id: SecureRandom.uuid,
       log_level: nil,
-      path: nil
+      path: nil,
+      data: nil
     )
       @id = id
       @flags = flags.is_a?(Hash) ? flags : {}
       @log_level = Logging::Level::ALL.include?(log_level) ? log_level : Logging::Level::ERROR
       @class_name = class_name
       @path = path
+      @data = data
     end
 
     # Create a hash-formatted version of config
@@ -43,7 +47,8 @@ module Ladon
         test_class_name: @class_name,
         test_file_path: @path,
         log_level: @log_level.to_s,
-        flags: @flags
+        flags: @flags,
+        data: @data
       }
     end
 
@@ -55,6 +60,7 @@ module Ladon
         "Test Class Name: #{@class_name}",
         "Test File Path: #{@path}",
         "Log Level: #{@log_level}",
+        "Data: #{@data}",
         'Flags:',
         @flags.map { |flag, value| "#{flag}  => #{value}" }.join("\n")
       ].join("\n")
