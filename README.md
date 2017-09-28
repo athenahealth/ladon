@@ -8,12 +8,17 @@ Ladon is a Ruby framework for codifying software behavior models and creating au
 
 **This is just a README.** 
 
-See the [wiki](https://gitlab.athenahealth.com/ladon/ladon/wikis/home) for complete high-level documentation.
+Refer to the [wiki](https://gitlab.athenahealth.com/ladon/ladon/wikis/home) for complete high-level documentation.
+
+## Contributing
+Refer to [wiki](https://gitlab.athenahealth.com/ladon/ladon/wikis/contributing-to-ladon) for instructions on contributing to ladon.
 
 ## Credits
 
-Ladon was architected and implemented at **athenahealth** by [Snow](https://github.com/imjonsnooow).
+Ladon was architected and implemented at athenahealth, Inc by [Shayne Snow](https://github.com/imjonsnooow).
 
 ## License
 
-See [LICENSE.txt](LICENSE.txt) for authoritative licensing details.   
+Copyright 2017 athenahealth, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License"). Refer to [LICENSE] for authoritative licensing details.
