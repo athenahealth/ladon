@@ -21,4 +21,4 @@ Ladon was architected and implemented at athenahealth, Inc by [Shayne Snow](http
 
 Copyright 2017 athenahealth, Inc.
 
-Licensed under the Apache License, Version 2.0 (the "License"). Refer to [LICENSE] for authoritative licensing details.
+Licensed under the Apache License, Version 2.0 (the "License"). Refer to [LICENSE](LICENSE) for authoritative licensing details.
