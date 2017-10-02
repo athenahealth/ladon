@@ -17,7 +17,7 @@ Gem::Specification.new do |gem|
   gem.files       = Dir['lib/**/*.rb', 'runners/**/*.rb']
 
   gem.homepage    = 'http://rubygems.org/gems/ladon'
-  gem.license     = 'MIT' # TODO
+  gem.license     = 'Apache 2.0'
 
   gem.executables << 'ladon-run'
   gem.executables << 'ladon-batch'

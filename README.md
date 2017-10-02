@@ -1,17 +1,15 @@
 # Ladon - A Software Modeling and Automation Framework
 
-[![build status](https://gitlab.athenahealth.com/ladon/ladon/badges/master/build.svg)](https://gitlab.athenahealth.com/ladon/ladon/commits/master) [![coverage report](https://gitlab.athenahealth.com/ladon/ladon/badges/master/coverage.svg)](https://gitlab.athenahealth.com/ladon/ladon/commits/master)
-
 ## Description
 
 Ladon is a Ruby framework for codifying software behavior models and creating automation through those models.
 
 **This is just a README.** 
 
-Refer to the [wiki](https://gitlab.athenahealth.com/ladon/ladon/wikis/home) for complete high-level documentation.
+Refer to the [wiki](https://github.com/athenahealth/ladon/wiki) for complete high-level documentation.
 
 ## Contributing
-Refer to [wiki](https://gitlab.athenahealth.com/ladon/ladon/wikis/contributing-to-ladon) for instructions on contributing to ladon.
+Refer to [wiki](https://github.com/athenahealth/ladon/wiki/Contributing-to-Ladon) for instructions on contributing to ladon.
 
 ## Credits
 
