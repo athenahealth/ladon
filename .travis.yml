@@ -1,0 +1,22 @@
+language: ruby
+rvm:
+  - 2.3
+
+
+before_install:
+  - ruby -v
+  - which ruby
+  - gem update --system
+  - gem install bundler --no-ri --no-rdoc
+
+install:
+  - bundle install --jobs $(nproc)  "${FLAGS[@]}"
+
+jobs:
+  include:
+    - stage: lint
+      script: bundle exec rake rubocop
+    - stage: test
+      script: bundle exec rake spec
+    - stage: build
+      script: bundle exec rake build
